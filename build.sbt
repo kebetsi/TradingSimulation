@@ -2,7 +2,7 @@ import sbt._
 import Process._
 import Keys._
 
-name := "Engine"
+name := "TradingSimProject"
 
 version := "0.1"
 
