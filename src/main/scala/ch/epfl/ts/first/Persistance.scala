@@ -11,12 +11,12 @@ trait Persistance[T] {
   def save(ts: List[Transaction])
   
   def loadTransaction(id: Int) : Transaction
-  def loadTransactions(ids: List[Int]) : List[Transaction]
+  def loadTransactions(startTime: Long, endTime: Long) : List[Transaction]
   
   def save(o: Order)
   def save(os: List[Order])
   
   def loadOrder(id: Int) : Order
-  def loadOrders(ids: List[Int]) : List[Order]
+  def loadOrders(startTime: Long, endTime: Long) : List[Order]
 
 }
