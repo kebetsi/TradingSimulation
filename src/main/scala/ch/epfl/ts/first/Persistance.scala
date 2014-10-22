@@ -6,17 +6,10 @@ import ch.epfl.ts.data.Order
 
 trait Persistance[T] {
   
+  def save(t: T)
+  def save(ts: List[T])
   
-  def save(t: Transaction)
-  def save(ts: List[Transaction])
-  
-  def loadTransaction(id: Int) : Transaction
-  def loadTransactions(startTime: Long, endTime: Long) : List[Transaction]
-  
-  def save(o: Order)
-  def save(os: List[Order])
-  
-  def loadOrder(id: Int) : Order
-  def loadOrders(startTime: Long, endTime: Long) : List[Order]
+  def loadSingle(id: Int) : T
+  def loadBatch(startTime: Long, endTime: Long) : List[T]
 
 }
