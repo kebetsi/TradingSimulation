@@ -12,7 +12,8 @@ import java.util.ArrayList
 import scala.slick.jdbc.JdbcBackend.Database
 
 import scala.slick.lifted.{Tag, TableQuery, Column}
-import scala.slick.driver.SQLiteDriver._
+import scala.slick.driver.SQLiteDriver.simple._
+import scala.slick.ast.TypedType
 
 class OrderPersistorImpl extends Persistance[Order] {
 
