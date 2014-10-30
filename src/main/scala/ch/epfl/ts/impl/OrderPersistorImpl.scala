@@ -5,11 +5,6 @@ import ch.epfl.ts.first.Persistance
 import ch.epfl.ts.data.Order
 import java.util.ArrayList
 
-//import scala.slick.driver.SQLiteDriver
-//import scala.slick.jdbc.StaticQuery
-//import scala.slick.jdbc.meta.MTable
-//import scala.slick.direct.AnnotationMapper.column
-
 import scala.slick.jdbc.JdbcBackend.Database
 
 import scala.slick.lifted.{Tag, TableQuery, Column}
@@ -22,7 +17,9 @@ class OrderPersistorImpl extends Persistance[Order] {
     val db = Database.forURL("jdbc:sqlite:testDB.txt", driver = "org.sqlite.JDBC")
   }
 
-
+//  type Order = (Int, )
+  
+  
   type Supplier = (Int, String, String, String, String, String)
   // Definition of the SUPPLIERS table
   class Suppliers(tag: Tag) extends Table[(Int, String, String, String, String, String)](tag, "SUPPLIERS") {
@@ -55,7 +52,7 @@ class OrderPersistorImpl extends Persistance[Order] {
 
   def loadSingle(id: Int): Order = {
 
-    return Order(0.0)
+    return Order(0.0, 0.0)
   }
 
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
