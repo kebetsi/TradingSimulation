@@ -12,5 +12,6 @@ libraryDependencies ++= Seq(
 	"com.typesafe.akka" %% "akka-actor" % "2.3.6" withSources() withJavadoc(),
 	"com.typesafe.slick" %% "slick" % "2.1.0" withSources() 
 withJavadoc(),
-	"org.slf4j" % "slf4j-nop" % "1.6.4" withSources() withJavadoc()
+	"org.slf4j" % "slf4j-nop" % "1.6.4" withSources() withJavadoc(),
+	"com.github.nscala-time" %% "nscala-time" % "1.4.0"
 )
