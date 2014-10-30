@@ -4,6 +4,8 @@ package ch.epfl.ts.impl
 import ch.epfl.ts.first.Persistance
 import ch.epfl.ts.data.Order
 import java.util.ArrayList
+import ch.epfl.ts.types.Currency._
+import ch.epfl.ts.data.OrderType._
 
 import scala.slick.jdbc.JdbcBackend.Database
 
@@ -29,8 +31,8 @@ class OrderPersistorImpl extends Persistance[Order] {
   
   def save(newOrder: Order) = {
 //    order += newOrder
-    order.map(o => (o.price, o.quantity, o.timestamp))
-      .insert((0, newOrder.price, newOrder.quantity, newOrder.timestamp))
+//    order.map(o => (o.price, o.quantity, o.timestamp))
+//      .insert((0, newOrder.price, newOrder.quantity, newOrder.timestamp))
   }  
   
   def save(ts: List[Order]) = {
@@ -39,7 +41,7 @@ class OrderPersistorImpl extends Persistance[Order] {
 
   def loadSingle(id: Int): Order = {
 
-    return Order(0.0, 0.0, 0)
+    return Order(0.0, 0.0, 0, USD, BID)
   }
 
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
