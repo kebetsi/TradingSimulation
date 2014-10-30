@@ -2,7 +2,7 @@ package ch.epfl.ts.data
 
 import ch.epfl.ts.types.Currency
 
-case class Order (price: Double, quantity: Double, timestamp: Long, currency: Currency, orderType: OrderType) {
+case class Order (price: Double, quantity: Double, timestamp: Long) { //, currency: Currency, orderType: OrderType) {
   
 }
 
