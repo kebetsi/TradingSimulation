@@ -7,10 +7,11 @@ protected[first] trait Fetch[T] {
 }
 
 abstract class PullFetch[T] extends Fetch[T] {
-  def fetch: List[T]
+  def fetch(): List[T]
+  def interval(): Int
 }
 
-abstract class PushFetch[T] () extends Fetch[T] {
+abstract class PushFetch[T] extends Fetch[T] {
   
   
 }

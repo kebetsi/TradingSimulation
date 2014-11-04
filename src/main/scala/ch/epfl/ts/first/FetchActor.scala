@@ -1,28 +1,27 @@
 package ch.epfl.ts.first
 
+import scala.concurrent.duration.DurationInt
+
 import akka.actor.Actor
-import scala.reflect.ClassTag
+import akka.actor.ActorRef
+import akka.actor.actorRef2Scala
 
-import ch.epfl.ts.data.{Transaction, Order}
-
-
-protected[first] class PullFetchActor[T](f: Fetch[T]) extends Actor {
-	
-  def receive = {
-    case Transaction 	=> println("PullFetchActor: Got Transaction")
-    case Order 			=> println("PullFetchActor: Got Order")
-    case _				=> println("PullFetchActor: Unknown Datatype") 
-  }
+protected[first] class PullFetchActor[T](f: PullFetch[T], dest: ActorRef) extends Actor {
+  import context._
+  private[this] case class Fetch()
+  system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
   
+  override def receive = {
+    case Fetch => f.fetch().map( dest ! _)
+  }
 }
 
-
-protected[first] class PushFetchActor[T](f: Fetch[T]) extends Actor {
-	
-  def receive = {
-    case Transaction 	=> println("PushFetchActor: Got Transaction")
-    case Order 			=> println("PushFetchActor: Got Order")
-    case _				=> println("PushFetchActor: Unknown Datatype") 
+/**
+ * Don't use for now
+ */
+protected[first] class PushFetchActor[T](f: PushFetch[T], dest: ActorRef) extends Actor {
+  override def receive = {
+    case _ => 
   }
   
 }
