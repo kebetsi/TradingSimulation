@@ -1,7 +1,7 @@
 import ch.epfl.ts.data.Order
+import ch.epfl.ts.data.Currency._;
 import ch.epfl.ts.data.OrderType._
 import ch.epfl.ts.impl.OrderPersistorImpl
-import ch.epfl.ts.types.Currency._
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.impl.TransactionPersistorImpl
 

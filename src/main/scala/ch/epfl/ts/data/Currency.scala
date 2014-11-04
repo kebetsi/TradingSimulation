@@ -1,4 +1,4 @@
-package ch.epfl.ts.types
+package ch.epfl.ts.data
 
 object Currency extends Enumeration {
   type Currency = Value

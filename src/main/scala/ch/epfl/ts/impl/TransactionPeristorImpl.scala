@@ -2,10 +2,11 @@ package ch.epfl.ts.impl
 
 import ch.epfl.ts.first.Persistance
 import ch.epfl.ts.data.Transaction
+
 import java.util.ArrayList
-import ch.epfl.ts.types.Currency
-import ch.epfl.ts.types.Currency._
+
 import ch.epfl.ts.data.OrderType
+import ch.epfl.ts.data.Currency;
 import ch.epfl.ts.data.OrderType._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession

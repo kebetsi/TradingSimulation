@@ -12,6 +12,8 @@ protected[first] class PullFetchActor[T](f: PullFetch[T], dest: List[ActorRef]) 
   
   system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
   
+  println ("heere")
+  
   override def receive = {
     case Fetch => f.fetch().map( t => dest.map(_ ! t))
   }

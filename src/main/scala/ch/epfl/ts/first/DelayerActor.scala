@@ -1,9 +1,13 @@
 package ch.epfl.ts.first
 
+
+import ch.epfl.ts.data.Transaction
+
 import scala.reflect.ClassTag
 import akka.actor.{Actor, ActorRef}
 
-protected[first] class DelayerActor[OutType : ClassTag] (dest: List[ActorRef]) 
+
+ class DelayerActor[OutType: ClassTag] (dest: List[ActorRef]) 
   extends Actor {
   
   val clazz = implicitly[ClassTag[OutType]].runtimeClass
@@ -13,3 +17,5 @@ protected[first] class DelayerActor[OutType : ClassTag] (dest: List[ActorRef])
     case _ => 
   }
 }
+ 
+class TransactionDelayer(dest: List[ActorRef]) extends DelayerActor[Transaction](dest) {}

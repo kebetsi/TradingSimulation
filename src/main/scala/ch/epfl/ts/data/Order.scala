@@ -1,6 +1,6 @@
 package ch.epfl.ts.data
 
-import ch.epfl.ts.types.Currency._
+import Currency._
 
 object OrderType extends Enumeration {
   type OrderType = Value
