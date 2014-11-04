@@ -9,7 +9,7 @@ object OrderType extends Enumeration {
 };
 import OrderType._
 
-case class Order (price: Double, quantity: Double, timestamp: Long) {  // , currency: Currency, orderType: OrderType) {
+case class Order (price: Double, quantity: Double, timestamp: Long, currency: Currency, orderType: OrderType) {
 }
 
 
