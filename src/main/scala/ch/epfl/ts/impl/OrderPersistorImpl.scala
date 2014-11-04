@@ -31,6 +31,9 @@ class OrderPersistorImpl extends Persistance[Order] {
   }
   lazy val order = TableQuery[Orders]
 
+  /**
+   * create table if it does not exist
+   */
   def init() = {
     db.withDynSession {
       if (MTable.getTables("ORDERS").list.isEmpty) {
@@ -39,25 +42,27 @@ class OrderPersistorImpl extends Persistance[Order] {
     }
   }
 
+  /**
+   * save single entry
+   */
   def save(newOrder: Order) = {
     db.withDynSession {
       order += (1, newOrder.price, newOrder.quantity, newOrder.timestamp, newOrder.currency.toString(), newOrder.orderType.toString()) // AutoInc are implicitly ignored
     }
-    //    session.
-    //    order.insert()
-    //    order += (newOrder.price, newOrder.quantity, newOrder.timestamp)
-    //    order.map(o => (0, o.price, o.quantity, o.timestamp))
-    //      .insert((0, newOrder.price, newOrder.quantity, newOrder.timestamp))
-    //    order.map( o => (1, o.price, o.quantity, o.timestamp)) += (1, newOrder.price, newOrder.quantity, newOrder.timestamp)
-    //    order.map( o => (1, o.price, o.quantity, o.timestamp)).
   }
 
+  /**
+   * save entries
+   */
   def save(ts: List[Order]) = {
     db.withDynSession {
-      //      order ++= ts
+      order ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString(), x.orderType.toString()) }
     }
   }
 
+  /**
+   * load entry with id
+   */
   def loadSingle(id: Int): Order /*Option[Order]*/ = {
     db.withDynSession {
       val r = order.filter(_.id === id).invoker.firstOption.get
@@ -65,8 +70,42 @@ class OrderPersistorImpl extends Persistance[Order] {
     }
   }
 
+  /**
+   * load entries with timestamp value between startTime and endTime
+   */
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
-    return List()
+    var res: List[Order] = List()
+    db.withDynSession {
+      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Order(r._2, r._3, r._4, Currency.withName(r._5), OrderType.withName(r._6)) :: res }
+    }
+    return res
+  }
+  
+  /**
+   * delete entry with id
+   */
+  def deleteSingle(id: Int) = {
+    db.withDynSession {
+      order.filter(_.id === id).delete
+    }
+  }
+  
+  /**
+   * delete entries with timestamp values between startTime and endTime
+   */
+  def deleteBatch(startTime: Long, endTime: Long) = {
+    db.withDynSession {
+      order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).delete
+    }
+  }
+  
+  /**
+   * delete all entries
+   */
+  def clearAll = {
+    db.withDynSession {
+      order.delete
+    }
   }
 
 }
