@@ -66,7 +66,11 @@ class OrderPersistorImpl extends Persistance[Order] {
   }
 
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
-    return List()
+    var res: List[Order] = List()
+    db.withDynSession {
+      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Order(r._2, r._3, r._4, Currency.withName(r._5), OrderType.withName(r._6)) :: res }
+    }
+    return res
   }
 
 }
