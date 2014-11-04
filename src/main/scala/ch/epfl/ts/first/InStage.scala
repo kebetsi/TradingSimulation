@@ -18,9 +18,9 @@ class InStage[OutType] (dest: List[ActorRef],
   
   // Actor Fetcher
   val fetchA: ActorRef = if (fetch.isInstanceOf[PullFetch[OutType]]) {
-    as.actorOf(Props(classOf[PullFetchActor[OutType]], fetch, pActor), "/instage/fetcher")
+    as.actorOf(Props(classOf[PullFetchActor[OutType]], fetch, List(pActor, dActor)), "/instage/fetcher")
   } else if (fetch.isInstanceOf[PushFetch[OutType]]) {
-    as.actorOf(Props(classOf[PushFetchActor[OutType]], fetch, pActor), "/instage/fetcher")
+    as.actorOf(Props(classOf[PushFetchActor[OutType]], fetch, List(pActor, dActor)), "/instage/fetcher")
   } else {
     throw new RuntimeException("Type Mismatch")
   }
