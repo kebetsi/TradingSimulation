@@ -1,23 +1,21 @@
 package ch.epfl.ts.impl
 
-
 import ch.epfl.ts.first.Persistance
 import ch.epfl.ts.data.Order
 import java.util.ArrayList
 import ch.epfl.ts.types.Currency._
 import ch.epfl.ts.data.OrderType._
-
 import scala.slick.jdbc.JdbcBackend.Database
-
-import scala.slick.lifted.{Tag, TableQuery, Column}
+import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
+import scala.slick.lifted.{ Tag, TableQuery, Column }
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.ast.TypedType
+import scala.slick.jdbc.meta
+import scala.slick.jdbc.meta.MTable
 
 class OrderPersistorImpl extends Persistance[Order] {
 
-  def init() = {
-    val db = Database.forURL("jdbc:sqlite:testDB.txt", driver = "org.sqlite.JDBC")
-  }
+  val db = Database.forURL("jdbc:sqlite:testDB.txt", driver = "org.sqlite.JDBC")
 
   type OrderEntry = (Int, Double, Double, Long)
   class Orders(tag: Tag) extends Table[(Int, Double, Double, Long)](tag, "ORDERS") {
@@ -28,20 +26,39 @@ class OrderPersistorImpl extends Persistance[Order] {
     def * = (id, price, quantity, timestamp)
   }
   lazy val order = TableQuery[Orders]
-  
-  def save(newOrder: Order) = {
-//    order += newOrder
-//    order.map(o => (o.price, o.quantity, o.timestamp))
-//      .insert((0, newOrder.price, newOrder.quantity, newOrder.timestamp))
-  }  
-  
-  def save(ts: List[Order]) = {
 
+  def init() = {
+    db.withDynSession {
+      if (MTable.getTables("ORDERS").list.isEmpty) {
+        (order.ddl).create
+      }
+    }
   }
 
-  def loadSingle(id: Int): Order = {
+  def save(newOrder: Order) = {
+    db.withDynSession {
+      order += (1, newOrder.price, newOrder.quantity, newOrder.timestamp) // AutoInc are implicitly ignored
+    }
+    //    session.
+    //    order.insert()
+    //    order += (newOrder.price, newOrder.quantity, newOrder.timestamp)
+    //    order.map(o => (0, o.price, o.quantity, o.timestamp))
+    //      .insert((0, newOrder.price, newOrder.quantity, newOrder.timestamp))
+    //    order.map( o => (1, o.price, o.quantity, o.timestamp)) += (1, newOrder.price, newOrder.quantity, newOrder.timestamp)
+    //    order.map( o => (1, o.price, o.quantity, o.timestamp)).
+  }
 
-    return Order(0.0, 0.0, 0, USD, BID)
+  def save(ts: List[Order]) = {
+    db.withDynSession {
+      //      order ++= ts
+    }
+  }
+
+  def loadSingle(id: Int): Order /*Option[Order]*/ = {
+    db.withDynSession {
+      val r = order.filter(_.id === id).invoker.firstOption.get
+      return Order(r._2, r._3, r._4)
+    }
   }
 
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
