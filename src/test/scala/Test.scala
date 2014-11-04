@@ -12,10 +12,11 @@ object Test {
     persistor.init()
     persistor.save(order1)
     persistor.save(order2)
-    val retrievedOrder = persistor.loadSingle(1)
-    println("retrieved: price=" + retrievedOrder.price + ", quantity=" + retrievedOrder.quantity + ", timestamp=" + retrievedOrder.timestamp + ", currency=" + retrievedOrder.currency + ", orderType=" + retrievedOrder.orderType)
+//    val retrievedOrder = persistor.loadSingle(1)
+//    println("retrieved: price=" + retrievedOrder.price + ", quantity=" + retrievedOrder.quantity + ", timestamp=" + retrievedOrder.timestamp + ", currency=" + retrievedOrder.currency + ", orderType=" + retrievedOrder.orderType)
     val orders = persistor.loadBatch(0, 2)
-    orders.map(a => println("order price=" + a.price))
+    orders.map(a => println(a))
+    persistor.deleteBatch(0, 100)
   }
 
 }
