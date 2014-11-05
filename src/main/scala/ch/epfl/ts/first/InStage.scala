@@ -14,7 +14,7 @@ class InStage[OutType] (dest: List[ActorRef],
   //val dActor = as.actorOf(Props(classOf[DelayerActor[OutType]], List(dest)), "instage-delayer")
   val dActor = as.actorOf(Props(classOf[TransactionDelayer], List(dest)), "instage-delayer")
   
-  // Actor Persister
+  // Actor Persistor
   val pActor = as.actorOf(Props(classOf[PersistanceActor[OutType]], persist), "instage-persiter")
   
   // Actor Fetcher
@@ -26,10 +26,6 @@ class InStage[OutType] (dest: List[ActorRef],
     throw new RuntimeException("Type Mismatch")
   }
   
-  
-  
-  
-  
   // Actor Replay
   
   
@@ -37,6 +33,7 @@ class InStage[OutType] (dest: List[ActorRef],
   
   
   def receive = {
+    case "init" => dActor ! pActor; dActor ! fetchA; pActor ! fetchA
   	case _ =>
   }
   

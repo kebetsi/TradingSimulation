@@ -15,6 +15,7 @@ protected[first] class PullFetchActor[T](f: PullFetch[T], dest: List[ActorRef]) 
   println ("heere")
   
   override def receive = {
+    // pull and send to each listener
     case Fetch => f.fetch().map( t => dest.map(_ ! t))
   }
 }

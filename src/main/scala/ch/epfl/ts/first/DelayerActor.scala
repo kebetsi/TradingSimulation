@@ -13,6 +13,7 @@ import akka.actor.{Actor, ActorRef}
   val clazz = implicitly[ClassTag[OutType]].runtimeClass
   
   def receive = {
+    case ActorRef => sender ! "bloubloublou"
     case d if clazz.isInstance(d) => dest.map(_ ! d)
     case _ => 
   }
