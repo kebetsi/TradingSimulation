@@ -1,11 +1,33 @@
-package ch.epfl.bigdata.btc.crawler.coins.markets
+package ch.epfl.ts.first.fetcher
 
-import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.first.TransactionPullFetch
 import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.first.TransactionPullFetch
 
 import org.apache.http.client.fluent._
 import net.liftweb.json._
 import org.joda.time.DateTime
+
+class BtceTransactionPullFetcher extends TransactionPullFetch {
+  val btce = new BtceAPI(USD, BTC)
+  var count = 2000
+  var latest = new Transaction(0.0, 0.0, 0, USD, "?", "?")
+  
+  override def interval(): Int = 12000
+
+  override def fetch(): List[Transaction] = {
+    val trades = btce.getTrade(count)
+    val idx = trades.indexOf(latest)
+    count = if (idx < 0)  2000 else Math.min(10*idx, 2000)
+    latest = if (trades.length == 0) latest else trades.head
+    
+    if(idx > 0)
+      trades.slice(0, idx)
+    else
+      trades
+  }
+}
 
 
 case class BTCeCaseTransaction(date: Long, price: Double, amount: Double, 
@@ -37,9 +59,7 @@ class BtceAPI(from: Currency, to: Currency) {
     }
   }
 
-  def getDepth() {
-
-  }
+  def getDepth() {}
 
   private def pair2path() = (from, to) match {
     case (USD, BTC) => "btc_usd"
