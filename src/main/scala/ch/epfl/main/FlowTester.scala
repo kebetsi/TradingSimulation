@@ -1,10 +1,13 @@
 
 
+package ch.epfl.main
+
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first._
 import akka.actor.{ ActorSystem, Props, Actor}
 import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcher
 import ch.epfl.ts.impl.TransactionPersistorImpl
+import akka.actor.actorRef2Scala
 
 object FlowTester {
   

@@ -14,7 +14,7 @@ class InStage[OutType] (dest: List[ActorRef],
   
   // Actor Delayer
   //val dActor = as.actorOf(Props(classOf[DelayerActor[OutType]], List(dest)), "instage-delayer")
-  val dActor = as.actorOf(Props(classOf[TransactionDelayer], List(dest)), "instage-delayer")
+  val dActor = as.actorOf(Props(classOf[TransactionDelayer], dest), "instage-delayer")
   
   // Actor Persistor
   val pActor = as.actorOf(Props(classOf[TranscationPersistanceActor], persist), "instage-persiter")

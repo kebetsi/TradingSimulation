@@ -7,17 +7,17 @@ import scala.reflect.ClassTag
 import akka.actor.{Actor, ActorRef}
 
 
- class DelayerActor[OutType: ClassTag] (dest: List[ActorRef]) 
-  extends Actor {
-  
-  val clazz = implicitly[ClassTag[OutType]].runtimeClass
-  
+abstract class DelayerActor extends Actor {}
+ 
+class TransactionDelayer(dest: List[ActorRef]) extends DelayerActor {
   def receive = {
-    case ActorRef => sender ! "bloubloublou"
-    case d if clazz.isInstance(d) => dest.map(_ ! d)
-    case _ => 
+    case d: Transaction => dest.map(x => x ! d)
+    case _ =>
   }
 }
- 
-class TransactionDelayer(dest: List[ActorRef]) extends DelayerActor[Transaction](dest) {}
-class OrderDelayer(dest: List[ActorRef]) extends DelayerActor[Order](dest) {}
+class OrderDelayer(dest: List[ActorRef]) extends DelayerActor {
+  def receive = {
+    case d: Order => dest.map(x => x ! d)
+    case _ =>
+  }
+}
