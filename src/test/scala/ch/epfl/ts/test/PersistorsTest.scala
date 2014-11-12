@@ -1,5 +1,7 @@
+package ch.epfl.ts.test
+
 import ch.epfl.ts.data.Order
-import ch.epfl.ts.data.Currency._;
+import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.OrderType._
 import ch.epfl.ts.impl.OrderPersistorImpl
 import ch.epfl.ts.data.Transaction

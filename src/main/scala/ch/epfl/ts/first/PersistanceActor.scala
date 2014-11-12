@@ -1,5 +1,6 @@
 package ch.epfl.ts.first
 
+import ch.epfl.ts.data.Transaction
 import scala.reflect.ClassTag
 import akka.actor.{Actor, ActorRef}
 
@@ -13,3 +14,6 @@ protected[first] class PersistanceActor[OutType : ClassTag] (p: Persistance[OutT
     case _ => 
   }
 }
+
+protected[first] class TranscationPersistanceActor(p: Persistance[Transaction])
+  extends PersistanceActor[Transaction] (p: Persistance[Transaction]) 
