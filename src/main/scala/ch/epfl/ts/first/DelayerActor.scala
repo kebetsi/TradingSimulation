@@ -1,7 +1,7 @@
 package ch.epfl.ts.first
 
 
-import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.data.{Transaction, Order}
 
 import scala.reflect.ClassTag
 import akka.actor.{Actor, ActorRef}
@@ -20,3 +20,4 @@ import akka.actor.{Actor, ActorRef}
 }
  
 class TransactionDelayer(dest: List[ActorRef]) extends DelayerActor[Transaction](dest) {}
+class OrderDelayer(dest: List[ActorRef]) extends DelayerActor[Order](dest) {}

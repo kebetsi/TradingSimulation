@@ -29,7 +29,6 @@ class BtceTransactionPullFetcher extends TransactionPullFetch {
   }
 }
 
-
 case class BTCeCaseTransaction(date: Long, price: Double, amount: Double, 
     tid: Int, price_currency: String, item: String, trade_type: String)
 
