@@ -16,4 +16,4 @@ protected[first] class PersistanceActor[OutType : ClassTag] (p: Persistance[OutT
 }
 
 protected[first] class TranscationPersistanceActor(p: Persistance[Transaction])
-  extends PersistanceActor[Transaction] (p: Persistance[Transaction]) 
+  extends PersistanceActor[Transaction] (p) 
