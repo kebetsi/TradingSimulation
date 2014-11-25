@@ -14,10 +14,8 @@ object Native {
     val entriesList = timed(source.getLines().toList)
     val test = entriesList.head
     println("first entry: " + entriesList.head)
-    val testSplit: List[Array[String]] = timed(entriesList.map { x => x.split(",") })
-    println("first entry parsed: " + testSplit.head(0) + "," + testSplit.head(1) + "," + testSplit.head(2) + "," + testSplit.head(3) + "," + testSplit.head(4) + "," + testSplit.head(5))
     var retrievedTransactions: List[Transaction] = List()
-    timed(entriesList.foreach { a => val x = a.split(","); retrievedTransactions = new Transaction(x(1).toDouble, x(2).toDouble, x(0).toLong, Currency.USD, x(4), x(5)) :: retrievedTransactions})
+    timed(entriesList.map { a => val x = a.split(","); retrievedTransactions = new Transaction(x(1).toDouble, x(2).toDouble, x(0).toLong, Currency.USD, x(4), x(5)) :: retrievedTransactions})
   }
 
   def timed[A](block: => A) = {
