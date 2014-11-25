@@ -6,7 +6,7 @@ import ch.epfl.ts.data.Order
 import java.util.ArrayList
 
 import ch.epfl.ts.data.OrderType
-import ch.epfl.ts.data.Currency;
+import ch.epfl.ts.data.Currency
 import ch.epfl.ts.data.OrderType._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
@@ -38,7 +38,7 @@ class OrderPersistorImpl extends Persistance[Order] {
   def init() = {
     db.withDynSession {
       if (MTable.getTables("ORDERS").list.isEmpty) {
-        (order.ddl).create
+        order.ddl.create
       }
     }
   }
@@ -48,7 +48,7 @@ class OrderPersistorImpl extends Persistance[Order] {
    */
   def save(newOrder: Order) = {
     db.withDynSession {
-      order += (1, newOrder.price, newOrder.quantity, newOrder.timestamp, newOrder.currency.toString(), newOrder.orderType.toString()) // AutoInc are implicitly ignored
+      order += (1, newOrder.price, newOrder.quantity, newOrder.timestamp, newOrder.currency.toString, newOrder.orderType.toString) // AutoInc are implicitly ignored
     }
   }
 
@@ -57,7 +57,7 @@ class OrderPersistorImpl extends Persistance[Order] {
    */
   def save(ts: List[Order]) = {
     db.withDynSession {
-      order ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString(), x.orderType.toString()) }
+      order ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString) }
     }
   }
 

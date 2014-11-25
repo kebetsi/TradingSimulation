@@ -14,6 +14,4 @@ abstract class PullFetch[T] extends Fetch[T] {
 abstract class TransactionPullFetch extends PullFetch[Transaction]
 abstract class OrderPullFetch extends PullFetch[Order]
 
-abstract class PushFetch[T] extends Fetch[T] {
-  
-}
+abstract class PushFetch[T] (callback: T => Unit) extends Fetch[T]

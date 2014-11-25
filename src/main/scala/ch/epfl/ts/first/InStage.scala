@@ -19,7 +19,7 @@ class InStage[OutType](dest: List[ActorRef],
   val pActor = as.actorOf(Props(classOf[TranscationPersistanceActor], persist), "instage-persiter")
 
   // Actor Fetcher
-  println(fetch);
+  println(fetch)
 
   /*
   val fetchA: ActorRef = if (fetch.isInstanceOf[TransactionPullFetch]) {

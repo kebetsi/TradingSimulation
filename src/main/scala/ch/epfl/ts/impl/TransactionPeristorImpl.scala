@@ -6,7 +6,7 @@ import ch.epfl.ts.data.Transaction
 import java.util.ArrayList
 
 import ch.epfl.ts.data.OrderType
-import ch.epfl.ts.data.Currency;
+import ch.epfl.ts.data.Currency
 import ch.epfl.ts.data.OrderType._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
@@ -39,7 +39,7 @@ class TransactionPersistorImpl extends Persistance[Transaction] {
   def init() = {
     db.withDynSession {
       if (MTable.getTables("TRANSACTIONS").list.isEmpty) {
-        (transaction.ddl).create
+        transaction.ddl.create
       }
     }
   }
@@ -49,7 +49,7 @@ class TransactionPersistorImpl extends Persistance[Transaction] {
    */
   def save(newTransaction: Transaction) = {
     db.withDynSession {
-      transaction += (1, newTransaction.price, newTransaction.quantity, newTransaction.timestamp, newTransaction.currency.toString(), newTransaction.buyer, newTransaction.seller) // AutoInc are implicitly ignored
+      transaction += (1, newTransaction.price, newTransaction.quantity, newTransaction.timestamp, newTransaction.currency.toString, newTransaction.buyer, newTransaction.seller) // AutoInc are implicitly ignored
     }
   }
 
@@ -58,7 +58,7 @@ class TransactionPersistorImpl extends Persistance[Transaction] {
    */
   def save(ts: List[Transaction]) = {
     db.withDynSession {
-      transaction ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString(), x.buyer, x.seller) }
+      transaction ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString, x.buyer, x.seller) }
     }
   }
 
