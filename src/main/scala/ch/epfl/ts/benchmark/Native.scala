@@ -15,7 +15,7 @@ object Native {
     val test = entriesList.head
     println("first entry: " + entriesList.head)
     var retrievedTransactions: List[Transaction] = List()
-    timed(entriesList.map { a => val x = a.split(","); retrievedTransactions = new Transaction(x(1).toDouble, x(2).toDouble, x(0).toLong, Currency.USD, x(4), x(5)) :: retrievedTransactions})
+    timed(entriesList.foreach { a => val x = a.split(","); retrievedTransactions = new Transaction(x(1).toDouble, x(2).toDouble, x(0).toLong, Currency.withName(x(3).toLowerCase()), x(4), x(5)) :: retrievedTransactions})
   }
 
   def timed[A](block: => A) = {
