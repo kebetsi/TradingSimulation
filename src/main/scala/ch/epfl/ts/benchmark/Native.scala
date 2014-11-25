@@ -4,7 +4,7 @@ import scala.io.Source
 import java.io._
 import scala.util.Random
 
-import ch.epfl.ts.data.{Transaction, Currency}
+import ch.epfl.ts.data.{ Transaction, Currency }
 
 object Native {
 
@@ -24,7 +24,7 @@ object Native {
     println("took " + (System.currentTimeMillis - t0) + "ms")
     result
   }
-  
+
   def generateFakeData = {
     val writer = new PrintWriter(new File("fakeData.csv"))
     val rnd = new Random()
