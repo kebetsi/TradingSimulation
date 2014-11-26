@@ -8,7 +8,7 @@ import scala.io.Source
 class PullFetchBenchmarkImpl extends PullFetch[Transaction] {
   override def interval = 12000 * 1000 * 1000
 
-  val filename = "/BITCOIN-BITSTAMPUSD.csv"
+  val filename = "fakeData.csv"
   var called = false
 
   override def fetch: List[Transaction] = {

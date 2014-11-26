@@ -10,14 +10,21 @@ import scala.util.Random
 object Native {
 
   def main(args: Array[String]) = {
-
-    val source = Source.fromFile("fakeData.csv")
+    val filename = "fakeData.csv"
+    val source = Source.fromFile(filename)
+    println("Unbuffered run")
     val entriesList = timed(source.getLines().toList)
-    val test = entriesList.head
-    println("first entry: " + entriesList.head)
-    val retrievedTransactions = timed(
+    println("lines count: " + entriesList.size)
+    timed(
       entriesList.map(_.split(",")).map(l => Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
     )
+    println("Buffered run")
+    timed(Source.fromFile(filename).getLines().foreach(
+      s => {
+        val l = s.split(",")
+        Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5))
+      }
+    ))
   }
 
   def timed[A](block: => A) = {

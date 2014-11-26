@@ -6,9 +6,8 @@ import ch.epfl.ts.data.{Currency, Transaction}
 import scala.concurrent.duration.FiniteDuration
 import scala.io.Source
 
-abstract class TimedReporterActor(master: ActorRef, dest: List[ActorRef]) extends Actor {
+abstract class TimedReporterActor(master: ActorRef, dest: List[ActorRef], source: String) extends Actor {
   val system = this.context.system
-
   import system.dispatcher
 
   def receive = {
@@ -25,7 +24,7 @@ abstract class TimedReporterActor(master: ActorRef, dest: List[ActorRef]) extend
     val startTime = System.currentTimeMillis
     f()
     val endTime = System.currentTimeMillis
-    master ! Report("TimedReporter", startTime, endTime)
+    master ! Report(source, startTime, endTime)
   }
 
   def f(): Unit
@@ -33,16 +32,15 @@ abstract class TimedReporterActor(master: ActorRef, dest: List[ActorRef]) extend
 
 object TimedReporterActor {
   def fileFetchActor(sys: ActorSystem, master: ActorRef, filename: String): (List[ActorRef] => ActorRef) = {
-    (dest: List[ActorRef]) => {
-      class FileFetch extends TimedReporterActor(master, dest) {
-        override def f(): Unit = Source.fromFile(filename).getLines().foreach(
-          s => {
-            val l = s.split(",")
-            dest.map(_ ! Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
-          }
-        )
-      }
-      sys.actorOf(Props(classOf[FileFetch], dest))
-    }
+    (dest: List[ActorRef]) => sys.actorOf(Props(classOf[FileFetch], master, filename, dest))
   }
+}
+
+class FileFetch(master: ActorRef, filename: String, dest: List[ActorRef]) extends TimedReporterActor(master, dest, "Generator") {
+  override def f(): Unit = Source.fromFile(filename).getLines().foreach(
+    s => {
+      val l = s.split(",")
+      dest.map(_ ! Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
+    }
+  )
 }

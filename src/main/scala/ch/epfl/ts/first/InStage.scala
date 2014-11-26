@@ -1,14 +1,12 @@
 package ch.epfl.ts.first
 
 import akka.actor.{ActorSystem, Actor, ActorRef, Props}
-import akka.event.Logging
+import ch.epfl.ts.benchmark.{Stop, Start}
+import ch.epfl.ts.data.StreamObject
 import scala.reflect.ClassTag
 
-
-case class StreamObject()
-
 trait Stage {
-  def stop()
+  def broadcast[T](mesg: T)
 }
 
 class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef]) {
@@ -19,8 +17,8 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
   var persistance: Option[Persistance[T]] = None
 
   // Fetcher
-  var fetcherCreator: Option[List[ActorRef] => ActorRef]
-  var fetcherInterface: Option[Fetch[T]]
+  var fetcherCreator: Option[List[ActorRef] => ActorRef] = None
+  var fetcherInterface: Option[Fetch[T]] = None
 
   // Delayer
   val delayerActor = if (clazz.getCanonicalName equals "Order") {
@@ -51,9 +49,8 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
     var fA, pA, rA, dA: Option[ActorRef] = None
 
     persistance match {
-      case f: Some[Persistance[T]] => {
-
-      }
+      case f: Some[Persistance[_]] => {}
+      case None => {}
     }
 
     fetcherCreator match {
@@ -65,25 +62,21 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
       }
       case _ => throw new Error("No fetcher defined")
     }
-
-
-    as.actorOf(Props(classOf[InStageMaster],fA, pA, rA, dA))
+    as.actorOf(Props(classOf[InStageMaster], this, fA, pA, rA, dA)) // what the fuck?! (this)
   }
 
   class InStageMaster(f: Option[ActorRef], p: Option[ActorRef], r: Option[ActorRef], d: Option[ActorRef])
     extends Actor with Stage {
 
     override def receive = {
-      case Stop => stop()
+      case t:Stop => broadcast[Stop](t)
+      case t:Start => broadcast[Start](t)
     }
-    case class Stop()
-    override def stop() = {
-      f match { case a: Some[ActorRef] => a.get ! Stop() }
-      p match { case a: Some[ActorRef] => a.get ! Stop() }
-      r match { case a: Some[ActorRef] => a.get ! Stop() }
-      d match { case a: Some[ActorRef] => a.get ! Stop() }
+    override def broadcast[T](msg: T) = {
+      f match { case a: Some[ActorRef] => a.get ! msg case None => }
+      p match { case a: Some[ActorRef] => a.get ! msg case None => }
+      r match { case a: Some[ActorRef] => a.get ! msg case None => }
+      d match { case a: Some[ActorRef] => a.get ! msg case None => }
     }
   }
-
-
 }
