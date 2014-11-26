@@ -1,10 +1,11 @@
 package ch.epfl.ts.benchmark
 
-import scala.io.Source
 import java.io._
-import scala.util.Random
 
-import ch.epfl.ts.data.{ Transaction, Currency }
+import ch.epfl.ts.data.{Currency, Transaction}
+
+import scala.io.Source
+import scala.util.Random
 
 object Native {
 
@@ -15,7 +16,7 @@ object Native {
     val test = entriesList.head
     println("first entry: " + entriesList.head)
     val retrievedTransactions = timed(
-      entriesList.map(_.split(",")).map( l => Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
+      entriesList.map(_.split(",")).map(l => Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
     )
   }
 

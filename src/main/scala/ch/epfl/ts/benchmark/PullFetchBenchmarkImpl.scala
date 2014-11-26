@@ -1,12 +1,12 @@
 package ch.epfl.ts.benchmark
 
 import ch.epfl.ts.data.{Currency, Transaction}
-
-import scala.io.Source
 import ch.epfl.ts.first.PullFetch
 
+import scala.io.Source
+
 class PullFetchBenchmarkImpl extends PullFetch[Transaction] {
-override def interval = 12000 * 1000 * 1000
+  override def interval = 12000 * 1000 * 1000
 
   val filename = "/BITCOIN-BITSTAMPUSD.csv"
   var called = false

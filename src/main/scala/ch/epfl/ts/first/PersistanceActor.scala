@@ -2,18 +2,19 @@ package ch.epfl.ts.first
 
 import ch.epfl.ts.data.Transaction
 import scala.reflect.ClassTag
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor}
 
-protected[first] class PersistanceActor[OutType : ClassTag] (p: Persistance[OutType]) 
+/**
+ * The Abstraction for the persistance actors
+ */
+protected[first] class PersistanceActor[T : ClassTag] (p: Persistance[T])
   extends Actor {
-  
-  val clazz = implicitly[ClassTag[OutType]].runtimeClass
-  
+  val clazz = implicitly[ClassTag[T]].runtimeClass
   def receive = {
-    case d if clazz.isInstance(d) => p.save(d.asInstanceOf[OutType])
-    case _ => 
+    case d if clazz.isInstance(d) => p.save(d.asInstanceOf[T])
+    case _ =>
   }
 }
 
 protected[first] class TranscationPersistanceActor(p: Persistance[Transaction])
-  extends PersistanceActor[Transaction] (p) 
+  extends PersistanceActor[Transaction] (p)

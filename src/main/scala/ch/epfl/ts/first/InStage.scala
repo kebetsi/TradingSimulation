@@ -1,44 +1,89 @@
 package ch.epfl.ts.first
 
-import ch.epfl.ts.data.Transaction
-
-import akka.actor.{ Actor, ActorRef, Props }
+import akka.actor.{ActorSystem, Actor, ActorRef, Props}
 import akka.event.Logging
+import scala.reflect.ClassTag
 
-class InStage[OutType](dest: List[ActorRef],
-                       fetch: Fetch[OutType], persist: Persistance[OutType]) extends Actor {
 
-  val as = context.system
-  val log = Logging(context.system, this)
+case class StreamObject()
 
-  // Actor Delayer
-  //val dActor = as.actorOf(Props(classOf[DelayerActor[OutType]], List(dest)), "instage-delayer")
-  val dActor = as.actorOf(Props(classOf[TransactionDelayer], dest), "instage-delayer")
+trait Stage {
+  def stop()
+}
 
-  // Actor Persistor
-  val pActor = as.actorOf(Props(classOf[TranscationPersistanceActor], persist), "instage-persiter")
+class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef]) {
 
-  // Actor Fetcher
-  println(fetch)
+  val clazz = implicitly[ClassTag[T]].runtimeClass
 
-  /*
-  val fetchA: ActorRef = if (fetch.isInstanceOf[TransactionPullFetch]) {
-    as.actorOf(Props(classOf[TransactionPullFetchActor], fetch, List(pActor, dActor)), "instage-fetcher")
-  } else if (fetch.isInstanceOf[PushFetch[OutType]]) {
-    as.actorOf(Props(classOf[PushFetchActor[OutType]], fetch, List(pActor, dActor)), "instage-fetcher")
+  // Persistance
+  var persistance: Option[Persistance[T]] = None
+
+  // Fetcher
+  var fetcherCreator: Option[List[ActorRef] => ActorRef]
+  var fetcherInterface: Option[Fetch[T]]
+
+  // Delayer
+  val delayerActor = if (clazz.getCanonicalName equals "Order") {
+    as.actorOf(Props(classOf[OrderDelayer], out), "order-delayer")
   } else {
-    throw new RuntimeException("Type Mismatch")
-  }*/
-
-  val fetchA: ActorRef =
-    as.actorOf(Props(classOf[TransactionPullFetchActor], fetch, List(pActor, dActor)), "instage-fetcher")
-
-  // Actor Replay
-
-  def receive = {
-    case "init" =>
-      dActor ! pActor; dActor ! fetchA; pActor ! fetchA
-    case _ =>
+    as.actorOf(Props(classOf[TransactionDelayer], out), "order-delayer")
   }
 
-}	
+  def withPersistance (p: Persistance[T]): InStage[T]= {
+    persistance = Option(p)
+    this
+  }
+  def withPersistance(): InStage[T] = {
+    // TODO: Auto-select
+    throw new Error("Persistance instance autoselect not implemented")
+    this
+  }
+  def withFetcherActor(arC: List[ActorRef] => ActorRef): InStage[T] = {
+    fetcherCreator = Option(arC)
+    this
+  }
+  def withFetchInterface(fInter: Fetch[T]): InStage[T] = {
+    fetcherInterface = Option(fInter)
+    this
+  }
+
+  def start: ActorRef = {
+    var fA, pA, rA, dA: Option[ActorRef] = None
+
+    persistance match {
+      case f: Some[Persistance[T]] => {
+
+      }
+    }
+
+    fetcherCreator match {
+      case f: Some[List[ActorRef] => ActorRef] => {
+        pA match {
+          case s: Some[ActorRef] => fA = Option(f.get(List(s.get, delayerActor)))
+          case _ => fA = Option(f.get(List(delayerActor)))
+        }
+      }
+      case _ => throw new Error("No fetcher defined")
+    }
+
+
+    as.actorOf(Props(classOf[InStageMaster],fA, pA, rA, dA))
+  }
+
+  class InStageMaster(f: Option[ActorRef], p: Option[ActorRef], r: Option[ActorRef], d: Option[ActorRef])
+    extends Actor with Stage {
+
+    override def receive = {
+      case Stop => stop()
+    }
+    case class Stop()
+    override def stop() = {
+      f match { case a: Some[ActorRef] => a.get ! Stop() }
+      p match { case a: Some[ActorRef] => a.get ! Stop() }
+      r match { case a: Some[ActorRef] => a.get ! Stop() }
+      d match { case a: Some[ActorRef] => a.get ! Stop() }
+    }
+  }
+
+
+}
