@@ -21,7 +21,7 @@ object LoadFromFileBenchmark {
     //    generateFakeData
     val filename = "fakeData.csv"
 
-    println("#####----- Java: using FileReader and BufferedReader -----#####")
+    println("#####----- Java: using BufferedReader -----#####")
     var br: BufferedReader = null;
     var line: String = "";
     //    String s = null;
@@ -73,7 +73,7 @@ object LoadFromFileBenchmark {
       }))
     println
 
-    println("#####----- scala using actor -----#####")
+    println("#####----- Scala: using akka Actors and scala.io.Source -----#####")
     val system = ActorSystem("ReadingBenchmarking")
     val bufferedReader = system.actorOf(Props(new BufferedReaderActor(filename)), "bufferedReader")
     val simpleReader = system.actorOf(Props(new SimpleReaderActor(filename, bufferedReader)), "simpleReader")

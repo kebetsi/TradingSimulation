@@ -32,7 +32,7 @@ class ConsumerActor(reporter: ActorRef) extends Actor {
     }
     count += 1
     //println(count)
-    if (count == 999481) {
+    if (count == 999477) {
       val endTime = System.currentTimeMillis()
       reporter ! Report("Consumer", startTime, endTime)
     }
