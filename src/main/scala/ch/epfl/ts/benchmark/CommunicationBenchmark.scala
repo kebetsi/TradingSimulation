@@ -12,99 +12,124 @@ import akka.actor.Actor
 import akka.actor.ActorRef
 import akka.actor.ActorSystem
 import akka.actor.Props
+import java.io.ObjectOutputStream
+import java.io.ObjectInputStream
 
 object CommunicationBenchmark {
 
-  val msgQuantity = 100000
+  val msgQuantity = 1000000
 
-  def main(args: Array[String]) = {
+  def main(args: Array[String]) {
 
-    // test for various tuples size
-    
     /**
      * Tuple2
      */
-//    var elemsList: List[Tuple2[Int, Int]] = List()
-//    for (i <- 1 to msgQuantity) {
-//      elemsList = new Tuple2(i, i) :: elemsList
-//    }
-//    elemsList = elemsList.reverse
-//    println("generated list of " + elemsList.size + " tuples.")
-//    println("#####----- Tuple of size 2 -----#####")
-//
-//    /**
-//     * Java sockets
-//     */
-//    println("###--- Java Sockets ---###")
-//
-//    val server = new javaServer(8765)
-//    val client = new Socket()
-//    server.start()
-//    client.connect(server.server.getLocalSocketAddress)
-//    val stream = new PrintStream(new BufferedOutputStream(client.getOutputStream))
-//    val startSockets = System.currentTimeMillis();
-//    elemsList.map(a => { stream.println(a._1 + "," + a._2); stream.flush() })
-//    server.stop()
-//    println("javaTime: " + (System.currentTimeMillis() - startSockets) + "ms")
-//
-//    /**
-//     *  akka actors
-//     */
-//    println("###--- Akka actors ---###")
-//
-//    val system = ActorSystem("CommBenchmark")
-//    val receiver = system.actorOf(Props(new ReceiverActor(msgQuantity)), "receiver")
-//    val sender = system.actorOf(Props(new SenderActor(receiver)), "sender")
-//    sender ! StartTuples(elemsList)
-    
-    
-    /**
-     * Tuple3
-     */
-    var elemsList3: List[Tuple3[Int, Int, Int]] = List()
-    for (i <- 1 to msgQuantity) {
-      elemsList3 = new Tuple3(i, i, i) :: elemsList3
-    }
-    elemsList3 = elemsList3.reverse
-    println("generated list of " + elemsList3.size + " tuples.")
-    println("#####----- Tuple of size 3 -----#####")
 
     /**
      * Java sockets
      */
-    println("###--- Java Sockets ---###")
-
-    val server3 = new javaServer(8766)
-    val client3 = new Socket()
-    server3.start()
-    client3.connect(server3.server.getLocalSocketAddress)
-    val stream3 = new PrintStream(new BufferedOutputStream(client3.getOutputStream))
-    val startSockets3 = System.currentTimeMillis();
-    elemsList3.map(a => { stream3.println(a._1 + "," + a._2 + "," + a._3); stream3.flush() })
-    server3.stop()
-    println("javaTime: " + (System.currentTimeMillis() - startSockets3) + "ms")
+//    javaSockets2(msgQuantity)
 
     /**
      *  akka actors
      */
+//    actorsTuple2(msgQuantity)
+
+    /**
+     * Tuple3
+     */
+
+    /**
+     * Java sockets
+     */
+//    javaSockets3(msgQuantity)
+
+    /**
+     *  akka actors
+     */
+    actorsTuple3(msgQuantity)
+
+  }
+
+  def generateTuple2(quantity: Int): List[Tuple2[Int, Int]] = {
+    println("#####----- Tuples of size 2 -----#####")
+    var elemsList: List[Tuple2[Int, Int]] = List()
+    for (i <- 1 to quantity) {
+      elemsList = new Tuple2(i, i) :: elemsList
+    }
+    elemsList = (-1, -1) :: elemsList
+    elemsList = elemsList.reverse
+    println("generated list of " + elemsList.size + " tuples.")
+    elemsList
+  }
+
+  def generateTuple3(quantity: Int): List[Tuple3[Int, Int, Int]] = {
+    println("#####----- Tuples of size 3 -----#####")
+    var elemsList3: List[Tuple3[Int, Int, Int]] = List()
+    for (i <- 1 to quantity) {
+      elemsList3 = new Tuple3(i, i, i) :: elemsList3
+    }
+    elemsList3 = (-1, -1, -1) :: elemsList3
+    elemsList3 = elemsList3.reverse
+    println("generated list of " + elemsList3.size + " tuples.")
+    elemsList3
+  }
+
+  def javaSockets2(quantity: Int) = {
+    val elemsList = generateTuple2(quantity)
+    println("###--- Java Sockets ---###")
+    val server = new javaServer2(8765)
+    val client = new Socket()
+    server.start()
+    client.connect(server.server.getLocalSocketAddress)
+    val stream = new ObjectOutputStream(client.getOutputStream)
+    server.startTime = System.currentTimeMillis();
+    elemsList.map(a => { stream.writeObject(a) })
+    stream.close()
+  }
+
+  def javaSockets3(quantity: Int) = {
+    val elemsList3 = generateTuple3(quantity)
+    println("###--- Java Sockets ---###")
+    val server = new javaServer3(8765)
+    val client = new Socket()
+    server.start()
+    client.connect(server.server.getLocalSocketAddress)
+    val stream = new ObjectOutputStream(client.getOutputStream)
+    server.startTime = System.currentTimeMillis();
+    elemsList3.map(a => { stream.writeObject(a) })
+    stream.close()
+  }
+
+  def actorsTuple2(quantity: Int) = {
+    val elemsList = generateTuple2(quantity)
+    println("###--- Akka actors ---###")
+
+    val system = ActorSystem("CommBenchmark")
+    val receiver = system.actorOf(Props(new ReceiverActor(msgQuantity)), "receiver")
+    val sender = system.actorOf(Props(new SenderActor(receiver)), "sender")
+    sender ! StartTuples(elemsList)
+  }
+
+  def actorsTuple3(quantity: Int) = {
+    val elemsList = generateTuple3(quantity)
     println("###--- Akka actors ---###")
 
     val system3 = ActorSystem("CommBenchmark3")
     val receiver3 = system3.actorOf(Props(new ReceiverActor3(msgQuantity)), "receiver3")
     val sender3 = system3.actorOf(Props(new SenderActor3(receiver3)), "sender3")
-    sender3 ! StartTuples3(elemsList3)
-
+    sender3 ! StartTuples3(elemsList)
   }
 
 }
 
 /**
- * 
- * 
+ *
+ *
  * Tuple3
- * 
- * 
- * 
+ *
+ *
+ *
  */
 
 case class StartTuples3(tuples: List[Tuple3[Int, Int, Int]])
@@ -115,10 +140,11 @@ class SenderActor3(receiver: ActorRef) extends Actor {
     case StartTuples3(tuples) => {
       startTime = System.currentTimeMillis()
       tuples.map(x => receiver ! x);
+      receiver ! "Stop"
     }
 
-    case "Stop" => {
-      println("akka time: " + (System.currentTimeMillis() - startTime) + " ms.")
+    case endTime: Long => {
+      println("akka time: " + (endTime - startTime) + " ms.")
       context.system.shutdown()
     }
   }
@@ -126,22 +152,18 @@ class SenderActor3(receiver: ActorRef) extends Actor {
 
 class ReceiverActor3(quantity: Int) extends Actor {
   def receive = {
-    case a: Tuple3[Int, Int, Int] => {
-      //      println("receiver actor: " + a._1 + "," + a._2);
-      if (a._1 == quantity) {
-        sender ! "Stop"
-        context.system.shutdown()
-      }
-    }
+    case Tuple3(a, b, c) => {}
+    case "Stop"          => sender ! System.currentTimeMillis()
+
   }
 }
 
 /**
- * 
- * 
+ *
+ *
  * Tuples 2
- * 
- * 
+ *
+ *
  */
 
 case class StartTuples(tuples: List[Tuple2[Int, Int]])
@@ -152,10 +174,11 @@ class SenderActor(receiver: ActorRef) extends Actor {
     case StartTuples(tuples) => {
       startTime = System.currentTimeMillis()
       tuples.map(x => receiver ! x);
+      receiver ! "Stop"
     }
 
-    case "Stop" => {
-      println("akka time: " + (System.currentTimeMillis() - startTime) + " ms.")
+    case endTime: Long => {
+      println("akka time: " + (endTime - startTime) + " ms.")
       context.system.shutdown()
     }
   }
@@ -163,37 +186,53 @@ class SenderActor(receiver: ActorRef) extends Actor {
 
 class ReceiverActor(quantity: Int) extends Actor {
   def receive = {
-    case a: Tuple2[Int, Int] => {
-      //      println("receiver actor: " + a._1 + "," + a._2);
-      if (a._1 == quantity) {
-        sender ! "Stop"
-        context.system.shutdown()
-      }
+    case Tuple2(a, b) => {
     }
+    case "Stop" => sender ! System.currentTimeMillis()
   }
 }
 
 /**
- * 
- * 
+ *
  * Java Server
- * 
- * 
+ *
  */
 
-class javaServer(port: Int) extends Thread {
+class javaServer2(port: Int) extends Thread {
 
   val server = new ServerSocket(port)
   var isRunning = true
+  var startTime: Long = 0
 
   override def run() {
 
     val worker = server.accept()
-    val reader = new BufferedReader(new InputStreamReader(worker.getInputStream))
-    var newLine: String = null
-    while ((newLine = reader.readLine()) != null) {
-      //      println("Java server: received " + newLine)
+    val ois = new ObjectInputStream(worker.getInputStream)
+    var newObject: Any = null
+    while ({ newObject = ois.readObject(); (newObject != (-1, -1)) }) {
+      //      println("Java server: received: " + newObject)
     }
+    println("javaTime: " + (System.currentTimeMillis() - startTime) + "ms")
+    this.stop()
+  }
+}
+
+class javaServer3(port: Int) extends Thread {
+
+  val server = new ServerSocket(port)
+  var isRunning = true
+  var startTime: Long = 0
+
+  override def run() {
+
+    val worker = server.accept()
+    val ois = new ObjectInputStream(worker.getInputStream)
+    var newObject: Any = null
+    while ({ newObject = ois.readObject(); (newObject != (-1, -1, -1)) }) {
+      //      println("Java server: received: " + newObject)
+    }
+    println("javaTime: " + (System.currentTimeMillis() - startTime) + "ms")
+    this.stop()
   }
 }
 
