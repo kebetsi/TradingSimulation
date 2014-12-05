@@ -8,8 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-
-
+/* OSX time functions */
 #ifdef __MACH__
 #include <sys/time.h>
 #define CLOCK_REALTIME 0 
@@ -26,29 +25,52 @@ int clock_gettime(int clk_id, struct timespec* t) {
 #endif
 
 
-
-
-
 void readFileToMemory(const char * filename);
+void readFileToMemoryItearting(const char * filename);
+void readFileLineByLine(const char * filename);
 void networkSend(int count);
+void networkSendWithFile();
 
 int main() {
 
 	readFileToMemory("../fakeData.csv");
-	networkSend(0);
+	readFileToMemoryItearting("../fakeData.csv");
+	readFileLineByLine("../fakeData.csv");
+	//networkSend(0);
+	networkSendWithFile();
 	return 0;
 }
 
 
-/* Simple file read */
+/* Get file size*/
 size_t getFileSize(const char * filename) {
 	struct stat st;
 	stat(filename, &st);
 	return st.st_size;
 }
 
+/* Reads file into memory with fread */
 void readFileToMemory(const char * filename) {
+	size_t size = getFileSize(filename);
+	char *mFile = (char*)malloc(size*sizeof(char));
+	FILE *f = fopen(filename,"rb");
+	struct timespec tw1, tw2;
 	
+	clock_gettime(CLOCK_MONOTONIC, &tw1);
+	
+	fread( mFile, sizeof(char), size, f);
+	fclose(f);
+	
+	clock_gettime(CLOCK_MONOTONIC, &tw2);
+	
+	free(mFile);
+	
+	double posix_wall = 1000.0*tw2.tv_sec + 1e-6*tw2.tv_nsec - (1000.0*tw1.tv_sec + 1e-6*tw1.tv_nsec);
+	printf("Reads file into memory with fread ==> time passed: %.2f ms\n", posix_wall);
+}
+
+/* Read file to memory char by char */
+void readFileToMemoryItearting(const char * filename) {
 	size_t size = getFileSize(filename);
 	char *mFile = (char*)malloc(size*sizeof(char));
 	FILE *f = fopen(filename,"rb");
@@ -66,9 +88,31 @@ void readFileToMemory(const char * filename) {
 	free(mFile);
 	
 	double posix_wall = 1000.0*tw2.tv_sec + 1e-6*tw2.tv_nsec - (1000.0*tw1.tv_sec + 1e-6*tw1.tv_nsec);
-	printf("Read time passed: %.2f ms\n", posix_wall);
+	printf("Read file to memory char by char ==> time passed: %.2f ms\n", posix_wall);
 }
 
+/* Read file line by line */
+void readFileLineByLine(const char * filename) {
+	char *buffer = (char*)malloc(256*sizeof(char));
+	FILE *f = fopen(filename,"rb");
+	struct timespec tw1, tw2;
+	
+	clock_gettime(CLOCK_MONOTONIC, &tw1);
+
+	while (fgets(buffer, 256, f) != NULL) {
+		int i = 0;
+		for (; buffer[i] != '\0' && i < 256; ++i);
+		char *line = (char*)malloc(i*sizeof(char));
+		free(line);
+	}
+	
+	fclose(f);
+	
+	clock_gettime(CLOCK_MONOTONIC, &tw2);
+	
+	double posix_wall = 1000.0*tw2.tv_sec + 1e-6*tw2.tv_nsec - (1000.0*tw1.tv_sec + 1e-6*tw1.tv_nsec);
+	printf("Read file line by line ==> time passed: %.2f ms\n", posix_wall);
+}
 
 /* Send data over socket */
 void* consume(void *arg) {
@@ -140,5 +184,91 @@ void networkSend(int count) {
 	pthread_join(consumer, &status);
 	
 	double posix_wall = 1000.0*tw2.tv_sec + 1e-6*tw2.tv_nsec - (1000.0*tw1.tv_sec + 1e-6*tw1.tv_nsec);
-	printf("Network time passed: %.2f ms\n", posix_wall);
+	printf("networkSend ==> Network time passed: %.2f ms\n", posix_wall);
+}
+
+
+
+
+/* Send data over socket */
+void* consumeLineByLine(void *arg) {
+	int sockfd, newsockfd, portno = 10240;
+	socklen_t clilen;
+	char buffer[256];
+	struct sockaddr_in serv_addr, cli_addr;
+	int n, counter = 0;
+    const char *filename = "../fakeData.csv";
+     
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     
+	bzero((char *) &serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(portno);
+	bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+	listen(sockfd,5);
+	clilen = sizeof(cli_addr);
+	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+     
+     
+     size_t fSize = getFileSize(filename);
+	while (counter < fSize -10){
+		n = read(newsockfd,buffer,255);
+		counter += n;
+		bzero(buffer,256);
+	}
+	close(newsockfd);
+	close(sockfd);
+	clock_gettime(CLOCK_MONOTONIC, (struct timespec*)arg);
+}
+
+void* produceFromFile(void *arg) {
+	clock_gettime(CLOCK_MONOTONIC, (struct timespec*)arg);
+	
+	int sockfd, portno= 10240;
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+    char buffer[256];
+    const char *filename = "../fakeData.csv";
+    
+	FILE *f = fopen(filename,"r");
+	struct timespec tw1, tw2;
+	
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    server = gethostbyname("localhost");
+    
+    if (server == NULL) {
+        fprintf(stderr,"ERROR, no such host\n");
+        exit(0);
+    }
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)(server->h_addr), (char *)(&serv_addr.sin_addr.s_addr), (size_t)(server->h_length));
+    serv_addr.sin_port = htons(portno);
+    connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
+    
+    size_t read = 0;
+    while((read = fread( &buffer, 1, 256, f)) != 0) {
+		//printf("%d\n",read);
+		write(sockfd,buffer,read);
+	}
+	
+	fclose(f);
+    close(sockfd);
+}
+
+void networkSendWithFile() {
+	pthread_t producer, consumer;
+	struct timespec tw1, tw2;
+	void *status;
+	
+	pthread_create(&consumer, NULL, &consumeLineByLine, &tw2);
+	pthread_create(&producer, NULL, &produceFromFile, &tw1);
+	
+	pthread_join(producer, &status);
+	pthread_join(consumer, &status);
+	
+	double posix_wall = 1000.0*tw2.tv_sec + 1e-6*tw2.tv_nsec - (1000.0*tw1.tv_sec + 1e-6*tw1.tv_nsec);
+	printf("networkSendWithFile ==> Network time passed: %.2f ms\n", posix_wall);
 }
