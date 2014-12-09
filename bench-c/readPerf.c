@@ -24,19 +24,21 @@ int clock_gettime(int clk_id, struct timespec* t) {
 }
 #endif
 
+const char * FILENAME = "../fakeData.csv";
 
-void readFileToMemory(const char * filename);
-void readFileToMemoryItearting(const char * filename);
-void readFileLineByLine(const char * filename);
-void networkSend(int count);
+
+void readFileToMemory();
+void readFileToMemoryItearting();
+void readFileLineByLine();
+void networkSend();
 void networkSendWithFile();
 
 int main() {
 
-	readFileToMemory("../fakeData.csv");
-	readFileToMemoryItearting("../fakeData.csv");
-	readFileLineByLine("../fakeData.csv");
-	//networkSend(0);
+	readFileToMemory();
+	readFileToMemoryItearting();
+	readFileLineByLine();
+	//networkSend();
 	networkSendWithFile();
 	return 0;
 }
@@ -50,10 +52,10 @@ size_t getFileSize(const char * filename) {
 }
 
 /* Reads file into memory with fread */
-void readFileToMemory(const char * filename) {
-	size_t size = getFileSize(filename);
+void readFileToMemory() {
+	size_t size = getFileSize(FILENAME);
 	char *mFile = (char*)malloc(size*sizeof(char));
-	FILE *f = fopen(filename,"rb");
+	FILE *f = fopen(FILENAME,"rb");
 	struct timespec tw1, tw2;
 	
 	clock_gettime(CLOCK_MONOTONIC, &tw1);
@@ -70,10 +72,10 @@ void readFileToMemory(const char * filename) {
 }
 
 /* Read file to memory char by char */
-void readFileToMemoryItearting(const char * filename) {
-	size_t size = getFileSize(filename);
+void readFileToMemoryItearting() {
+	size_t size = getFileSize(FILENAME);
 	char *mFile = (char*)malloc(size*sizeof(char));
-	FILE *f = fopen(filename,"rb");
+	FILE *f = fopen(FILENAME,"rb");
 		
 	struct timespec tw1, tw2;
 	clock_gettime(CLOCK_MONOTONIC, &tw1);
@@ -92,9 +94,9 @@ void readFileToMemoryItearting(const char * filename) {
 }
 
 /* Read file line by line */
-void readFileLineByLine(const char * filename) {
+void readFileLineByLine() {
 	char *buffer = (char*)malloc(256*sizeof(char));
-	FILE *f = fopen(filename,"rb");
+	FILE *f = fopen(FILENAME,"rb");
 	struct timespec tw1, tw2;
 	
 	clock_gettime(CLOCK_MONOTONIC, &tw1);
@@ -121,6 +123,7 @@ void* consume(void *arg) {
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	int n, counter = 0;
+	size_t size = getFileSize(FILENAME);
      
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
      
@@ -132,12 +135,13 @@ void* consume(void *arg) {
 	listen(sockfd,5);
 	clilen = sizeof(cli_addr);
 	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-     
-	while (counter < 33423360){
+
+	do {
 		n = read(newsockfd,buffer,255);
 		counter += n;
 		bzero(buffer,256);
-	}
+	} while (counter < size);
+	
 	close(newsockfd);
 	close(sockfd);
 	clock_gettime(CLOCK_MONOTONIC, (struct timespec*)arg);
@@ -150,6 +154,7 @@ void* produce(void *arg) {
     struct sockaddr_in serv_addr;
     struct hostent *server;
     char buffer[256];
+    size_t size = getFileSize(FILENAME);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     server = gethostbyname("localhost");
@@ -165,8 +170,8 @@ void* produce(void *arg) {
     serv_addr.sin_port = htons(portno);
     connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     
-    for( int i = 0; i < 131072; ++i) {
-		write(sockfd,buffer,255);
+    for( int i = 0; i < (1024*1024*30)/255; ++i) {
+		write(sockfd,&buffer,255);
 	}
 
     close(sockfd);
@@ -189,7 +194,6 @@ void networkSend(int count) {
 
 
 
-
 /* Send data over socket */
 void* consumeLineByLine(void *arg) {
 	int sockfd, newsockfd, portno = 10240;
@@ -197,7 +201,7 @@ void* consumeLineByLine(void *arg) {
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	int n, counter = 0;
-    const char *filename = "../fakeData.csv";
+    size_t size = getFileSize(FILENAME);
      
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
      
@@ -210,13 +214,24 @@ void* consumeLineByLine(void *arg) {
 	clilen = sizeof(cli_addr);
 	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
      
+
      
-     size_t fSize = getFileSize(filename);
+     do {
+		n = read(newsockfd,buffer,255);
+		counter += n;
+		for (int i = 0; buffer[i] != '\0' && i < n; ++i);
+		char *line = (char*)malloc(n*sizeof(char));
+		free(line);
+		bzero(buffer,256);
+	} while (counter < size);
+     
+    /* size_t fSize = getFileSize(FILENAME);
 	while (counter < fSize -10){
 		n = read(newsockfd,buffer,255);
 		counter += n;
 		bzero(buffer,256);
 	}
+	*/
 	close(newsockfd);
 	close(sockfd);
 	clock_gettime(CLOCK_MONOTONIC, (struct timespec*)arg);
@@ -229,9 +244,8 @@ void* produceFromFile(void *arg) {
     struct sockaddr_in serv_addr;
     struct hostent *server;
     char buffer[256];
-    const char *filename = "../fakeData.csv";
     
-	FILE *f = fopen(filename,"r");
+	FILE *f = fopen(FILENAME,"r");
 	struct timespec tw1, tw2;
 	
 
