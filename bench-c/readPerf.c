@@ -165,7 +165,6 @@ void* produce(void *arg) {
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    //serv_addr.sin_addr.s_addr = *(server->h_addr_list[0]);
     bcopy((char *)(server->h_addr), (char *)(&serv_addr.sin_addr.s_addr), (size_t)(server->h_length));
     serv_addr.sin_port = htons(portno);
     connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
@@ -214,8 +213,6 @@ void* consumeLineByLine(void *arg) {
 	clilen = sizeof(cli_addr);
 	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
      
-
-     
      do {
 		n = read(newsockfd,buffer,255);
 		counter += n;
@@ -224,14 +221,7 @@ void* consumeLineByLine(void *arg) {
 		free(line);
 		bzero(buffer,256);
 	} while (counter < size);
-     
-    /* size_t fSize = getFileSize(FILENAME);
-	while (counter < fSize -10){
-		n = read(newsockfd,buffer,255);
-		counter += n;
-		bzero(buffer,256);
-	}
-	*/
+   
 	close(newsockfd);
 	close(sockfd);
 	clock_gettime(CLOCK_MONOTONIC, (struct timespec*)arg);
@@ -243,7 +233,9 @@ void* produceFromFile(void *arg) {
 	int sockfd, portno= 10240;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    char buffer[256];
+    const int BUFFER_SIZE = 2048;
+   
+    char buffer[BUFFER_SIZE];
     
 	FILE *f = fopen(FILENAME,"r");
 	struct timespec tw1, tw2;
@@ -263,8 +255,7 @@ void* produceFromFile(void *arg) {
     connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
     
     size_t read = 0;
-    while((read = fread( &buffer, 1, 256, f)) != 0) {
-		//printf("%d\n",read);
+    while((read = fread( &buffer, 1, BUFFER_SIZE, f)) != 0) {
 		write(sockfd,buffer,read);
 	}
 	
