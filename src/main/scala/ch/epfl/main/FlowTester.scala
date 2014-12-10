@@ -3,11 +3,10 @@
 package ch.epfl.main
 
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first._
-import akka.actor.{ ActorSystem, Props, Actor}
+import ch.epfl.ts.first.InStage
+import akka.actor._
 import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcher
 import ch.epfl.ts.impl.TransactionPersistorImpl
-import akka.actor.actorRef2Scala
 
 object FlowTester {
   
@@ -26,10 +25,16 @@ object FlowTester {
     val system = ActorSystem("DataSourceSystem")
   
     val printer = system.actorOf(Props(classOf[Printer]), "instage-printer")
-    
+
+    val instage = (new InStage[Transaction](system, List(printer)))
+      .withPersistance(new TransactionPersistorImpl())
+      .withFetchInterface(new BtceTransactionPullFetcher()).start
+
+    /*
     val is = system.actorOf(Props(classOf[InStage[Transaction]], List(printer), 
-        new BtceTransactionPullFetcher(), new TransactionPersistorImpl() ), "instage-inst")
+        , new TransactionPersistorImpl() ), "instage-inst")
     is ! "init"
+    */
   }
 
 }
