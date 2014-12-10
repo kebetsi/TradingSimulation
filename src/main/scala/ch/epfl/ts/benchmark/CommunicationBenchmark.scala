@@ -15,6 +15,9 @@ import akka.actor.Props
 import java.io.ObjectOutputStream
 import java.io.ObjectInputStream
 import java.io.BufferedInputStream
+import java.io.PrintWriter
+import java.io.File
+import java.io.FileOutputStream
 
 /**
  * Compares message transferring throughput between Java Sockets (serialized Tuples over Buffered socket) and akka Actors.
@@ -24,8 +27,11 @@ import java.io.BufferedInputStream
  *
  */
 object CommunicationBenchmark {
-
-  val msgQuantity = 1000000
+  //  val writer = new PrintWriter(new File("test.txt"))
+  //  val outStream = new PrintStream(new FileOutputStream("commBench.txt", true))
+  //  Console.out = outStream
+  //  System.setOut(outStream)
+  val msgQuantity = 10000000
 
   def main(args: Array[String]) {
 
@@ -41,12 +47,17 @@ object CommunicationBenchmark {
     /**
      *  akka actors
      */
-    //    actorsTuple2(msgQuantity)
+    //        actorsTuple2(msgQuantity)
 
     /**
      * triple actors
      */
-    tripleActor2(msgQuantity)
+    //    tripleActor2(msgQuantity)
+
+    /**
+     * quadruple actors
+     */
+    quadrupleActor2(msgQuantity)
 
     /**
      * Tuple3
@@ -55,17 +66,22 @@ object CommunicationBenchmark {
     /**
      * Java sockets
      */
-    //    javaSockets3(msgQuantity)
+    //        javaSockets3(msgQuantity)
 
     /**
      *  akka actors
      */
-    //    actorsTuple3(msgQuantity)
+    //        actorsTuple3(msgQuantity)
 
     /**
      * triple actors
      */
     //    tripleActor3(msgQuantity)
+
+    /**
+     * quadruple actors
+     */
+    //    quadrupleActor3(msgQuantity)
 
   }
 
@@ -159,9 +175,8 @@ object CommunicationBenchmark {
 
   class ReceiverActor2 extends Actor {
     def receive = {
-      case Tuple2(a, b) => {
-      }
-      case "Stop" => sender ! System.currentTimeMillis()
+      case Tuple2(a, b) => {}
+      case "Stop"       => sender ! System.currentTimeMillis()
     }
   }
 
@@ -189,6 +204,22 @@ object CommunicationBenchmark {
       case endTime: Long => source ! endTime
       case a: ActorRef   => source = a
     }
+  }
+
+  /**
+   * Quadruple message passing
+   */
+
+  def quadrupleActor2(quantity: Int) = {
+    val elemsList = generateTuple2(quantity)
+    val system4 = ActorSystem("QuadActors2")
+    val receiver3 = system4.actorOf(Props(new ReceiverActor2), "receiver3")
+    val middle1 = system4.actorOf(Props(new middleActor2(receiver3)), "middle1")
+    val middle2 = system4.actorOf(Props(new middleActor2(middle1)), "middle2")
+    val sender3 = system4.actorOf(Props(new SenderActor2(middle2)), "sender3")
+    middle1 ! middle2
+    middle2 ! sender3
+    sender3 ! StartTuples2(elemsList)
   }
 
   /**
@@ -256,6 +287,18 @@ object CommunicationBenchmark {
     val system3 = ActorSystem("CommBenchmark3")
     val receiver3 = system3.actorOf(Props(new ReceiverActor3), "receiver3")
     val sender3 = system3.actorOf(Props(new SenderActor3(receiver3)), "sender3")
+    sender3 ! StartTuples3(elemsList)
+  }
+
+  def quadrupleActor3(quantity: Int) = {
+    val elemsList = generateTuple3(quantity)
+    val system4 = ActorSystem("QuadActors2")
+    val receiver3 = system4.actorOf(Props(new ReceiverActor3), "receiver3")
+    val middle1 = system4.actorOf(Props(new middleActor3(receiver3)), "middle1")
+    val middle2 = system4.actorOf(Props(new middleActor3(middle1)), "middle2")
+    val sender3 = system4.actorOf(Props(new SenderActor3(middle2)), "sender3")
+    middle1 ! middle2
+    middle2 ! sender3
     sender3 ! StartTuples3(elemsList)
   }
 
