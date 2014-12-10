@@ -116,6 +116,29 @@ void readFileLineByLine() {
 	printf("Read file line by line ==> time passed: %.2f ms\n", posix_wall);
 }
 
+/* Read file line by line */
+void readFileLineBuffer() {
+	char *buffer = (char*)malloc(256*sizeof(char));
+	FILE *f = fopen(FILENAME,"rb");
+	struct timespec tw1, tw2;
+	
+	clock_gettime(CLOCK_MONOTONIC, &tw1);
+
+	while (fgets(buffer, 256, f) != NULL) {
+		int i = 0;
+		for (; buffer[i] != '\0' && i < 256; ++i);
+		char *line = (char*)malloc(i*sizeof(char));
+		free(line);
+	}
+	
+	fclose(f);
+	
+	clock_gettime(CLOCK_MONOTONIC, &tw2);
+	
+	double posix_wall = 1000.0*tw2.tv_sec + 1e-6*tw2.tv_nsec - (1000.0*tw1.tv_sec + 1e-6*tw1.tv_nsec);
+	printf("Read file line by line ==> time passed: %.2f ms\n", posix_wall);
+}
+
 /* Send data over socket */
 void* consume(void *arg) {
 	int sockfd, newsockfd, portno = 10240;
@@ -197,7 +220,8 @@ void networkSend(int count) {
 void* consumeLineByLine(void *arg) {
 	int sockfd, newsockfd, portno = 10240;
 	socklen_t clilen;
-	char buffer[256];
+	const int BUFFER_SIZE = 1024000;
+	char buffer[BUFFER_SIZE];
 	struct sockaddr_in serv_addr, cli_addr;
 	int n, counter = 0;
     size_t size = getFileSize(FILENAME);
@@ -214,12 +238,12 @@ void* consumeLineByLine(void *arg) {
 	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
      
      do {
-		n = read(newsockfd,buffer,255);
+		n = read(newsockfd,buffer,BUFFER_SIZE);
 		counter += n;
 		for (int i = 0; buffer[i] != '\0' && i < n; ++i);
 		char *line = (char*)malloc(n*sizeof(char));
 		free(line);
-		bzero(buffer,256);
+		bzero(buffer,BUFFER_SIZE);
 	} while (counter < size);
    
 	close(newsockfd);
@@ -233,8 +257,7 @@ void* produceFromFile(void *arg) {
 	int sockfd, portno= 10240;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    const int BUFFER_SIZE = 2048;
-   
+    const int BUFFER_SIZE = 4096;
     char buffer[BUFFER_SIZE];
     
 	FILE *f = fopen(FILENAME,"r");
