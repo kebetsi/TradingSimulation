@@ -1,16 +1,27 @@
 package ch.epfl.ts.first
 
-import scala.reflect.ClassTag
-import akka.actor.Actor
+import akka.actor.{Actor, Cancellable, ActorRef}
+import scala.concurrent.duration.DurationLong
 
-protected[first] abstract class Replay[T : ClassTag] extends Actor {
-  
-  val clazz = implicitly[ClassTag[T]].runtimeClass
-  
+class Replay[T](p: Persistance[T], dest: List[ActorRef], initTime: Long, compression: Double) extends Actor {
+  var started = false
+  var schedule: Cancellable = null
+  var currentTime = initTime
   def receive = {
-    case d if clazz.isInstance(d) => process(d.asInstanceOf[T])
-    case _ => 
+    case "Stop" if started => {
+      started = false
+      schedule.cancel()
+    }
+    case "Start" if !started => {
+      started = true
+      schedule = context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, "Tick")
+    }
+    case "Tick" if sender == self => {
+      currentTime += 1
+      process
+    }
   }
-
-  def process (data: T): Unit
+  def process: Unit = {
+    p.loadBatch(currentTime, currentTime).map(t => dest.map(d => d ! t))
+  }
 }
