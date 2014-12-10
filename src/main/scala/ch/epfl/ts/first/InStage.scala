@@ -20,14 +20,12 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
   var fetcherCreator: Option[List[ActorRef] => ActorRef] = None
   var fetcherInterface: Option[Fetch[T]] = None
 
-  // Delayer
-  val delayerActor = if (clazz.getCanonicalName equals "Order") {
-    as.actorOf(Props(classOf[OrderDelayer], out), "order-delayer")
-  } else {
-    as.actorOf(Props(classOf[TransactionDelayer], out), "order-delayer")
-  }
+  // Replay
+  var replayOptions: Option[ReplayConfig] = None
 
-  def withPersistance (p: Persistance[T]): InStage[T]= {
+
+  /* Creating persistance actors */
+  def withPersistance(p: Persistance[T]): InStage[T]= {
     persistance = Option(p)
     this
   }
@@ -36,6 +34,8 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
     throw new Error("Persistance instance autoselect not implemented")
     this
   }
+
+  /* Creating fetching Actors */
   def withFetcherActor(arC: List[ActorRef] => ActorRef): InStage[T] = {
     fetcherCreator = Option(arC)
     this
@@ -45,29 +45,48 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
     this
   }
 
+  def withReplay(initTime: Long, compression: Double) = {
+    replayOptions = Option(ReplayConfig(initTime, compression))
+    this
+  }
+
+  /* Helper function to create the actors */
+  private def createReplayActor(c: ReplayConfig) =
+    as.actorOf(Props(classOf[Replay[T]], persistance.get, out, ReplayConfig(c.initTime, c.compression)))
+
+  private def createPersistanceActor()  = as.actorOf(Props(new PersistanceActor[T](persistance.get)))
+
+  private def createFetchActor(dest: List[ActorRef]) = {
+    fetcherInterface.get match {
+      case e: PushFetch[T] => as.actorOf(Props(classOf[PullFetchActor[T]], e, dest))
+      case e: PullFetch[T] => as.actorOf(Props(classOf[PullFetchActor[T]], e, dest))
+    }
+  }
+
+  /* Initializes the whole */
   def start: ActorRef = {
     var fA, pA, rA, dA: Option[ActorRef] = None
-
-    persistance match {
-      case f: Some[Persistance[_]] => {}
-      case None => {}
-    }
-
-    fetcherCreator match {
-      case f: Some[List[ActorRef] => ActorRef] => {
-        pA match {
-          case s: Some[ActorRef] => fA = Option(f.get(List(s.get, delayerActor)))
-          case _ => fA = Option(f.get(List(delayerActor)))
-        }
+    // We are supposed to be in replay mode
+    if (persistance != None && replayOptions != None) {
+      rA = replayOptions match {
+        case r: Some[ReplayConfig] => Option(createReplayActor(r.get))
       }
-      case _ => throw new Error("No fetcher defined")
+    } // Supposed to be in live mode
+    else if (fetcherCreator != None || fetcherInterface != None) {
+      if (persistance != None){
+        pA = Option(createPersistanceActor())
+        fA = Option(createFetchActor(pA.get :: out))
+      } else {
+        fA = Option(createFetchActor(out))
+      }
+    } else {
+      throw new RuntimeException("No fetcher or persistance specified")
     }
     as.actorOf(Props(classOf[InStageMaster], this, fA, pA, rA, dA)) // what the fuck?! (this)
   }
 
   class InStageMaster(f: Option[ActorRef], p: Option[ActorRef], r: Option[ActorRef], d: Option[ActorRef])
     extends Actor with Stage {
-
     override def receive = {
       case t:Stop => broadcast[Stop](t)
       case t:Start => broadcast[Start](t)
