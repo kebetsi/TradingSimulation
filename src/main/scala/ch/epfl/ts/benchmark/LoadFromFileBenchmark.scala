@@ -16,7 +16,6 @@ import akka.actor.ActorRef
 object LoadFromFileBenchmark {
 
   def main(args: Array[String]) = {
-
     //    generateFakeData
     val filename = "fakeData-999721.csv"
 
@@ -78,8 +77,6 @@ object LoadFromFileBenchmark {
     val bufferedReader = system.actorOf(Props(new BufferedReaderActor(filename)), "bufferedReader")
     val simpleReader = system.actorOf(Props(new SimpleReaderActor(filename, bufferedReader)), "simpleReader")
     simpleReader ! "Start"
-    
-
   }
 
   class SimpleReaderActor(filename: String, next: ActorRef) extends Actor {
@@ -128,9 +125,9 @@ object LoadFromFileBenchmark {
   def generateFakeData = {
     val writer = new PrintWriter(new File("fakeData.csv"))
     val rnd = new Random()
-
     for (a <- 1 to 1000000) {
       writer.write(a + "," + (rnd.nextInt(150) + 100) + "," + (rnd.nextInt(30) + 1) + "," + "usd" + "," + "buyer" + "," + "seller" + "\n")
     }
+    writer.close()
   }
 }
