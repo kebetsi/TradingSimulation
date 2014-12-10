@@ -1,7 +1,6 @@
 package ch.epfl.ts.first.fetcher
 
-import ch.epfl.ts.first.TransactionPullFetch
-import ch.epfl.ts.first.OrderPullFetch
+import ch.epfl.ts.first.PullFetch
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.Order
 import ch.epfl.ts.data.OrderType
@@ -11,7 +10,7 @@ import org.apache.http.client.fluent._
 import org.joda.time.DateTime
 import net.liftweb.json._
 
-class BtceTransactionPullFetcher extends TransactionPullFetch {
+class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000
   var latest = new Transaction(0.0, 0.0, 0, USD, "?", "?")
@@ -31,7 +30,7 @@ class BtceTransactionPullFetcher extends TransactionPullFetch {
   }
 }
 
-class BtceOrderPullFetcher extends OrderPullFetch {
+class BtceOrderPullFetcher extends PullFetch[Order] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000
   override def interval(): Int = 12000
@@ -62,9 +61,9 @@ class BtceAPI(from: Currency, to: Currency) {
     }
 
     if (t.length != 0) {
-      return t.map(f => new Transaction(f.price, f.amount, f.date * 1000, USD, "?", "?"))
+      t.map(f => new Transaction(f.price, f.amount, f.date * 1000, USD, "?", "?"))
     } else {
-      return List[Transaction]()
+      List[Transaction]()
     }
   }
 

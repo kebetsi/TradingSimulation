@@ -5,6 +5,7 @@ import scala.concurrent.duration.DurationLong
 
 case class ReplayConfig(initTime: Long, compression: Double)
 class Replay[T](p: Persistance[T], dest: List[ActorRef], conf: ReplayConfig) extends Actor {
+  import context._
   var started = false
   var schedule: Cancellable = null
   var currentTime = conf.initTime

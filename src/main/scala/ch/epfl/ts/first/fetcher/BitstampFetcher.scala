@@ -2,12 +2,12 @@ package ch.epfl.ts.first.fetcher
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.TransactionPullFetch
+import ch.epfl.ts.first.{PullFetch, TransactionPullFetch}
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 
 
-class BitstampTransactionPullFetcher extends TransactionPullFetch {
+class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
   val bitstamp = new BitstampAPI(USD, BTC)
   var count = 2000
   var latest = new Transaction(0.0, 0.0, 0, USD, "?", "?")
