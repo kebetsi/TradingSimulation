@@ -8,7 +8,6 @@ import akka.actor.Actor
 import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.ActorRef
-import sun.security.provider.certpath.ssl.SSLServerCertStore.CS
 
 /**
  * Benchmarking reading data from a csv file, parsing it and instantiating Transaction objects from it

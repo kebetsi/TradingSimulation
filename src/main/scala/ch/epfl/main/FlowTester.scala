@@ -26,8 +26,11 @@ object FlowTester {
   
     val printer = system.actorOf(Props(classOf[Printer]), "instage-printer")
 
+    val persistor = new TransactionPersistorImpl()
+    persistor.init()
+
     val instage = (new InStage[Transaction](system, List(printer)))
-      .withPersistance(new TransactionPersistorImpl())
+      .withPersistance(persistor)
       .withFetchInterface(new BtceTransactionPullFetcher()).start
 
     /*
