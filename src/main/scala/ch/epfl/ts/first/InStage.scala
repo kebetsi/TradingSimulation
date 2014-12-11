@@ -1,7 +1,6 @@
 package ch.epfl.ts.first
 
 import akka.actor.{ActorSystem, Actor, ActorRef, Props}
-import ch.epfl.ts.benchmark.{Stop, Start}
 import ch.epfl.ts.data.StreamObject
 import scala.reflect.ClassTag
 
@@ -52,7 +51,7 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
 
   /* Helper function to create the actors */
   private def createReplayActor(c: ReplayConfig) =
-    as.actorOf(Props(classOf[Replay[T]], persistance.get, out, ReplayConfig(c.initTime, c.compression)))
+    as.actorOf(Props(classOf[Replay[T]], persistance.get, out, ReplayConfig(c.initTimeMs, c.compression)))
 
   private def createPersistanceActor()  = as.actorOf(Props(new PersistanceActor[T](persistance.get)))
 
@@ -88,8 +87,9 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
   class InStageMaster(f: Option[ActorRef], p: Option[ActorRef], r: Option[ActorRef], d: Option[ActorRef])
     extends Actor with Stage {
     override def receive = {
-      case t:Stop => broadcast[Stop](t)
-      case t:Start => broadcast[Start](t)
+      case "Stop" => broadcast[String]("Stop")
+      case "Start" => broadcast[String]("Start")
+      case _ =>
     }
     override def broadcast[T](msg: T) = {
       f match { case a: Some[ActorRef] => a.get ! msg case None => }

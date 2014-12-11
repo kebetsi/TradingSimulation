@@ -3,12 +3,12 @@ package ch.epfl.ts.first
 import akka.actor.{Actor, Cancellable, ActorRef}
 import scala.concurrent.duration.DurationLong
 
-case class ReplayConfig(initTime: Long, compression: Double)
+case class ReplayConfig(initTimeMs: Long, compression: Double)
 class Replay[T](p: Persistance[T], dest: List[ActorRef], conf: ReplayConfig) extends Actor {
   import context._
   var started = false
   var schedule: Cancellable = null
-  var currentTime = conf.initTime
+  var currentTime = conf.initTimeMs
 
   def receive = {
     case "Stop" if started => {
@@ -20,16 +20,16 @@ class Replay[T](p: Persistance[T], dest: List[ActorRef], conf: ReplayConfig) ext
       schedule = start(conf.compression)
     }
     case "Tick" if sender == self => {
-      currentTime += 1
       process
+      currentTime += 1000
     }
     case r: ReplayConfig => {
       schedule.cancel()
-      currentTime = r.initTime
+      currentTime = r.initTimeMs
       // TODO: discard waiting objects
       schedule = start(r.compression)
     }
   }
   private def start(compression: Double) = context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, "Tick")
-  private def process = p.loadBatch(currentTime, currentTime).map(t => dest.map(d => d ! t))
+  private def process = p.loadBatch(currentTime, currentTime + 999).map(t => dest.map(d => d ! t))
 }

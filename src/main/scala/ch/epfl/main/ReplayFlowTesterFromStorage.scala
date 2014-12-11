@@ -1,12 +1,13 @@
 package ch.epfl.main
 
 import akka.actor._
+import ch.epfl.ts.benchmark.Start
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first.InStage
 import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcher
 import ch.epfl.ts.impl.TransactionPersistorImpl
 
-object LiveFlowTesterWithStorage {
+object ReplayFlowTesterFromStorage {
   // Stage 2, used just to print out the result from stage 1
   class Printer extends Actor {
     override def receive = {
@@ -22,6 +23,7 @@ object LiveFlowTesterWithStorage {
     persistor.init()
     val instage = new InStage[Transaction](system, List(printer))
       .withPersistance(persistor)
-      .withFetchInterface(new BtceTransactionPullFetcher()).start
+      .withReplay(1418230172000L,0.01).start
+    instage ! "Start"
   }
 }
