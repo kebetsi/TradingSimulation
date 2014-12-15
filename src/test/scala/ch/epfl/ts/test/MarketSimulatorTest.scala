@@ -10,6 +10,7 @@ import akka.actor.ActorSystem
 import akka.actor.Props
 import ch.epfl.ts.engine.PrintBooks
 import ch.epfl.ts.engine.PrintBooks
+import ch.epfl.ts.engine.AskOrder
 
 object MarketSimulatorTest {
 
@@ -17,11 +18,14 @@ object MarketSimulatorTest {
 
     val system = ActorSystem("marketSystem")
     val market = system.actorOf(Props(new MarketSimulator), "market")
-//case class BidOrder(o: Order) extends Order(o.uid, o.whatC, o.price, o.quantity, o.withC)
 
     market ! new AskOrder(1,USD,100,50,USD)
     market ! new AskOrder(1, USD, 90, 50, USD)
     market ! new AskOrder(1, USD, 110, 50, USD)
+    market ! new AskOrder(1, USD, 120, 50, USD)
+    market ! new AskOrder(1, USD, 110, 50, USD)
+    market ! new AskOrder(1, USD, 140, 50, USD)
+    market ! new AskOrder(1, USD, 80, 50, USD)
     
     market ! PrintBooks
     
@@ -30,6 +34,5 @@ object MarketSimulatorTest {
     market ! new BidOrder(2, USD, 100, 50, USD)
 
     market ! PrintBooks
-//    system.shutdown()
   }
 }

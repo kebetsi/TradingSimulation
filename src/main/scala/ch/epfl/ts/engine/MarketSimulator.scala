@@ -5,11 +5,12 @@ import ch.epfl.ts.data.Currency.Currency
 import ch.epfl.ts.data.Transaction
 import akka.actor.Actor
 
+// msg used to print the books contents (since we use PriotityQueues, it's the heap order)
 case class PrintBooks()
 
 class MarketSimulator extends Actor {
 
-  def priceOrdering = new Ordering[Order] {
+  def decreasingPriceOrdering = new Ordering[Order] {
     def compare(first: Order, second: Order): Int = {
       if (first.price > second.price) {
         return 1
@@ -21,7 +22,7 @@ class MarketSimulator extends Actor {
     }
   }
 
-  def inversePriceOrdering = new Ordering[Order] {
+  def increasingPriceOrdering = new Ordering[Order] {
     def compare(first: Order, second: Order): Int = {
       if (first.price > second.price) {
         return -1
@@ -33,8 +34,8 @@ class MarketSimulator extends Actor {
     }
   }
 
-  var bidOrdersBook = new PriorityQueue()(priceOrdering)
-  var askOrdersBook = new PriorityQueue()(inversePriceOrdering)
+  var bidOrdersBook = new PriorityQueue()(decreasingPriceOrdering)
+  var askOrdersBook = new PriorityQueue()(increasingPriceOrdering)
 
   def handleMatch(tested: Order, possibleMatch: Option[Order], targetQueue: PriorityQueue[Order], testedQueue: PriorityQueue[Order]) = possibleMatch match {
     case Some(s) => {
@@ -78,6 +79,7 @@ class MarketSimulator extends Actor {
     }
 
     case PrintBooks => {
+      // print shows heap order (binary tree)
       println("Ask Orders Book: " + askOrdersBook)
       println("Bid Orders Book: " + bidOrdersBook)
     }
