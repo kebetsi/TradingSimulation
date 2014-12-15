@@ -7,10 +7,11 @@ abstract class Message()
 //case class Transaction() extends Message
 
 
-abstract class Order(val uid: Long, val whatC: Currency, val quantity: Double, val withC: Currency)
-case class RejectedOrder(o: Order) extends Order(o.uid, o.whatC, o.quantity, o.withC)
-case class AcceptedOrder(o: Order) extends Order(o.uid, o.whatC, o.quantity, o.withC)
-
+abstract class Order(val uid: Long, val whatC: Currency, val price: Double, val quantity: Double, val withC: Currency)
+case class BidOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
+case class AskOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
+case class RejectedOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
+case class AcceptedOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
 
 
 /* Get wallet state */
