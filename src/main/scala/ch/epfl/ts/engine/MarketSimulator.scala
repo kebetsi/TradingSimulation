@@ -5,20 +5,6 @@ import ch.epfl.ts.data.Currency.Currency
 import ch.epfl.ts.data.Transaction
 import akka.actor.Actor
 
-/*case class BidOrder(uid: Long, currency: Currency, price: Double, volume: Double) extends Ordered[BidOrder] {
-  def compare(that: BidOrder): Int = if (this.price < that.price) 1 else if (this.price > that.price) -1 else 0
-  override def toString(): String = {
-    "(uid: " + uid + ", cur: " + currency + ", price: " + price + ", vol: " + volume + ")"
-  }
-}
-case class AskOrder(uid: Long, currency: Currency, price: Double, volume: Double) extends Ordered[AskOrder] {
-  def compare(that: AskOrder): Int = if (this.price < that.price) -1 else if (this.price > that.price) 1 else 0
-  override def toString(): String = {
-    "(uid: " + uid + ", cur: " + currency + ", price: " + price + ", vol: " + volume + ")"
-  }
-}
-*/
-
 case class PrintBooks()
 
 class MarketSimulator extends Actor {
@@ -74,7 +60,7 @@ class MarketSimulator extends Actor {
         println("going try to match: " + askOrdersBook.head + " and " + bid)
       }
 
-      // find match
+      // find ask order with a price lower than the bid
       handleMatch(bid, askOrdersBook.find { ask => ask.price <= bid.price }, askOrdersBook, bidOrdersBook)
 
     }
@@ -87,7 +73,7 @@ class MarketSimulator extends Actor {
         println("going try to match: " + bidOrdersBook.head + " and " + ask)
       }
 
-      // find match
+      // find bid order with a price higher than the ask
       handleMatch(ask, bidOrdersBook.find { bid => bid.price >= ask.price }, bidOrdersBook, askOrdersBook)
     }
 
