@@ -15,5 +15,6 @@ libraryDependencies ++= Seq(
 	"net.liftweb" %% "lift-json" % "2.6-RC1" withSources() withJavadoc(),
 	"org.apache.httpcomponents" % "fluent-hc" % "4.3.6" withSources() withJavadoc(),
 	"org.slf4j" % "slf4j-nop" % "1.6.4" withSources() withJavadoc(),
-	"org.xerial" % "sqlite-jdbc" % "3.8.7" withSources() withJavadoc()
+	"org.xerial" % "sqlite-jdbc" % "3.8.7" withSources() withJavadoc(),
+	"org.twitter4j" % "twitter4j-stream" % "3.0.3"
 )
