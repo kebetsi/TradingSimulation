@@ -83,9 +83,9 @@ class WalletChief extends Actor {
  * @param userId
  */
 sealed class Wallet(userId: Long) {
-  var openOrders: List[Order] = List[Order]()
-  var closedOrders: List[Order] = List[Order]()
-  var canceledOrders: List[Order] = List[Order]()
+  var openOrders: List[EngineOrder] = List[EngineOrder]()
+  var closedOrders: List[EngineOrder] = List[EngineOrder]()
+  var canceledOrders: List[EngineOrder] = List[EngineOrder]()
 
   var funds: Map[Currency, Double] = Map[Currency, Double]()
 }

@@ -2,12 +2,6 @@ package ch.epfl.ts.impl
 
 import ch.epfl.ts.first.PushFetch
 import twitter4j._
-import akka.actor.ActorSelection
-import akka.actor.Props
-import akka.actor.Actor
-import ch.epfl.bigdata.btc.crawler
-import akka.actor.ActorRef
-import org.joda.time.DateTime
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import ch.epfl.ts.data.Tweet
@@ -44,7 +38,7 @@ class TwitterPushFetcher extends PushFetch[Tweet]() {
       val intSentiment = sentiment match {
         case "positive" => 1
         case "negative" => -1
-        case "neutral"  => 0
+        case "neutral" => 0
       }
 
       if (intSentiment == 1) {
@@ -52,17 +46,24 @@ class TwitterPushFetcher extends PushFetch[Tweet]() {
       } else if (intSentiment == -1) {
         System.err.println(tweet)
       }
-      var imagesrc = status.getUser().getProfileImageURL()
-      var author = status.getUser().getScreenName()
+      val imagesrc = status.getUser().getProfileImageURL()
+      val author = status.getUser().getScreenName()
+      val ts = status.getCreatedAt().getTime()
 
-      //      println(new Tweet(status.getCreatedAt().getTime(), tweet, intSentiment, imagesrc, author))
-      submitData(new Tweet(status.getCreatedAt().getTime(), tweet, intSentiment, imagesrc, author))
+      submitData(new Tweet(ts, tweet, intSentiment, imagesrc, author))
 
     }
+
     def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}
+
     def onTrackLimitationNotice(numberOfLimitedStatuses: Int) {}
-    def onException(ex: Exception) { ex.printStackTrace }
+
+    def onException(ex: Exception) {
+      ex.printStackTrace
+    }
+
     def onScrubGeo(arg0: Long, arg1: Long) {}
+
     def onStallWarning(warning: StallWarning) {}
   }
 

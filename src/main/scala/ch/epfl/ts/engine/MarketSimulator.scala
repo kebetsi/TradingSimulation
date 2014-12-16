@@ -10,28 +10,20 @@ case class PrintBooks()
 
 class MarketSimulator extends Actor {
 
-  def decreasingPriceOrdering = new Ordering[Order] {
-    def compare(first: Order, second: Order): Int = {
+  def decreasingPriceOrdering = new Ordering[EngineOrder] {
+    def compare(first: EngineOrder, second: EngineOrder): Int =
       if (first.price > second.price) 1 else if (first.price < second.price) -1 else 0
-    }
   }
 
-  def increasingPriceOrdering = new Ordering[Order] {
-    def compare(first: Order, second: Order): Int = {
-      if (first.price > second.price) {
-        return -1
-      } else if (first.price < second.price) {
-        return 1
-      } else {
-        return 0
-      }
-    }
+  def increasingPriceOrdering = new Ordering[EngineOrder] {
+    def compare(first: EngineOrder, second: EngineOrder): Int =
+      if (first.price > second.price) -1 else if (first.price < second.price)  1 else 0
   }
 
   var bidOrdersBook = new PriorityQueue()(decreasingPriceOrdering)
   var askOrdersBook = new PriorityQueue()(increasingPriceOrdering)
 
-  def handleMatch(tested: Order, possibleMatch: Option[Order], targetQueue: PriorityQueue[Order], testedQueue: PriorityQueue[Order]) = possibleMatch match {
+  def handleMatch(tested: EngineOrder, possibleMatch: Option[EngineOrder], targetQueue: PriorityQueue[EngineOrder], testedQueue: PriorityQueue[EngineOrder]) = possibleMatch match {
     case Some(s) => {
       println("found match")
       println("creating transaction: " + new Transaction(s.price, s.quantity, 999, s.whatC, "buya", "sella"))
@@ -78,9 +70,6 @@ class MarketSimulator extends Actor {
       println("Bid Orders Book: " + bidOrdersBook)
     }
 
-    case _ => {
-      println("got unknown")
-    }
+    case _ =>   println("got unknown")
   }
-
 }
