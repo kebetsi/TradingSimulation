@@ -2,20 +2,31 @@ package ch.epfl.ts.engine
 
 import ch.epfl.ts.data.Currency.Currency
 
+/*
+ * Definition of the Simulator's internal messages.
+ */
 
 abstract class Message()
-//case class Transaction() extends Message
 
+/* *****************************
+ * Transactions
+ */
+case class Transaction() extends Message
 
-abstract class Order(val uid: Long, val whatC: Currency, val price: Double, val quantity: Double, val withC: Currency)
+/* *****************************
+ * Orders
+ */
+abstract class Order(val uid: Long, val whatC: Currency, val price: Double, val quantity: Double, val withC: Currency) extends Message
 case class BidOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
 case class AskOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
 case class RejectedOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
 case class AcceptedOrder(override val uid: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends Order(uid, whatC, price, quantity, withC)
 
 
-/* Get wallet state */
-abstract class WalletState(val uid: Long) //extends Message
+/* *****************************
+ * Wallet
+ */
+abstract class WalletState(val uid: Long) extends Message
 
 /* Getter */
 case class GetWalletFunds(override val uid: Long) extends WalletState(uid)
@@ -34,3 +45,15 @@ case class WalletCanceledOrders(override val uid: Long, caO: List[Order]) extend
 /* Actions */
 case class FundWallet(override val uid: Long, c: Currency, q: Double) extends WalletState(uid)
 
+
+
+/* *****************************
+ * Matcher
+ */
+abstract class MatcherState() extends Message
+
+/* Getter */
+case class GetMatcherOrderBook(count: Int) extends MatcherState
+
+/* Answers */
+case class MatcherOrderBook(bids: List[Order], asks: List[Order]) extends MatcherState
