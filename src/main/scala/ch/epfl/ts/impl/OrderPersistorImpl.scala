@@ -1,20 +1,13 @@
 package ch.epfl.ts.impl
 
+import ch.epfl.ts.data.{Currency, Order, OrderType}
 import ch.epfl.ts.first.Persistance
-import ch.epfl.ts.data.Order
 
-import java.util.ArrayList
-
-import ch.epfl.ts.data.OrderType
-import ch.epfl.ts.data.Currency
-import ch.epfl.ts.data.OrderType._
+import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
-import scala.slick.lifted.{ Tag, TableQuery, Column }
-import scala.slick.driver.SQLiteDriver.simple._
-import scala.slick.ast.TypedType
-import scala.slick.jdbc.meta
 import scala.slick.jdbc.meta.MTable
+import scala.slick.lifted.{Column, TableQuery, Tag}
 
 class OrderPersistorImpl extends Persistance[Order] {
 
