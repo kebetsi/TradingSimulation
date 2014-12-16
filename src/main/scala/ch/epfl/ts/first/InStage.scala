@@ -57,7 +57,7 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
 
   private def createFetchActor(dest: List[ActorRef]) = {
     fetcherInterface.get match {
-      case e: PushFetch[T] => as.actorOf(Props(classOf[PullFetchActor[T]], e, dest))
+      case e: PushFetch[T] => as.actorOf(Props(classOf[PushFetchActor[T]], e, dest))
       case e: PullFetch[T] => as.actorOf(Props(classOf[PullFetchActor[T]], e, dest))
     }
   }

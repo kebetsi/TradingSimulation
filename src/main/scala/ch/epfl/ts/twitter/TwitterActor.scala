@@ -5,15 +5,11 @@ import akka.actor.ActorSelection
 import akka.actor.Props
 import akka.actor.Actor
 import ch.epfl.bigdata.btc.crawler
-//import ch.epfl.bigdata.btc.crawler.btc.FetchRunner
-//import ch.epfl.bigdata.btc.crawler.coins.DataSource
 import akka.actor.ActorRef
 import org.joda.time.DateTime
-//import ch.epfl.bigdata.btc.types.Transfer._
 import java.io.BufferedReader
 import java.io.InputStreamReader
-
-case class Tweet(date: DateTime, content: String, sentiment: Int, imagesrc: String, author: String)
+import ch.epfl.ts.data.Tweet
 
 
 class TwitterActor(dataSource: ActorRef) extends Actor {
@@ -58,7 +54,7 @@ class TwitterActor(dataSource: ActorRef) extends Actor {
 			var imagesrc = status.getUser().getProfileImageURL()
 			var author = status.getUser().getScreenName()
 
-			println(new Tweet(new DateTime(status.getCreatedAt().getTime()), tweet, intSentiment, imagesrc, author))
+			println(new Tweet(status.getCreatedAt().getTime(), tweet, intSentiment, imagesrc, author))
 
 		}
 		def onDeletionNotice(statusDeletionNotice: StatusDeletionNotice) {}

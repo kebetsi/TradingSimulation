@@ -12,7 +12,15 @@ abstract class PullFetch[T] extends Fetch[T] {
   def interval(): Int
 }
 /* Direction PUSH */
-abstract class PushFetch[T] (callback: T => Unit) extends Fetch[T]
+abstract class PushFetch[T] extends Fetch[T] {
+  var dest = List[ActorRef]()
+  def setDest(d: List[ActorRef]) {
+    dest = d;
+  }
+  def submitData(t: T) {
+    dest.map(_ ! t)
+  }
+}
 
 /* Actor implementation */
 protected[first] class PullFetchActor[T](f: PullFetch[T], dest: List[ActorRef]) extends Actor {
@@ -26,8 +34,8 @@ protected[first] class PullFetchActor[T](f: PullFetch[T], dest: List[ActorRef]) 
 }
 
 /* Actor implementation */
-protected[first] class PushFetchActor[T](f: PushFetch[T], dest: ActorRef) extends Actor {
+protected[first] class PushFetchActor[T](f: PushFetch[T], dest: List[ActorRef]) extends Actor {
   override def receive = {
-    case _ =>
+    case _ => f.setDest(dest)
   }
 }
