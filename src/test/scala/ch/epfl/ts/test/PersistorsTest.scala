@@ -6,6 +6,8 @@ import ch.epfl.ts.data.OrderType._
 import ch.epfl.ts.impl.OrderPersistorImpl
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.impl.TransactionPersistorImpl
+import ch.epfl.ts.impl.TweetPersistorImpl
+import ch.epfl.ts.data.Tweet
 
 object PersistorsTest {
 
@@ -31,6 +33,17 @@ object PersistorsTest {
     val retrievedTrans = transPersistor.loadBatch(0, 100)
     retrievedTrans.map { x => println(x) }
     transPersistor.clearAll
+    
+    println("testing TweetPersistor")
+    val t1 = new Tweet(1, "blabla bitcoiiin", -1, "/docs", "dude")
+    val t2 = new Tweet(10, "bitcoin great", 1, "/etc", "bob")
+    val tweetPersistor = new TweetPersistorImpl
+    tweetPersistor.init()
+    tweetPersistor.save(t1)
+    tweetPersistor.save(t2)
+    val retrievedTweets = tweetPersistor.loadBatch(0, 11)
+    retrievedTweets.map { x => println(x) }
+    tweetPersistor.clearAll
   }
 
 }
