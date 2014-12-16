@@ -12,13 +12,7 @@ class MarketSimulator extends Actor {
 
   def decreasingPriceOrdering = new Ordering[Order] {
     def compare(first: Order, second: Order): Int = {
-      if (first.price > second.price) {
-        return 1
-      } else if (first.price < second.price) {
-        return -1
-      } else {
-        return 0
-      }
+      if (first.price > second.price) 1 else if (first.price < second.price) -1 else 0
     }
   }
 

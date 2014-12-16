@@ -1,20 +1,14 @@
-package ch.epfl.bigdata.btc.crawler.twitter
+package ch.epfl.ts.twitter
 
-import twitter4j._
-import akka.actor.ActorSelection
-import akka.actor.Props
-import akka.actor.Actor
-import ch.epfl.bigdata.btc.crawler
-import akka.actor.ActorRef
+import java.io.{BufferedReader, InputStreamReader}
+
+import akka.actor.{Actor, ActorRef}
 import org.joda.time.DateTime
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import ch.epfl.ts.data.Tweet
 
+case class Tweet(date: DateTime, content: String, sentiment: Int, imagesrc: String, author: String)
 
 class TwitterActor(dataSource: ActorRef) extends Actor {
-
-
+	
 	val config = new twitter4j.conf.ConfigurationBuilder()
 	.setOAuthConsumerKey("h7HL6oGtIOrCZN53TbWafg")
 	.setOAuthConsumerSecret("irg8l38K4DUrqPV638dIfXvK0UjVHKC936IxbaTmqg")
