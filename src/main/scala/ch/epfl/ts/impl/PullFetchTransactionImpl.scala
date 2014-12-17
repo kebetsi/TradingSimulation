@@ -1,7 +1,7 @@
 package ch.epfl.ts.impl
 
-import ch.epfl.ts.first.PullFetch
 import ch.epfl.ts.data.{Transaction, Currency}
+import ch.epfl.ts.first.fetcher.PullFetch
 
 class PullFetchTransactionImpl extends PullFetch[Transaction] {
   override def interval = 12000

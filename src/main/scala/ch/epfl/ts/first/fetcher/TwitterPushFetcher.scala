@@ -1,12 +1,15 @@
-package ch.epfl.ts.impl
+package ch.epfl.ts.first.fetcher
 
-import ch.epfl.ts.first.PushFetch
-import twitter4j._
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.io.{BufferedReader, InputStreamReader}
+
 import ch.epfl.ts.data.Tweet
+import twitter4j._
 
-class TwitterPushFetcher extends PushFetch[Tweet]() {
+class TwitterPushFetchComponent extends PushFetchComponent[Tweet] {
+  new TwitterPushFetcher(this.callback)
+}
+
+class TwitterPushFetcher(override var callback: (Tweet => Unit)) extends PushFetch[Tweet]() {
 
   val config = new twitter4j.conf.ConfigurationBuilder()
     .setOAuthConsumerKey("h7HL6oGtIOrCZN53TbWafg")
@@ -50,7 +53,7 @@ class TwitterPushFetcher extends PushFetch[Tweet]() {
       val author = status.getUser().getScreenName()
       val ts = status.getCreatedAt().getTime()
 
-      submitData(new Tweet(ts, tweet, intSentiment, imagesrc, author))
+      callback(new Tweet(ts, tweet, intSentiment, imagesrc, author))
 
     }
 

@@ -2,6 +2,7 @@ package ch.epfl.ts.first
 
 import akka.actor.{ActorSystem, Actor, ActorRef, Props}
 import ch.epfl.ts.data.StreamObject
+import ch.epfl.ts.first.fetcher._
 import scala.reflect.ClassTag
 
 trait Stage {
@@ -53,12 +54,13 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
   private def createReplayActor(c: ReplayConfig) =
     as.actorOf(Props(classOf[Replay[T]], persistance.get, out, ReplayConfig(c.initTimeMs, c.compression)))
 
-  private def createPersistanceActor()  = as.actorOf(Props(new PersistanceActor[T](persistance.get)))
+  private def createPersistanceActor() = throw new Exception//as.actorOf(Props(new PersistanceActor[T](persistance.get)))
 
   private def createFetchActor(dest: List[ActorRef]) = {
     fetcherInterface.get match {
-      case e: PushFetch[T] => as.actorOf(Props(classOf[PushFetchActor[T]], e, dest))
-      case e: PullFetch[T] => as.actorOf(Props(classOf[PullFetchActor[T]], e, dest))
+      //case e: PushFetch[T] => as.actorOf(Props(classOf[PushFetchActor[T]], e, dest))
+      //case e: PullFetch[T] => as.actorOf(Props(classOf[PullFetchActor[T]], e, dest))
+      case _ =>
     }
   }
 
@@ -74,9 +76,9 @@ class InStage[T <: StreamObject: ClassTag](as: ActorSystem, out: List[ActorRef])
     else if (fetcherCreator != None || fetcherInterface != None) {
       if (persistance != None){
         pA = Option(createPersistanceActor())
-        fA = Option(createFetchActor(pA.get :: out))
+        //fA = Option(createFetchActor(pA.get :: out))
       } else {
-        fA = Option(createFetchActor(out))
+        //fA = Option(createFetchActor(out))
       }
     } else {
       throw new RuntimeException("No fetcher or persistance specified")

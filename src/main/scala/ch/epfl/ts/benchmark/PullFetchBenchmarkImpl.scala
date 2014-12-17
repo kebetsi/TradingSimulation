@@ -1,7 +1,7 @@
 package ch.epfl.ts.benchmark
 
 import ch.epfl.ts.data.{Currency, Transaction}
-import ch.epfl.ts.first.PullFetch
+import ch.epfl.ts.first.fetcher.PullFetch
 
 import scala.io.Source
 
