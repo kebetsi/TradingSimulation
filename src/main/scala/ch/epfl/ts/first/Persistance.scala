@@ -3,6 +3,8 @@ package ch.epfl.ts.first
 import akka.actor.Actor
 import ch.epfl.ts.data.{Transaction, Order}
 
+import ch.epfl.ts.component.Component
+
 import scala.reflect.ClassTag
 
 /**
@@ -19,10 +21,10 @@ trait Persistance[T] {
 /**
  * The Abstraction for the persistance actors
  */
-protected[first] class PersistanceActor[T : ClassTag] (p: Persistance[T])
-  extends Actor {
+class PersistanceComponent[T : ClassTag] (p: Persistance[T])
+  extends Component {
   val clazz = implicitly[ClassTag[T]].runtimeClass
-  override def receive = {
+  def receiver = {
     case d if clazz.isInstance(d) => p.save(d.asInstanceOf[T])
     case _ =>
   }

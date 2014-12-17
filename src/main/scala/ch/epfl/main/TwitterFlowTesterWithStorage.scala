@@ -3,14 +3,12 @@ package ch.epfl.main
 import akka.actor._
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first.InStage
-import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcher
+import ch.epfl.ts.first.fetcher.{TwitterPushFetcher, BtceTransactionPullFetcher}
 import ch.epfl.ts.impl.TransactionPersistorImpl
-import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcher
 import ch.epfl.ts.impl.TransactionPersistorImpl
 import ch.epfl.ts.data.Tweet
 import ch.epfl.ts.first.InStage
 import ch.epfl.ts.impl.TweetPersistorImpl
-import ch.epfl.ts.impl.TwitterPushFetcher
 
 object TwitterFlowTesterWithStorage {
   // Stage 2, used just to print out the result from stage 1
@@ -20,7 +18,7 @@ object TwitterFlowTesterWithStorage {
       case _  => 
     }
   }
-
+/*
   def main(args: Array[String]) = {
     val system = ActorSystem("DataSourceSystem")
     val printer = system.actorOf(Props(classOf[Printer]), "instage-printer")
@@ -29,5 +27,5 @@ object TwitterFlowTesterWithStorage {
     val instage = new InStage[Tweet](system, List(printer))
       .withPersistance(persistor)
       .withFetchInterface(new TwitterPushFetcher()).start
-  }
+  }*/
 }

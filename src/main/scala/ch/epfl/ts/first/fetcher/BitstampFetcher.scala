@@ -2,7 +2,6 @@ package ch.epfl.ts.first.fetcher
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.{PullFetch}
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 

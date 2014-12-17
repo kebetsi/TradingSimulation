@@ -1,14 +1,12 @@
 package ch.epfl.ts.first.fetcher
 
-import ch.epfl.ts.first.PullFetch
-import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.data.Order
-import ch.epfl.ts.data.OrderType
 import ch.epfl.ts.data.Currency._
-
-import org.apache.http.client.fluent._
-import org.joda.time.DateTime
+import ch.epfl.ts.data.{Order, OrderType, Transaction}
 import net.liftweb.json._
+import org.apache.http.client.fluent._
+
+class BtceTransactionPullFetcherComponent(val name: String) extends PullFetchComponent[Transaction](new BtceTransactionPullFetcher)
+class BtceOrderPullFetcherComponent(val name: String) extends PullFetchComponent[Order](new BtceOrderPullFetcher)
 
 class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
@@ -53,8 +51,8 @@ class BtceAPI(from: Currency, to: Currency) {
   def getTrade(count: Int): List[Transaction] = {
     var t = List[BTCeCaseTransaction]()
     try {
-      var path = serverBase + pair + "/trades/" + count
-      var json = Request.Get(path).execute().returnContent().asString()
+      val path = serverBase + pair + "/trades/" + count
+      val json = Request.Get(path).execute().returnContent().asString()
       t = parse(json).extract[List[BTCeCaseTransaction]]
     } catch {
       case _ : Throwable => t = List[BTCeCaseTransaction]();
@@ -70,15 +68,15 @@ class BtceAPI(from: Currency, to: Currency) {
   def getDepth(count: Int): List[Order] = {
     var t = List[Order]()
     try {
-      var path = serverBase + pair + "/depth/" + count
-      var json = Request.Get(path).execute().returnContent().asString()
+      val path = serverBase + pair + "/depth/" + count
+      val json = Request.Get(path).execute().returnContent().asString()
       val a = parse(json).extract[Map[String, List[List[Double]]]]
       
-      var asks = a.get("asks") match {
+      val asks = a.get("asks") match {
         case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.ASK))
         case _ => List[Order]()
       }
-      var bids = a.get("bids") match {
+      val bids = a.get("bids") match {
         case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.BID))
         case _ => List[Order]()
       }
@@ -86,7 +84,7 @@ class BtceAPI(from: Currency, to: Currency) {
     } catch {
       case _ : Throwable => t = List[Order]()
     }
-    return t
+    t
   }
 
   private def pair2path() = (from, to) match {
