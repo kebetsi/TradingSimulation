@@ -1,35 +1,47 @@
 package ch.epfl.ts.component
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor._
 
-case class StartSignal()
+protected[component] case class StartSignal()
 
-case class StopSignal()
+protected[component] case class StopSignal()
 
-case class ActorRegistration(ar: ActorRef, ct: Class[_])
+protected[component] case class ComponentRegistration(ar: ActorRef, ct: Class[_])
 
-final class ComponentBuilder(implicit as: ActorSystem) {
-  var graph = Map[Actor, List[(Actor, Class[_])]]()
-  var instances = Map[Actor, ActorRef]()
+final class ComponentBuilder(name: String) {
+  val system = ActorSystem(name)
+  var graph = Map[ComponentRef, List[(ComponentRef, Class[_])]]()
+  var instances = List[ComponentRef]()
 
-  def add(src: Component, dest: Component, data: Class[_]) {
-    graph = graph + (src -> graph.getOrElse(src, List[(Actor, Class[_])]((dest, data))))
+  def add(src: ComponentRef, dest: ComponentRef, data: Class[_]) {
+    graph = graph + (src -> graph.getOrElse(src, List[(ComponentRef, Class[_])]((dest, data))))
   }
 
-  def add(src: Component, dest: Component) = (src, dest, classOf[Any])
+  def add(src: ComponentRef, dest: ComponentRef) = (src, dest, classOf[Any])
 
   def start = {
-    instances = Map(graph.foldLeft(List[(Actor)]()) { case (a, (k, v)) => k :: a ::: v.map(e => e._1)}
-      .distinct.map { i => (i, as.actorOf(Props(i)))}: _*)
-    // Create the connections
-    graph.map { case (src, dest) => dest.map(d => {
-      instances.get(src).get ! ActorRegistration(instances.get(d._1).get, d._2)
-    })
-    }
-    // Launch the system
-    instances.map { case (a, ar) => ar ! StartSignal}
+    graph.map { case (src, dest) => dest.map(d => src.ar ! ComponentRegistration(d._1.ar, d._2))}
+    instances.map(_.ar ! StartSignal)
+  }
+
+  def createRef(props: Props) = {
+    instances = new ComponentRef(system.actorOf(props), props.clazz) :: instances
+    instances.head
+  }
+
+  def createRef(props: Props, name: String) = {
+    instances = new ComponentRef(system.actorOf(props, name), props.clazz) :: instances
+    instances.head
   }
 }
+
+class ComponentRef(val ar: ActorRef, val clazz: Class[_]) {
+  // TODO: Verify clazz <: Component
+  def addDestination(destination: ComponentRef, data: Class[_])(implicit cb: ComponentBuilder) = {
+    cb.add(this, destination, data)
+  }
+}
+
 
 trait Receiver extends Actor {
   def receive: PartialFunction[Any, Unit]
@@ -38,11 +50,11 @@ trait Receiver extends Actor {
 }
 
 trait Component extends Receiver {
-
+  var dest = Map[Class[_], List[ActorRef]]()
   var stopped = true
 
   final def componentReceive = PartialFunction[Any, Unit] {
-    case ActorRegistration(ar, ct) => dest = dest + (ct -> dest.getOrElse(ct, List(ar)))
+    case ComponentRegistration(ar, ct) => dest = dest + (ct -> dest.getOrElse(ct, List(ar)))
     case StartSignal => stopped = false
     case StopSignal => context.stop(self)
     case _ if stopped => // discard
@@ -57,12 +69,6 @@ trait Component extends Receiver {
       case Some(l) => l.map(_ ! t)
       case None =>
     }
-  }
-
-  var dest = Map[Class[_], List[ActorRef]]()
-
-  def addDestination(destination: Component, data: Class[_])(implicit cb: ComponentBuilder) = {
-    cb.add(this, destination, data)
   }
 }
 
