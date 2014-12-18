@@ -9,6 +9,7 @@ protected[component] case class StopSignal()
 protected[component] case class ComponentRegistration(ar: ActorRef, ct: Class[_])
 
 final class ComponentBuilder(name: String) {
+  type ComponentProps = Props
   val system = ActorSystem(name)
   var graph = Map[ComponentRef, List[(ComponentRef, Class[_])]]()
   var instances = List[ComponentRef]()
@@ -24,12 +25,12 @@ final class ComponentBuilder(name: String) {
     instances.map(_.ar ! StartSignal)
   }
 
-  def createRef(props: Props) = {
+  def createRef(props: ComponentProps) = {
     instances = new ComponentRef(system.actorOf(props), props.clazz) :: instances
     instances.head
   }
 
-  def createRef(props: Props, name: String) = {
+  def createRef(props: ComponentProps, name: String) = {
     instances = new ComponentRef(system.actorOf(props, name), props.clazz) :: instances
     instances.head
   }
