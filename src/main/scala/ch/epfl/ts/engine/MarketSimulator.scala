@@ -12,12 +12,16 @@ class MarketSimulator extends Actor {
 
   def decreasingPriceOrdering = new Ordering[EngineOrder] {
     def compare(first: EngineOrder, second: EngineOrder): Int =
-      if (first.price > second.price) 1 else if (first.price < second.price) -1 else 0
+      if (first.price > second.price) 1 else if (first.price < second.price) -1 else {
+        if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
+      }
   }
 
   def increasingPriceOrdering = new Ordering[EngineOrder] {
     def compare(first: EngineOrder, second: EngineOrder): Int =
-      if (first.price > second.price) -1 else if (first.price < second.price)  1 else 0
+      if (first.price > second.price) -1 else if (first.price < second.price) 1 else {
+        if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
+      }
   }
 
   var bidOrdersBook = new PriorityQueue()(decreasingPriceOrdering)
@@ -70,6 +74,6 @@ class MarketSimulator extends Actor {
       println("Bid Orders Book: " + bidOrdersBook)
     }
 
-    case _ =>   println("got unknown")
+    case _ => println("got unknown")
   }
 }
