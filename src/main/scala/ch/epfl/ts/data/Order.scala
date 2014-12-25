@@ -4,12 +4,13 @@ import Currency._
 
 object OrderType extends Enumeration {
   type OrderType = Value
-  val BID = Value("bid")
-  val ASK = Value("ask")
+  val BID = Value("B")
+  val ASK = Value("S")
+  val DEL = Value("D")
 }
 import OrderType._
 
-case class Order (price: Double, quantity: Double, timestamp: Long, currency: Currency, orderType: OrderType)
+case class Order (id: Long, price: Double, quantity: Double, timestamp: Long, currency: Currency, orderType: OrderType)
   extends StreamObject {
   override def toString: String = "Order: price=" + price + ", quantity=" + quantity + ", timestamp=" + timestamp + ", currency=" + currency + ", orderType=" + orderType
 }
