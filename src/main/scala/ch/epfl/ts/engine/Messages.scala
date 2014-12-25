@@ -18,12 +18,16 @@ case class EngineTransaction() extends EngineMessage
  */
 // Limit and market order
 
-abstract class EngineOrder(val uid: Long, val timestamp: Long, val whatC: Currency, val price: Double, val quantity: Double, val withC: Currency) extends EngineMessage
-case class BidOrder(override val uid: Long, override val timestamp: Long,  override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, timestamp, whatC, price, quantity, withC)
-case class AskOrder(override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, timestamp, whatC, price, quantity, withC)
-case class DelOrder(override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, timestamp, whatC, price, quantity, withC)
-case class RejectedOrder(override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, timestamp, whatC, price, quantity, withC)
-case class AcceptedOrder(override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, timestamp, whatC, price, quantity, withC)
+/**
+ * uid: user id
+ * oid: order id
+ */
+abstract class EngineOrder(val uid: Long, val oid: Long, val timestamp: Long, val whatC: Currency, val price: Double, val quantity: Double, val withC: Currency) extends EngineMessage
+case class BidOrder(override val uid: Long, override val oid: Long, override val timestamp: Long,  override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, oid, timestamp, whatC, price, quantity, withC)
+case class AskOrder(override val uid: Long, override val oid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, oid, timestamp, whatC, price, quantity, withC)
+case class DelOrder(override val uid: Long, override val oid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, oid, timestamp, whatC, price, quantity, withC)
+case class RejectedOrder(override val uid: Long, override val oid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, oid, timestamp, whatC, price, quantity, withC)
+case class AcceptedOrder(override val uid: Long, override val oid: Long, override val timestamp: Long, override val whatC: Currency, override val price: Double, override val quantity: Double, override val withC: Currency) extends EngineOrder(uid, oid, timestamp, whatC, price, quantity, withC)
 
 
 /* *****************************
