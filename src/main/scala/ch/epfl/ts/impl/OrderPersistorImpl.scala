@@ -11,7 +11,7 @@ import scala.slick.lifted.{Column, TableQuery, Tag}
 
 class OrderPersistorImpl(dbName: String) extends Persistance[Order] {
 
-  val db = Database.forURL("jdbc:sqlite:" + dbName, driver = "org.sqlite.JDBC")
+  val db = Database.forURL("jdbc:sqlite:" + dbName + ".db", driver = "org.sqlite.JDBC")
 
   type OrderEntry = (Int, Long, Double, Double, Long, String, String)
   class Orders(tag: Tag) extends Table[(Int, Long, Double, Double, Long, String, String)](tag, "ORDERS") {

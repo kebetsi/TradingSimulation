@@ -12,7 +12,7 @@ import OrderType._
 
 case class Order (id: Long, price: Double, quantity: Double, timestamp: Long, currency: Currency, orderType: OrderType)
   extends StreamObject {
-  override def toString: String = "Order: price=" + price + ", quantity=" + quantity + ", timestamp=" + timestamp + ", currency=" + currency + ", orderType=" + orderType
+  override def toString: String = "Order: timestamp=" + timestamp + ", id=" + id + ", orderType=" + orderType + ", volume=" + timestamp + ", volume=" + quantity + ", price=" + orderType + ", currency=" + currency
 }
 
 
