@@ -75,11 +75,11 @@ class BtceAPI(from: Currency, to: Currency) {
       val a = parse(json).extract[Map[String, List[List[Double]]]]
       
       var asks = a.get("asks") match {
-        case Some(l) => l.map(e => Order(e.head, e.last, 0, from, OrderType.ASK))
+        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.ASK))
         case _ => List[Order]()
       }
       var bids = a.get("bids") match {
-        case Some(l) => l.map(e => Order(e.head, e.last, 0, from, OrderType.BID))
+        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.BID))
         case _ => List[Order]()
       }
       t = asks ++ bids

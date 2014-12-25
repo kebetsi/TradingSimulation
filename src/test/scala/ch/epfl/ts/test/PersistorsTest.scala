@@ -13,9 +13,9 @@ object PersistorsTest {
 
   def main(args: Array[String]) {
     println("testing OrderPersistor")
-    val order1 = new Order(2.0, 3.0, 1, USD, ASK)
-    val order2 = new Order(1.0, 2.0, 2, USD, ASK)
-    val ordersPersistor = new OrderPersistorImpl
+    val order1 = new Order(0, 2.0, 3.0, 1, USD, ASK)
+    val order2 = new Order(0, 1.0, 2.0, 2, USD, ASK)
+    val ordersPersistor = new OrderPersistorImpl("test")
     ordersPersistor.init()
     ordersPersistor.save(order1)
     ordersPersistor.save(order2)
