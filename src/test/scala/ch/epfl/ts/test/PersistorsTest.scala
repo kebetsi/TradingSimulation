@@ -36,8 +36,8 @@ object PersistorsTest {
     ordersPersistor.clearAll
 
     println("testing TransactionPersistor")
-    val trans1 = new Transaction(33, 41, 1, USD, "Bob", "Bill")
-    val trans2 = new Transaction(221, 23, 2, USD, "Jack", "Billy")
+    val trans1 = new Transaction(33, 41, 1, USD, 1, 1, 2, 2)
+    val trans2 = new Transaction(221, 23, 2, USD, 3, 3, 4, 4)
     val transList = trans1 :: trans2 :: Nil
     val transPersistor = new TransactionPersistorImpl
     transPersistor.init()

@@ -58,8 +58,8 @@ object LoadFromFileBenchmark {
     val entriesList = timed(source.getLines().toList)
     println("entries count: " + entriesList.size)
     print("from list: parse each element and instantiate Transaction objects: ")
-    timed(
-      entriesList.map(_.split(",")).map(l => Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3)), l(4), l(5))))
+//    timed(
+//      entriesList.map(_.split(",")).map(l => Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3)), l(4), l(5))))
 
     println("###--- Buffered run ---###")
     print("read from file, instantiate Iterator, parse and instantiate Transaction objects: ")
@@ -67,7 +67,7 @@ object LoadFromFileBenchmark {
     timed(source.getLines().foreach(
       s => {
         val l = s.split(",")
-        Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3)), l(4), l(5))
+//        Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3)), l(4), l(5))
       }))
     println
 
@@ -107,7 +107,7 @@ object LoadFromFileBenchmark {
         timed(source.getLines().foreach(
           s => {
             val l = s.split(",")
-            Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3)), l(4), l(5))
+//            Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3)), l(4), l(5))
           }))
 
         context.system.shutdown()

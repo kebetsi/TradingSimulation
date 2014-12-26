@@ -10,7 +10,7 @@ import org.apache.http.client.fluent._
 class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
   val bitstamp = new BitstampAPI(USD, BTC)
   var count = 2000
-  var latest = new Transaction(0.0, 0.0, 0, USD, "?", "?")
+  var latest = new Transaction(0.0, 0.0, 0, USD, 0, 0, 0, 0)
 
   override def interval(): Int = 12000
 
@@ -45,7 +45,7 @@ class BitstampAPI(from: Currency, to: Currency) {
     val json = Request.Get(path).execute().returnContent().asString()
     val t = parse(json).extract[List[BitstampCaseTransaction]]
 
-    t.map(f => new Transaction(f.price.toDouble, f.amount.toDouble, f.date.toLong * 1000, USD, "?", "?"))
+    t.map(f => new Transaction(f.price.toDouble, f.amount.toDouble, f.date.toLong * 1000, USD, 0, 0, 0, 0))
   }
 
   def getDepth {}

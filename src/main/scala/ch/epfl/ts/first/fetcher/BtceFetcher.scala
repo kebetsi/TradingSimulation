@@ -13,7 +13,7 @@ import net.liftweb.json._
 class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000
-  var latest = new Transaction(0.0, 0.0, 0, USD, "?", "?")
+  var latest = new Transaction(0.0, 0.0, 0, USD, 0, 0, 0, 0)
   
   override def interval(): Int = 12000
 
@@ -61,7 +61,7 @@ class BtceAPI(from: Currency, to: Currency) {
     }
 
     if (t.length != 0) {
-      t.map(f => new Transaction(f.price, f.amount, f.date * 1000, USD, "?", "?"))
+      t.map(f => new Transaction(f.price, f.amount, f.date * 1000, USD, 0, 0, 0, 0))
     } else {
       List[Transaction]()
     }

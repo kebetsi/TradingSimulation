@@ -40,7 +40,7 @@ class FileFetch(master: ActorRef, filename: String, dest: List[ActorRef]) extend
   override def f(): Unit = Source.fromFile(filename).getLines().foreach(
     s => {
       val l = s.split(",")
-      dest.map(_ ! Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
+//      dest.map(_ ! Transaction(l(1).toDouble, l(2).toDouble, l(0).toLong, Currency.withName(l(3).toLowerCase), l(4), l(5)))
     }
   )
 }
