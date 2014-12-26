@@ -5,18 +5,31 @@ import ch.epfl.ts.data.Currency.Currency
 import ch.epfl.ts.data.Transaction
 import akka.actor.Actor
 import com.sun.javafx.binding.SelectBinding.AsObject
+import akka.actor.ActorRef
 
 /**
  *  message used to print the books contents (since we use PriotityQueues, it's the heap order)
  */
 case class PrintBooks()
 
+/**
+ * message sent to retrieve the contents of ask and bid orders books
+ */
+case class RetrieveBooks()
+
+/**
+ * a tuple containing the bid and ask orders books and the last trading price
+ */
+case class Books(bids: PriorityQueue[BidOrder], asks: PriorityQueue[AskOrder], tradingPrice: Double)
+
 class MarketSimulator extends Actor {
+
+  var dest: List[ActorRef] = Nil
 
   /**
    * the price at which the last transaction was executed
    */
-  var tradingPrice: Double = 123456789
+  var tradingPrice: Double = 185000.0 // set for finance.csv
 
   def decreasingPriceOrdering = new Ordering[EngineOrder] {
     def compare(first: EngineOrder, second: EngineOrder): Int =
@@ -35,6 +48,9 @@ class MarketSimulator extends Actor {
   var bidOrdersBook = new PriorityQueue()(decreasingPriceOrdering)
   var askOrdersBook = new PriorityQueue()(increasingPriceOrdering)
 
+  /**
+   * old implementation - unused now
+   */
   def handleMatch(tested: EngineOrder, possibleMatch: Option[EngineOrder], targetQueue: PriorityQueue[EngineOrder], testedQueue: PriorityQueue[EngineOrder]) = possibleMatch match {
     case Some(s) => {
       println("found match")
@@ -66,7 +82,7 @@ class MarketSimulator extends Actor {
             if (testedAsk.quantity == bid.quantity) {
               println("Market: perfect match with " + testedAsk)
               // create transaction
-              new Transaction(bid.price, bid.quantity, bid.timestamp, bid.whatC, bid.uid, bid.oid, testedAsk.uid, testedAsk.oid)
+              dest.map { _ ! new Transaction(bid.price, bid.quantity, bid.timestamp, bid.whatC, bid.uid, bid.oid, testedAsk.uid, testedAsk.oid) }
               // remove matched ask order
               println("removing order: " + askOrdersBook.dequeue() + " from ask orders book.")
               // do nothing with matched bid - it was executed in the transaction
@@ -76,7 +92,7 @@ class MarketSimulator extends Actor {
             } else if (testedAsk.quantity > bid.quantity) {
               println("Market: bid quantity inferior - cutting matched order")
               // create transaction
-              new Transaction(bid.price, bid.quantity, bid.timestamp, bid.whatC, bid.uid, bid.oid, testedAsk.uid, testedAsk.oid)
+              dest.map { _ ! new Transaction(bid.price, bid.quantity, bid.timestamp, bid.whatC, bid.uid, bid.oid, testedAsk.uid, testedAsk.oid) }
               // remove matched ask order and reinput it with updated volume
               println("removing order: " + askOrdersBook.dequeue() + " from ask orders book. enqueuing same ask with " + (testedAsk.quantity - bid.quantity) + " volume.")
               askOrdersBook.enqueue(new AskOrder(testedAsk.uid, testedAsk.oid, testedAsk.timestamp, testedAsk.whatC, testedAsk.price, testedAsk.quantity - bid.quantity, testedAsk.withC))
@@ -86,7 +102,7 @@ class MarketSimulator extends Actor {
             } else {
               println("Market: bid quantity superior - gonna continue ")
               // create transaction
-              new Transaction(bid.price, testedAsk.quantity, bid.timestamp, bid.whatC, bid.uid, bid.oid, testedAsk.uid, testedAsk.oid)
+              dest.map { _ ! new Transaction(bid.price, testedAsk.quantity, bid.timestamp, bid.whatC, bid.uid, bid.oid, testedAsk.uid, testedAsk.oid) }
               // remove matched ask order
               println("removing order: " + askOrdersBook.dequeue() + " from ask orders book.")
               // call handleNewOrder on bid with updated volume
@@ -117,7 +133,7 @@ class MarketSimulator extends Actor {
             if (testedBid.quantity == ask.quantity) {
               println("Market: perfect match with " + testedBid)
               // create transaction
-              new Transaction(ask.price, ask.quantity, ask.timestamp, ask.whatC, testedBid.uid, testedBid.oid, ask.uid, ask.oid)
+              dest.map { _ ! new Transaction(ask.price, ask.quantity, ask.timestamp, ask.whatC, testedBid.uid, testedBid.oid, ask.uid, ask.oid) }
               // remove matched ask order
               println("removing order: " + bidOrdersBook.dequeue() + " from bid orders book.")
               // do nothing with matched ask - it was executed in the transaction
@@ -126,7 +142,7 @@ class MarketSimulator extends Actor {
             } else if (testedBid.quantity > ask.quantity) {
               println("Market: ask quantity inferior - cutting matched order")
               // create transaction
-              new Transaction(ask.price, ask.quantity, ask.timestamp, ask.whatC, testedBid.uid, testedBid.oid, ask.uid, ask.oid)
+              dest.map { _ ! new Transaction(ask.price, ask.quantity, ask.timestamp, ask.whatC, testedBid.uid, testedBid.oid, ask.uid, ask.oid) }
               // remove matched bid order and reinput it with updated volume
               println("removing order: " + bidOrdersBook.dequeue() + " from bid orders book. enqueuing same ask with " + (testedBid.quantity - ask.quantity) + " volume.")
               askOrdersBook.enqueue(new BidOrder(testedBid.uid, testedBid.oid, testedBid.timestamp, testedBid.whatC, testedBid.price, testedBid.quantity - ask.quantity, testedBid.withC))
@@ -136,7 +152,7 @@ class MarketSimulator extends Actor {
             } else {
               println("Market: ask quantity superior - gonna continue ")
               // create transaction
-              new Transaction(ask.price, testedBid.quantity, ask.timestamp, ask.whatC, testedBid.uid, testedBid.oid, ask.uid, ask.oid)
+              dest.map { _ ! new Transaction(ask.price, testedBid.quantity, ask.timestamp, ask.whatC, testedBid.uid, testedBid.oid, ask.uid, ask.oid) }
               // remove matched bid order
               println("removing order: " + bidOrdersBook.dequeue() + " from bid orders book.")
               // call handleNewOrder on ask with updated volume
@@ -175,7 +191,9 @@ class MarketSimulator extends Actor {
 
   def receive = {
 
-    case order: EngineOrder => handleNewOrder(order)
+    case order: EngineOrder    => handleNewOrder(order)
+
+    case newListener: ActorRef => dest = newListener :: dest
 
     //    case bid: BidOrder => {
     //      println("got bid: " + bid)
@@ -208,6 +226,10 @@ class MarketSimulator extends Actor {
       // print shows heap order (binary tree)
       println("Ask Orders Book: " + askOrdersBook)
       println("Bid Orders Book: " + bidOrdersBook)
+    }
+    
+    case RetrieveBooks => {
+      sender ! Books(bidOrdersBook.asInstanceOf[PriorityQueue[BidOrder]], askOrdersBook.asInstanceOf[PriorityQueue[AskOrder]], tradingPrice)
     }
 
     case _ => println("got unknown")
