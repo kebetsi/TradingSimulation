@@ -19,11 +19,11 @@ object ReplayFlowTesterFromStorage {
   def main(args: Array[String]) = {
     val system = ActorSystem("DataSourceSystem")
     val printer = system.actorOf(Props(classOf[Printer]), "instage-printer")
-    val persistor = new TransactionPersistorImpl()
+    val persistor = new TransactionPersistorImpl("ReplayFlowTesterFromStorage")
     persistor.init()
     val instage = new InStage[Transaction](system, List(printer))
       .withPersistance(persistor)
-      .withReplay(1418230172000L,0.01).start
+      .withReplay(1418737788400L,0.01).start
     instage ! "Start"
   }
 }

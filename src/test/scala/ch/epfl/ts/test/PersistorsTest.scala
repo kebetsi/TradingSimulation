@@ -39,7 +39,7 @@ object PersistorsTest {
     val trans1 = new Transaction(33, 41, 1, USD, 1, 1, 2, 2)
     val trans2 = new Transaction(221, 23, 2, USD, 3, 3, 4, 4)
     val transList = trans1 :: trans2 :: Nil
-    val transPersistor = new TransactionPersistorImpl
+    val transPersistor = new TransactionPersistorImpl("test")
     transPersistor.init()
     transPersistor.save(transList)
     val retrievedTrans = transPersistor.loadBatch(0, 100)

@@ -9,9 +9,9 @@ import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
-class TransactionPersistorImpl extends Persistance[Transaction] {
+class TransactionPersistorImpl(filename: String) extends Persistance[Transaction] {
 
-  val db = Database.forURL("jdbc:sqlite:testDB.txt", driver = "org.sqlite.JDBC")
+  val db = Database.forURL("jdbc:sqlite:" + filename + ".db", driver = "org.sqlite.JDBC")
 
   type TransactionEntry = (Int, Double, Double, Long, String, Long, Long, Long, Long)
   class Transactions(tag: Tag) extends Table[(Int, Double, Double, Long, String, Long, Long, Long, Long)](tag, "TRANSACTIONS") {

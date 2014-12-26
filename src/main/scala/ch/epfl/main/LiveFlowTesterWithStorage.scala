@@ -18,7 +18,7 @@ object LiveFlowTesterWithStorage {
   def main(args: Array[String]) = {
     val system = ActorSystem("DataSourceSystem")
     val printer = system.actorOf(Props(classOf[Printer]), "instage-printer")
-    val persistor = new TransactionPersistorImpl()
+    val persistor = new TransactionPersistorImpl("liveFlowTesterWithStorage")
     persistor.init()
     val instage = new InStage[Transaction](system, List(printer))
       .withPersistance(persistor)
