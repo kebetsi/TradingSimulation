@@ -18,7 +18,7 @@ object MarketSimulatorTest {
     market ! new AskOrder(1, 4, 4, USD, 120, 50, USD)
     market ! new AskOrder(1, 5, 5, USD, 110, 50, USD)
     market ! new AskOrder(1, 6, 6, USD, 140, 50, USD)
-    market ! new AskOrder(1, 7, 7, USD, 80, 50, USD)
+    market ! new AskOrder(1, 7, 7, USD, 80, 100, USD)
 
     market ! PrintBooks
 
