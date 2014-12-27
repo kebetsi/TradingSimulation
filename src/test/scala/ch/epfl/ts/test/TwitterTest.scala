@@ -1,9 +1,6 @@
 package ch.epfl.ts.test
 
 import akka.actor.ActorSystem
-import akka.actor.Props
-import ch.epfl.ts.first.fetcher.PushFetchActor
-
 object TwitterTest {
 
   def main(args: Array[String]) {

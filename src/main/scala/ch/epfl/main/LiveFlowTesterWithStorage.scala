@@ -1,9 +1,10 @@
 package ch.epfl.main
 
-import akka.actor._
-import ch.epfl.ts.component.{Component, ComponentBuilder}
+import akka.actor.Props
+import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.PersistanceComponent
+import ch.epfl.ts.first.{Persistance, TransactionPersistanceComponent}
 import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcherComponent
 import ch.epfl.ts.impl.TransactionPersistorImpl
 
@@ -11,15 +12,17 @@ object LiveFlowTesterWithStorage {
 
 
   def main(args: Array[String]): Unit = {
-    implicit val system = ActorSystem("DataSourceSystem")
-    implicit val builder = new ComponentBuilder()
+    implicit val builder = new ComponentBuilder("DataSourceSystem")
 
-    val printer = Props(new Printer("my-printer"))
-    val persistor = Props(new PersistanceComponent[Transaction](new TransactionPersistorImpl()))
-    val fetcher = Props(new BtceTransactionPullFetcherComponent("my-fetcher"))
-    
-    //fetcher.addDestination(printer, classOf[Transaction])
-    //fetcher.addDestination(persistor, classOf[Transaction])
+    val transacPerst: Persistance[Transaction] = new TransactionPersistorImpl()
+
+
+    val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
+    val persistor = builder.createRef(Props(classOf[TransactionPersistanceComponent], transacPerst))
+    val fetcher = builder.createRef(Props(classOf[BtceTransactionPullFetcherComponent], "my-fetcher"))
+
+    fetcher.addDestination(printer, classOf[Transaction])
+    fetcher.addDestination(persistor, classOf[Transaction])
 
     builder.start
   }
@@ -29,6 +32,7 @@ object LiveFlowTesterWithStorage {
 class Printer(val name: String) extends Component {
   def receiver = {
     case t: Transaction => println(System.currentTimeMillis, t.toString)
+    case x => println("Printer got: " + x.getClass.toString)
   }
 }
 

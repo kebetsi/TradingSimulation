@@ -9,8 +9,10 @@ protected[first] trait Fetch[T]
 /* Direction PULL */
 abstract class PullFetch[T] extends Fetch[T] {
   def fetch(): List[T]
+
   def interval(): Int
 }
+
 /* Direction PUSH */
 abstract class PushFetch[T] extends Fetch[T] {
   var callback: (T => Unit)
@@ -18,12 +20,20 @@ abstract class PushFetch[T] extends Fetch[T] {
 
 /* Actor implementation */
 protected[first] class PullFetchComponent[T](f: PullFetch[T]) extends Component {
+
   import context._
-  private[this] case class Fetch()
+
+  case object Fetch
+
   system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
-  def receiver = {
+
+  override def receiver = {
     // pull and send to each listener
-    case Fetch => f.fetch().map( t => sender[T](t))
+    case Fetch => {
+      println("Fetch receiver, got Fetch")
+      f.fetch().map(t => sender[T](t))
+    }
+    case x => println("Fetcher got: " + x.getClass.toString)
   }
 }
 
@@ -32,5 +42,6 @@ protected[first] class PushFetchComponent[T] extends Component {
   def receiver = {
     case _ =>
   }
+
   def callback(data: T) = sender(data)
 }
