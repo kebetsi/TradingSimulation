@@ -13,24 +13,29 @@ import scala.reflect.ClassTag
  */
 trait Persistance[T] {
   def save(t: T)
+
   def save(ts: List[T])
-  def loadSingle(id: Int) : T
-  def loadBatch(startTime: Long, endTime: Long) : List[T]
+
+  def loadSingle(id: Int): T
+
+  def loadBatch(startTime: Long, endTime: Long): List[T]
 }
 
 /**
  * The Abstraction for the persistance actors
  */
-class PersistanceComponent[T : ClassTag] (p: Persistance[T])
+class PersistanceComponent[T: ClassTag](p: Persistance[T])
   extends Component {
   val clazz = implicitly[ClassTag[T]].runtimeClass
+
   def receiver = {
     case d if clazz.isInstance(d) => p.save(d.asInstanceOf[T])
-    case _ =>
+    case x => println("Persistance got: " + x.getClass.toString)
   }
 }
-/*
-protected[first] class TransactionPersistanceActor(p: Persistance[Transaction])
-  extends PersistanceActor[Transaction] (p)
-protected[first] class OrderPersistanceActor(p: Persistance[Order])
-  extends PersistanceActor[Order] (p)*/
+
+class TransactionPersistanceComponent(p: Persistance[Transaction])
+  extends PersistanceComponent[Transaction](p)
+
+class OrderPersistanceComponent(p: Persistance[Order])
+  extends PersistanceComponent[Order](p)
