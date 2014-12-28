@@ -8,12 +8,19 @@ import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
-class TransactionPersistor(filename: String) extends Persistance[Transaction] {
+/**
+ * Transaction persistance component
+ */
+class TransactionPersistanceComponent(dbFilename: String)
+  extends PersistanceComponent[Transaction](new TransactionPersistor(dbFilename))
 
-  val db = Database.forURL("jdbc:sqlite:" + filename + ".db", driver = "org.sqlite.JDBC")
+/**
+ * Implementation of the Persistance trait for Transaction
+ */
+class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] {
 
-  type TransactionEntry = (Int, Double, Double, Long, String, Long, Long, Long, Long)
   class Transactions(tag: Tag) extends Table[(Int, Double, Double, Long, String, Long, Long, Long, Long)](tag, "TRANSACTIONS") {
+    def * = (id, price, quantity, timestamp, currency, buyerId, buyerOrderId, sellerId, sellerOrderId)
     def id: Column[Int] = column[Int]("TRANSACTION_ID", O.PrimaryKey, O.AutoInc)
     def price: Column[Double] = column[Double]("PRICE")
     def quantity: Column[Double] = column[Double]("QUANTITY")
@@ -23,9 +30,11 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
     def buyerOrderId: Column[Long] = column[Long]("BUYER_ORDER_ID")
     def sellerId: Column[Long] = column[Long]("SELLER_ID")
     def sellerOrderId: Column[Long] = column[Long]("SELLER_ORDER_ID")
-    def * = (id, price, quantity, timestamp, currency, buyerId, buyerOrderId, sellerId, sellerOrderId)
   }
+
+  type TransactionEntry = (Int, Double, Double, Long, String, Long, Long, Long, Long)
   lazy val transaction = TableQuery[Transactions]
+  val db = Database.forURL("jdbc:sqlite:" + dbFilename + ".db", driver = "org.sqlite.JDBC")
 
   /**
    * create table if it does not exist
@@ -43,7 +52,7 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
    */
   def save(newTransaction: Transaction) = {
     db.withDynSession {
-      transaction += (1, newTransaction.price, newTransaction.quantity, newTransaction.timestamp, newTransaction.currency.toString, newTransaction.buyerId, newTransaction.buyOrderId, newTransaction.sellerId, newTransaction.sellOrderId) // AutoInc are implicitly ignored
+      transaction +=(1, newTransaction.price, newTransaction.quantity, newTransaction.timestamp, newTransaction.currency.toString, newTransaction.buyerId, newTransaction.buyOrderId, newTransaction.sellerId, newTransaction.sellOrderId) // AutoInc are implicitly ignored
     }
   }
 
@@ -52,14 +61,14 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
    */
   def save(ts: List[Transaction]) = {
     db.withDynSession {
-      transaction ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString, x.buyerId, x.buyOrderId, x.sellerId, x.sellOrderId) }
+      transaction ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString, x.buyerId, x.buyOrderId, x.sellerId, x.sellOrderId)}
     }
   }
 
   /**
    * load entry with id
    */
-  def loadSingle(id: Int): Transaction /*Option[Order]*/ = {
+  def loadSingle(id: Int): Transaction = {
     db.withDynSession {
       val r = transaction.filter(_.id === id).invoker.firstOption.get
       return Transaction(r._2, r._3, r._4, Currency.withName(r._5), r._6, r._7, r._8, r._9)
@@ -72,11 +81,11 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
   def loadBatch(startTime: Long, endTime: Long): List[Transaction] = {
     var res: List[Transaction] = List()
     db.withDynSession {
-      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Transaction(r._2, r._3, r._4, Currency.withName(r._5), r._6, r._7, r._8, r._9) :: res }
+      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Transaction(r._2, r._3, r._4, Currency.withName(r._5), r._6, r._7, r._8, r._9) :: res}
     }
     res
   }
-  
+
   /**
    * delete entry with id
    */
@@ -85,7 +94,7 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
       transaction.filter(_.id === id).delete
     }
   }
-  
+
   /**
    * delete entries with timestamp values between startTime and endTime
    */
@@ -94,7 +103,7 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
       transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).delete
     }
   }
-  
+
   /**
    * delete all entries
    */
@@ -103,5 +112,4 @@ class TransactionPersistor(filename: String) extends Persistance[Transaction] {
       transaction.delete
     }
   }
-
 }

@@ -8,12 +8,19 @@ import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
-class OrderPersistor(dbName: String) extends Persistance[Order] {
+/**
+ * Order persistance component
+ */
+class OrderPersistanceComponent(dbFilename: String)
+  extends PersistanceComponent[Order](new OrderPersistor(dbFilename))
 
-  val db = Database.forURL("jdbc:sqlite:" + dbName + ".db", driver = "org.sqlite.JDBC")
+/**
+ * Implementation of the Persistance trait for Order
+ */
+class OrderPersistor(dbFilename: String) extends Persistance[Order] {
 
-  type OrderEntry = (Int, Long, Double, Double, Long, String, String)
   class Orders(tag: Tag) extends Table[(Int, Long, Double, Double, Long, String, String)](tag, "ORDERS") {
+    def * = (id, externalId, price, quantity, timestamp, currency, orderType)
     def id: Column[Int] = column[Int]("ORD_ID", O.PrimaryKey, O.AutoInc)
     def externalId: Column[Long] = column[Long]("EXT_ID")
     def price: Column[Double] = column[Double]("PRICE")
@@ -21,9 +28,11 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
     def timestamp: Column[Long] = column[Long]("TIMESTAMP")
     def currency: Column[String] = column[String]("CURRENCY")
     def orderType: Column[String] = column[String]("ORDER_TYPE")
-    def * = (id, externalId, price, quantity, timestamp, currency, orderType)
   }
+
+  type OrderEntry = (Int, Long, Double, Double, Long, String, String)
   lazy val order = TableQuery[Orders]
+  val db = Database.forURL("jdbc:sqlite:" + dbFilename + ".db", driver = "org.sqlite.JDBC")
 
   /**
    * create table if it does not exist
@@ -41,7 +50,7 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
    */
   def save(newOrder: Order) = {
     db.withDynSession {
-      order += (1, newOrder.id, newOrder.price, newOrder.quantity, newOrder.timestamp, newOrder.currency.toString, newOrder.orderType.toString) // AutoInc are implicitly ignored
+      order +=(1, newOrder.id, newOrder.price, newOrder.quantity, newOrder.timestamp, newOrder.currency.toString, newOrder.orderType.toString) // AutoInc are implicitly ignored
     }
   }
 
@@ -50,7 +59,7 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
    */
   def save(os: List[Order]) = {
     db.withDynSession {
-      order ++= os.toIterable.map { x => (1, x.id, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString) }
+      order ++= os.toIterable.map { x => (1, x.id, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString)}
     }
   }
 
@@ -70,11 +79,11 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
     var res: List[Order] = List()
     db.withDynSession {
-      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Order(r._2, r._3, r._4, r._5, Currency.withName(r._6), OrderType.withName(r._7)) :: res }
+      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Order(r._2, r._3, r._4, r._5, Currency.withName(r._6), OrderType.withName(r._7)) :: res}
     }
     return res
   }
-  
+
   /**
    * delete entry with id
    */
@@ -83,7 +92,7 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
       order.filter(_.id === id).delete
     }
   }
-  
+
   /**
    * delete entries with timestamp values between startTime and endTime
    */
@@ -92,7 +101,7 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
       order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).delete
     }
   }
-  
+
   /**
    * delete all entries
    */
@@ -101,5 +110,4 @@ class OrderPersistor(dbName: String) extends Persistance[Order] {
       order.delete
     }
   }
-
 }

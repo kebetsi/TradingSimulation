@@ -1,8 +1,6 @@
 package ch.epfl.ts.component.persist
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.{Order, Transaction}
-
 import scala.reflect.ClassTag
 
 /**
@@ -11,11 +9,8 @@ import scala.reflect.ClassTag
  */
 trait Persistance[T] {
   def save(t: T)
-
   def save(ts: List[T])
-
   def loadSingle(id: Int): T
-
   def loadBatch(startTime: Long, endTime: Long): List[T]
 }
 
@@ -26,14 +21,8 @@ class PersistanceComponent[T: ClassTag](p: Persistance[T])
   extends Component {
   val clazz = implicitly[ClassTag[T]].runtimeClass
 
-  def receiver = {
+  override def receiver = {
     case d if clazz.isInstance(d) => p.save(d.asInstanceOf[T])
     case x => println("Persistance got: " + x.getClass.toString)
   }
 }
-
-class TransactionPersistanceComponent(p: Persistance[Transaction])
-  extends PersistanceComponent[Transaction](p)
-
-class OrderPersistanceComponent(p: Persistance[Order])
-  extends PersistanceComponent[Order](p)
