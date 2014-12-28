@@ -13,7 +13,7 @@ object TwitterFlowTesterWithStorage {
 
     val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
     val persistor = builder.createRef(Props(classOf[TweetPersistanceComponent], "twitter-db"))
-    val fetcher = builder.createRef(Props(classOf[TwitterFetchComponent], "twitter-fetcher"))
+    val fetcher = builder.createRef(Props(classOf[TwitterFetchComponent]), "twitter-fetcher")
 
     fetcher.addDestination(printer, classOf[Tweet])
     fetcher.addDestination(persistor, classOf[Tweet])

@@ -34,7 +34,7 @@ class TwitterPushFetcher(override var callback: (Tweet => Unit)) extends PushFet
       val tweet = status.getText.replace('\n', ' ')
 
       // send stuff to datasource
-      val commands = Array("python", "sentiment.py", tweet)
+      val commands = Array("python", "twitter-classifier/sentiment.py", tweet)
       val p = Runtime.getRuntime.exec(commands)
 
       val stdInput = new BufferedReader(new InputStreamReader(p.getInputStream))
@@ -46,6 +46,7 @@ class TwitterPushFetcher(override var callback: (Tweet => Unit)) extends PushFet
         case "positive" => 1
         case "negative" => -1
         case "neutral" => 0
+        case _ => throw new RuntimeException("Undefined sentiment value")
       }
 
       if (intSentiment == 1) {
