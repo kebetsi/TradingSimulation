@@ -2,9 +2,9 @@ package ch.epfl.main
 
 import akka.actor._
 import ch.epfl.ts.benchmark.Start
+import ch.epfl.ts.component.fetch.BtceTransactionPullFetcher
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first.InStage
-import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcher
 import ch.epfl.ts.impl.TransactionPersistorImpl
 
 object ReplayFlowTesterFromStorage {

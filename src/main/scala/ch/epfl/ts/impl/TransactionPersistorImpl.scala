@@ -75,7 +75,7 @@ class TransactionPersistorImpl(filename: String) extends Persistance[Transaction
     db.withDynSession {
       val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Transaction(r._2, r._3, r._4, Currency.withName(r._5), r._6, r._7, r._8, r._9) :: res }
     }
-    return res
+    res
   }
   
   /**

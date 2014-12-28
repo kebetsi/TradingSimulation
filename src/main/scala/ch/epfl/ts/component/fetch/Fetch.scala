@@ -1,4 +1,4 @@
-package ch.epfl.ts.first.fetcher
+package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.component.Component
 
@@ -20,11 +20,8 @@ abstract class PushFetch[T] extends Fetch[T] {
 
 /* Actor implementation */
 protected[first] class PullFetchComponent[T](f: PullFetch[T]) extends Component {
-
   import context._
-
   case object Fetch
-
   system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
 
   override def receiver = {

@@ -73,7 +73,7 @@ class TweetPersistorImpl extends Persistance[Tweet] {
     db.withDynSession {
       val r = tweet.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Tweet(r._2, r._3, r._4, r._5, r._6) :: res }
     }
-    return res
+    res
   }
   
   /**

@@ -3,7 +3,7 @@ package ch.epfl.main
 import akka.actor._
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first.InStage
-import ch.epfl.ts.first.fetcher.{TwitterPushFetcher, BtceTransactionPullFetcher}
+import ch.epfl.ts.first.fetcher.TwitterPushFetcher
 import ch.epfl.ts.impl.TransactionPersistorImpl
 import ch.epfl.ts.impl.TransactionPersistorImpl
 import ch.epfl.ts.data.Tweet

@@ -1,4 +1,4 @@
-package ch.epfl.ts.first.fetcher
+package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.Transaction

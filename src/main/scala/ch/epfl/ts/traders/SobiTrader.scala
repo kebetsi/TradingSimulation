@@ -52,7 +52,7 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
       val it = bids.iterator
       var bi: Double = 0.0
       var vol: Double = 0
-      for (i <- 0 to (bids.size * quartile / 4)) {
+      for (i <- 0 to ((bids.size * quartile) / 4)) {
         val currentBidOrder = it.next()
         bi = bi + currentBidOrder.price * currentBidOrder.quantity
         vol = vol + currentBidOrder.quantity

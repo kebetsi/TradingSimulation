@@ -1,9 +1,9 @@
 package ch.epfl.ts.example
 
 import akka.actor.Props
+import ch.epfl.ts.component.fetch.BtceTransactionPullFetcherComponent
 import ch.epfl.ts.component.{Component, ComponentBuilder}
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcherComponent
 import ch.epfl.ts.first.{Persistance, TransactionPersistanceComponent}
 import ch.epfl.ts.impl.TransactionPersistorImpl
 

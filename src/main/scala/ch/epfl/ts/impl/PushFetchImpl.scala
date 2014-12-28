@@ -1,7 +1,8 @@
 package ch.epfl.ts.impl
 
+import ch.epfl.ts.component.fetch.PushFetch
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.fetcher.PushFetch
+
 
 /*
 class PushFetchImpl extends PushFetch[Transaction] {
