@@ -8,7 +8,7 @@ import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
-class OrderPersistorImpl(dbName: String) extends Persistance[Order] {
+class OrderPersistor(dbName: String) extends Persistance[Order] {
 
   val db = Database.forURL("jdbc:sqlite:" + dbName + ".db", driver = "org.sqlite.JDBC")
 

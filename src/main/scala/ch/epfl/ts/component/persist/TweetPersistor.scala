@@ -9,7 +9,7 @@ import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
 
-class TweetPersistorImpl extends Persistance[Tweet] {
+class TweetPersistor extends Persistance[Tweet] {
 
   val db = Database.forURL("jdbc:sqlite:testDB.txt", driver = "org.sqlite.JDBC")
 

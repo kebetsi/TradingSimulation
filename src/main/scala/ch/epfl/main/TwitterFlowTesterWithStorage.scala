@@ -1,7 +1,7 @@
 package ch.epfl.main
 
 import akka.actor._
-import ch.epfl.ts.component.persist.{TransactionPersistorImpl, TweetPersistorImpl}
+import ch.epfl.ts.component.persist.{TransactionPersistor, TweetPersistor}
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first.InStage
 import ch.epfl.ts.first.fetcher.TwitterPushFetcher

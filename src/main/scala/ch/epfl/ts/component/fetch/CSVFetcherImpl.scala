@@ -1,6 +1,6 @@
 package ch.epfl.ts.component.fetch
 
-import ch.epfl.ts.component.persist.OrderPersistorImpl
+import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{Order, OrderType}
 
@@ -17,7 +17,7 @@ class CSVFetcherImpl {
 
   def loadInPersistor(filename: String) {
     // name the db as "[filename without extension].db"
-    val ordersPersistor = new OrderPersistorImpl(filename.replaceAll("\\.[^.]*$", ".db"))
+    val ordersPersistor = new OrderPersistor(filename.replaceAll("\\.[^.]*$", ".db"))
     ordersPersistor.init()
 
     val source = Source.fromFile(filename)

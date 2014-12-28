@@ -1,7 +1,7 @@
 package ch.epfl.main
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import ch.epfl.ts.component.persist.OrderPersistorImpl
+import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
 import ch.epfl.ts.data.OrderType._
 import ch.epfl.ts.data.{Order, Transaction}
@@ -34,7 +34,7 @@ object ReplayOrdersLoop {
     val system = ActorSystem("ReplayFinanceSystem")
     val market = system.actorOf(Props(classOf[MarketSimulator]))
     val connector = system.actorOf(Props(classOf[MarketConnector], List(market)))
-    val persistor = new OrderPersistorImpl("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
+    val persistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     persistor.init()
     val replay = system.actorOf(Props(classOf[Replay[Order]], persistor, List(connector), ReplayConfig(initTime, compression)))
     //    val transactionsPersistor = system.actorOf(Props(new TransactionPersistorImpl("persistance")))
