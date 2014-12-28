@@ -1,11 +1,12 @@
 package ch.epfl.ts.benchmark
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Props,ActorRef}
+import ch.epfl.ts.component.{Component, ComponentBuilder}
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.InStage
 
 object FileProcessBenchActor {
   def main(args: Array[String]) = {
+    /*
     val system = ActorSystem("DataSourceSystem")
     val reporter = system.actorOf(Props[Reporter])
     val printer = system.actorOf(Props(classOf[ConsumerActor], reporter))
@@ -15,15 +16,32 @@ object FileProcessBenchActor {
       .start
 
     mainActor ! new Start(0)
+
+
+    implicit val builder = new ComponentBuilder("DataSourceSystem")
+
+    val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
+    val persistor = builder.createRef(Props(classOf[TransactionPersistanceComponent], "btce-transaction-db"))
+    val fetcher = builder.createRef(Props(classOf[BtceTransactionPullFetcherComponent], "my-fetcher"))
+
+    fetcher.addDestination(printer, classOf[Transaction])
+    fetcher.addDestination(persistor, classOf[Transaction])
+
+    builder.start
+
+*/
   }
 }
 
-class ConsumerActor(reporter: ActorRef) extends Actor {
+
+
+class Consumer(reporter: ActorRef) extends Component {
   var notInit = true
   var startTime: Long = 0
   var count: Long = 0
-  override def receive = {
+  override def receiver = {
     case t:Transaction => timeConsume
+    case _ =>
   }
   def timeConsume: Unit = {
     if (notInit) {

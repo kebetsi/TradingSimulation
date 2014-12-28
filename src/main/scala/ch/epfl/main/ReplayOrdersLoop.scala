@@ -1,12 +1,12 @@
 package ch.epfl.main
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import ch.epfl.ts.component.fetch.SimulatorBackLoop
 import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
 import ch.epfl.ts.data.OrderType._
 import ch.epfl.ts.data.{Order, Transaction}
 import ch.epfl.ts.engine.{AskOrder, BidOrder, DelOrder, MarketSimulator}
-import ch.epfl.ts.whatisthis.SimulatorPushFetchImpl
 import ch.epfl.ts.traders.SobiTrader
 
 object ReplayOrdersLoop {
@@ -44,7 +44,7 @@ object ReplayOrdersLoop {
 //    (market: ActorRef, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double)
     val sobiTrader = system.actorOf(Props(classOf[SobiTrader], market, 3000, 2, 700.0, 50, 100.0))
     //    val pusher = system.actorOf(Props(classOf[SimulatorPushFetchImpl[Transaction]], List(market), List(sobiTrader, transactionsPersistor)))
-    val pusher = system.actorOf(Props(classOf[SimulatorPushFetchImpl[Transaction]], List(market), List(sobiTrader)))
+    val pusher = system.actorOf(Props(classOf[SimulatorBackLoop[Transaction]], List(market), List(sobiTrader)))
 
     pusher ! "Start" // sends his ActorRef to source (here market)
     replay ! "Start"

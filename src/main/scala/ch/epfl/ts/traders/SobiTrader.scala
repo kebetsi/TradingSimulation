@@ -2,6 +2,7 @@ package ch.epfl.ts.traders
 
 import akka.actor.Actor
 import akka.actor.ActorRef
+import ch.epfl.ts.component.Component
 import scala.concurrent.duration.DurationInt
 import ch.epfl.ts.engine.RetrieveBooks
 import ch.epfl.ts.engine.Books
@@ -13,7 +14,8 @@ import ch.epfl.ts.data.Currency._
 
 case class FetchBooks()
 
-class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double) extends Actor {
+class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double)
+  extends Component {
   import context._
   system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, FetchBooks)
 
@@ -22,7 +24,7 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
   val myId = 123
   var baseOrderId: Long = 456789
 
-  def receive = {
+  def receiver = {
     case FetchBooks => {
       market ! RetrieveBooks
     }

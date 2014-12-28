@@ -44,7 +44,7 @@ object PersistorsTest {
     println("testing TweetPersistor")
     val t1 = new Tweet(1, "blabla bitcoiiin", -1, "/docs", "dude")
     val t2 = new Tweet(10, "bitcoin great", 1, "/etc", "bob")
-    val tweetPersistor = new TweetPersistor
+    val tweetPersistor = new TweetPersistor("PersistorsTest-tweet-db")
     tweetPersistor.init()
     tweetPersistor.save(t1)
     tweetPersistor.save(t2)

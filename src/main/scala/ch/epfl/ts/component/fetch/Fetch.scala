@@ -4,7 +4,7 @@ import ch.epfl.ts.component.Component
 
 import scala.concurrent.duration.DurationInt
 
-protected[first] trait Fetch[T]
+trait Fetch[T]
 
 /* Direction PULL */
 abstract class PullFetch[T] extends Fetch[T] {
@@ -19,7 +19,7 @@ abstract class PushFetch[T] extends Fetch[T] {
 }
 
 /* Actor implementation */
-protected[first] class PullFetchComponent[T](f: PullFetch[T]) extends Component {
+class PullFetchComponent[T](f: PullFetch[T]) extends Component {
   import context._
   case object Fetch
   system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
@@ -35,7 +35,7 @@ protected[first] class PullFetchComponent[T](f: PullFetch[T]) extends Component 
 }
 
 /* Actor implementation */
-protected[first] class PushFetchComponent[T] extends Component {
+class PushFetchComponent[T] extends Component {
   def receiver = {
     case _ =>
   }

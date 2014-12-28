@@ -2,7 +2,7 @@ package ch.epfl.ts.example
 
 import akka.actor.Props
 import ch.epfl.ts.component.fetch.BtceTransactionPullFetcherComponent
-import ch.epfl.ts.component.persist.{TransactionPersistor, TransactionPersistanceComponent, Persistance}
+import ch.epfl.ts.component.persist.TransactionPersistanceComponent
 import ch.epfl.ts.component.{Component, ComponentBuilder}
 import ch.epfl.ts.data.Transaction
 
@@ -14,10 +14,8 @@ object LiveFlowTesterWithStorage {
   def main(args: Array[String]): Unit = {
     implicit val builder = new ComponentBuilder("DataSourceSystem")
 
-    val transacPersist: Persistance[Transaction] = new TransactionPersistor("FlowTester")
-
     val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
-    val persistor = builder.createRef(Props(classOf[TransactionPersistanceComponent], transacPersist))
+    val persistor = builder.createRef(Props(classOf[TransactionPersistanceComponent], "btce-transaction-db"))
     val fetcher = builder.createRef(Props(classOf[BtceTransactionPullFetcherComponent], "my-fetcher"))
 
     fetcher.addDestination(printer, classOf[Transaction])
