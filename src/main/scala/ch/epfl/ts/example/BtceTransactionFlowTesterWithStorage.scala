@@ -25,5 +25,3 @@ object BtceTransactionFlowTesterWithStorage {
     builder.start
   }
 }
-
-

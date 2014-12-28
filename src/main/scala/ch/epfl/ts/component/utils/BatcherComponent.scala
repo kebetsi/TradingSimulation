@@ -14,7 +14,7 @@ class BatcherComponent[T: ClassTag](var size: Int) extends Component {
     case d if clazz.isInstance(d) =>
       batch = d.asInstanceOf[T] :: batch
       if (batch.size >= size)
-        sender(batch.reverse)
+        send(batch.reverse)
     case _ =>
   }
 }

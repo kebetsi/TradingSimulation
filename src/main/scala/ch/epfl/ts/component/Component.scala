@@ -27,7 +27,7 @@ final class ComponentBuilder(name: String) {
   def add(src: ComponentRef, dest: ComponentRef) = (src, dest, classOf[Any])
 
   def start = instances.map(cr => {
-    cr.ar ! StartSignal
+    cr.ar ! new StartSignal()
     println("Sending start Signal to " + cr.ar)
   })
 
@@ -54,7 +54,8 @@ class ComponentRef(val ar: ActorRef, val clazz: Class[_]) {
 trait Receiver extends Actor {
   def receive: PartialFunction[Any, Unit]
 
-  def sender[T](t: T): Unit
+  def send[T: ClassTag](t: T): Unit
+  def send[T: ClassTag](t: List[T]): Unit
 }
 
 abstract class Component extends Receiver {
@@ -63,12 +64,12 @@ abstract class Component extends Receiver {
 
   final def componentReceive = PartialFunction[Any, Any] {
     case ComponentRegistration(ar, ct) => {
-      dest = dest + (ct -> dest.getOrElse(ct, List(ar)))
+      dest = dest + (ct -> (ar :: dest.getOrElse(ct, List())))
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
     }
     case s: StartSignal => stopped = false; println("Received Start " + this.getClass.getSimpleName); s
     case s: StopSignal => context.stop(self); println("Received Stop " + this.getClass.getSimpleName); s
-    case _ if stopped => println("Received data stopped " + this.getClass.getSimpleName)
+    case y if stopped => println("Received data when stopped " + this.getClass.getSimpleName + " of type " + y.getClass )
     case x => x
   }
 
@@ -77,14 +78,14 @@ abstract class Component extends Receiver {
   /* TODO: Dirty hack, componentReceive giving back unmatched to rematch in receiver using a andThen */
   final override def receive = componentReceive andThen receiver
 
-  final def sender[T](t: T): Unit = {
+  final def send[T: ClassTag](t: T): Unit = {
     dest.get(t.getClass) match {
       case Some(l) => l.map(_ ! t)
       case None =>
     }
   }
 
-  final def sender[T: ClassTag](t: List[T]): Unit = {
+  final def send[T: ClassTag](t: List[T]): Unit = {
     val clazz = implicitly[ClassTag[T]].runtimeClass
     dest.get(clazz) match {
       case Some(l) => l.map(d => t.map(d ! _))

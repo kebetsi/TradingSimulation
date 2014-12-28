@@ -3,6 +3,7 @@ package ch.epfl.ts.component.fetch
 import ch.epfl.ts.component.Component
 
 import scala.concurrent.duration.DurationInt
+import scala.reflect.ClassTag
 
 trait Fetch[T]
 
@@ -19,26 +20,25 @@ abstract class PushFetch[T] extends Fetch[T] {
 }
 
 /* Actor implementation */
-class PullFetchComponent[T](f: PullFetch[T]) extends Component {
+class PullFetchComponent[T: ClassTag](f: PullFetch[T]) extends Component {
   import context._
   case object Fetch
   system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
 
   override def receiver = {
     // pull and send to each listener
-    case Fetch => {
-      println("Fetch receiver, got Fetch")
-      f.fetch().map(t => sender[T](t))
-    }
-    case x => println("Fetcher got: " + x.getClass.toString)
+    case Fetch =>
+      println("PullFetchComponent Fetch " + System.currentTimeMillis())
+      f.fetch().map(t => send[T](t))
+    case _ =>
   }
 }
 
 /* Actor implementation */
-class PushFetchComponent[T] extends Component {
+class PushFetchComponent[T: ClassTag] extends Component {
   def receiver = {
     case _ =>
   }
 
-  def callback(data: T) = sender(data)
+  def callback(data: T) = send(data)
 }

@@ -6,6 +6,6 @@ import ch.epfl.ts.data.Transaction
 case class Ohlc(value: Double)
 class OhlcComponent extends Component {
   def receiver = {
-    case Transaction => sender(new Ohlc(5.5))
+    case Transaction => send(new Ohlc(5.5))
   }
 }

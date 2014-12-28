@@ -22,7 +22,9 @@ class PersistanceComponent[T: ClassTag](p: Persistance[T])
   val clazz = implicitly[ClassTag[T]].runtimeClass
 
   override def receiver = {
-    case d if clazz.isInstance(d) => p.save(d.asInstanceOf[T])
+    case d if clazz.isInstance(d) =>
+      println("PersistanceComponent", d)
+      p.save(d.asInstanceOf[T])
     case x => println("Persistance got: " + x.getClass.toString)
   }
 }
