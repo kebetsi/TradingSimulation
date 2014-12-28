@@ -1,14 +1,12 @@
 package ch.epfl.main
 
 import akka.actor._
+import ch.epfl.ts.component.persist.{TransactionPersistorImpl, TweetPersistorImpl}
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.first.InStage
 import ch.epfl.ts.first.fetcher.TwitterPushFetcher
-import ch.epfl.ts.impl.TransactionPersistorImpl
-import ch.epfl.ts.impl.TransactionPersistorImpl
 import ch.epfl.ts.data.Tweet
 import ch.epfl.ts.first.InStage
-import ch.epfl.ts.impl.TweetPersistorImpl
 
 object TwitterFlowTesterWithStorage {
   // Stage 2, used just to print out the result from stage 1
