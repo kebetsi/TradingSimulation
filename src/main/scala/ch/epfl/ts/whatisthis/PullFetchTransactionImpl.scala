@@ -1,4 +1,4 @@
-package ch.epfl.ts.impl
+package ch.epfl.ts.whatisthis
 
 import ch.epfl.ts.component.fetch.PullFetch
 import ch.epfl.ts.data.{Transaction, Currency}

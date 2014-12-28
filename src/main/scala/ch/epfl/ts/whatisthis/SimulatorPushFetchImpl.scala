@@ -1,4 +1,4 @@
-package ch.epfl.ts.impl
+package ch.epfl.ts.whatisthis
 
 import akka.actor.Actor
 import akka.actor.ActorRef
