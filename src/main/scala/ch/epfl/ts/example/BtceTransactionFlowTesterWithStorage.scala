@@ -4,7 +4,7 @@ import akka.actor.Props
 import ch.epfl.ts.component.fetch.BtceTransactionPullFetcherComponent
 import ch.epfl.ts.component.persist.TransactionPersistanceComponent
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.component.{Component, ComponentBuilder}
+import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.data.Transaction
 
 /**

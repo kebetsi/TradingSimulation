@@ -2,6 +2,8 @@ package ch.epfl.ts.component
 
 import akka.actor.{Actor, ActorRef, ActorSystem}
 
+import scala.reflect.ClassTag
+
 
 private[component] case class StartSignal()
 
@@ -64,8 +66,8 @@ abstract class Component extends Receiver {
       dest = dest + (ct -> dest.getOrElse(ct, List(ar)))
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
     }
-    case StartSignal => stopped = false; println("Received Start " + this.getClass.getSimpleName)
-    case StopSignal => context.stop(self); println("Received Stop " + this.getClass.getSimpleName)
+    case s: StartSignal => stopped = false; println("Received Start " + this.getClass.getSimpleName); s
+    case s: StopSignal => context.stop(self); println("Received Stop " + this.getClass.getSimpleName); s
     case _ if stopped => println("Received data stopped " + this.getClass.getSimpleName)
     case x => x
   }
@@ -78,6 +80,14 @@ abstract class Component extends Receiver {
   final def sender[T](t: T): Unit = {
     dest.get(t.getClass) match {
       case Some(l) => l.map(_ ! t)
+      case None =>
+    }
+  }
+
+  final def sender[T: ClassTag](t: List[T]): Unit = {
+    val clazz = implicitly[ClassTag[T]].runtimeClass
+    dest.get(clazz) match {
+      case Some(l) => l.map(d => t.map(d ! _))
       case None =>
     }
   }

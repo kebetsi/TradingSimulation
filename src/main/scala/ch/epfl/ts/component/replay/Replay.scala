@@ -1,37 +1,38 @@
 package ch.epfl.ts.component.replay
 
 import akka.actor.{Actor, ActorRef, Cancellable}
+import ch.epfl.ts.component.{StopSignal, StartSignal, Component}
 import ch.epfl.ts.component.persist.Persistance
+import ch.epfl.ts.data.{Order, Transaction, Tweet}
 
 import scala.concurrent.duration.DurationLong
 
 case class ReplayConfig(initTimeMs: Long, compression: Double)
-class Replay[T](p: Persistance[T], dest: List[ActorRef], conf: ReplayConfig) extends Actor {
+
+class TransactionReplay(p: Persistance[Transaction], conf: ReplayConfig) extends Replay[Transaction](p, conf)
+class OrderReplay(p: Persistance[Order], conf: ReplayConfig) extends Replay[Order](p, conf)
+class TweetReplay(p: Persistance[Tweet], conf: ReplayConfig) extends Replay[Tweet](p, conf)
+
+class Replay[T](p: Persistance[T], conf: ReplayConfig) extends Component {
   import context._
-  var started = false
+  case class Tick()
   var schedule: Cancellable = null
   var currentTime = conf.initTimeMs
 
-  def receive = {
-    case "Stop" if started => {
-      started = false
+  def receiver = {
+    case StopSignal if stopped =>
       schedule.cancel()
-    }
-    case "Start" if !started => {
-      started = true
+    case StartSignal if !stopped =>
       schedule = start(conf.compression)
-    }
-    case "Tick" if sender == self => {
+    case Tick if sender == self =>
       process
       currentTime += 1000
-    }
-    case r: ReplayConfig => {
+    case r: ReplayConfig =>
       schedule.cancel()
       currentTime = r.initTimeMs
       // TODO: discard waiting objects
       schedule = start(r.compression)
-    }
   }
-  private def start(compression: Double) = context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, "Tick")
-  private def process = p.loadBatch(currentTime, currentTime + 999).map(t => dest.map(d => d ! t))
+  private def start(compression: Double) = context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, new Tick)
+  private def process() = sender[T](p.loadBatch(currentTime, currentTime + 999))
 }

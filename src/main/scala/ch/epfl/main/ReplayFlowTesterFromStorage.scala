@@ -1,25 +1,34 @@
 package ch.epfl.main
 
-import akka.actor._
+import akka.actor.Props
+import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.component.persist.TransactionPersistor
+import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
+import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.data.Transaction
 
+/**
+ * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,
+ * saving it to a SQLite Database and printing it on the other side.
+ */
 object ReplayFlowTesterFromStorage {
-  // Stage 2, used just to print out the result from stage 1
-  class Printer extends Actor {
-    override def receive = {
-      case t: Transaction => println(System.currentTimeMillis, t.toString)
-      case _  => 
-    }
-  }
+  def main(args: Array[String]): Unit = {
+    implicit val builder = new ComponentBuilder("DataSourceSystem")
 
-  /*def main(args: Array[String]) = {
-    val system = ActorSystem("DataSourceSystem")
-    val printer = system.actorOf(Props(classOf[Printer]), "instage-printer")
-    val persistor = new TransactionPersistorImpl("ReplayFlowTesterFromStorage")
-    persistor.init()
-    val instage = new InStage[Transaction](system, List(printer))
-      .withPersistance(persistor)
-      .withReplay(1418737788400L,0.01).start
-    instage ! "Start"
-  }*/
+    // Persistance Interface
+    val btceXact = new TransactionPersistor("btce-transaction-db")
+
+    // Replay configuration
+    val replayConf = new ReplayConfig(1418737788400L,0.01)
+
+    // Create Components
+    val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
+    val replayer = builder.createRef(Props(classOf[Replay[Transaction]], btceXact, replayConf))
+
+    // Build the connections
+    replayer.addDestination(printer, classOf[Transaction])
+
+    // Start the system
+    builder.start
+  }
 }
