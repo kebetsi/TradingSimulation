@@ -3,6 +3,7 @@ package ch.epfl.ts.example
 import akka.actor.Props
 import ch.epfl.ts.component.fetch.BtceTransactionPullFetcherComponent
 import ch.epfl.ts.component.persist.TransactionPersistanceComponent
+import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.component.{Component, ComponentBuilder}
 import ch.epfl.ts.data.Transaction
 
@@ -10,7 +11,7 @@ import ch.epfl.ts.data.Transaction
  * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,
  * saving it to a SQLite Database and printing it on the other side.
  */
-object LiveFlowTesterWithStorage {
+object BtceTransactionFlowTesterWithStorage {
   def main(args: Array[String]): Unit = {
     implicit val builder = new ComponentBuilder("DataSourceSystem")
 
@@ -25,13 +26,4 @@ object LiveFlowTesterWithStorage {
   }
 }
 
-/**
- * Simple printer component for Transactions.
- * @param name The name of the component.
- */
-class Printer(val name: String) extends Component {
-  override def receiver = {
-    case t: Transaction => println(System.currentTimeMillis, t.toString)
-    case _ =>
-  }
-}
+

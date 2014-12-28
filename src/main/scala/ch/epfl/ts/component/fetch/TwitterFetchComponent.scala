@@ -9,7 +9,7 @@ import twitter4j._
 /**
  * TODO: Should be refactored to only use PushFetchComponent[Tweet] and no more PushFetch[Tweet].
  */
-class TwitterPushFetchComponent extends PushFetchComponent[Tweet] {
+class TwitterFetchComponent extends PushFetchComponent[Tweet] {
   new TwitterPushFetcher(this.callback)
 }
 
