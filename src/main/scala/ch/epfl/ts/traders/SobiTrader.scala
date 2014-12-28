@@ -64,5 +64,4 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
       0.0
     }
   }
-
 }
