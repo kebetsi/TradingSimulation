@@ -1,8 +1,8 @@
 package ch.epfl.ts.benchmark
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import ch.epfl.ts.ch.epfl.ts.data.Transaction
-import ch.epfl.ts.ch.epfl.ts.first.InStage
+import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.first.InStage
 
 object FileProcessBenchActor {
   def main(args: Array[String]) = {

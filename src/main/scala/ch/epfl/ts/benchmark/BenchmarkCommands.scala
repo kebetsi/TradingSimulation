@@ -1,7 +1,7 @@
 package ch.epfl.ts.benchmark
 
 import akka.actor.Actor
-import ch.epfl.ts.ch.epfl.ts.data.{Order, Transaction}
+import ch.epfl.ts.data.{Order, Transaction}
 
 case class Start(offset: Long)
 
