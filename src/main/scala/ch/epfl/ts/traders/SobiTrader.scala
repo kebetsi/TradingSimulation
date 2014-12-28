@@ -36,7 +36,7 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
         market ! BidOrder(myId, baseOrderId, System.currentTimeMillis, USD, b.tradingPrice - priceDelta, orderVolume, USD)
       }
       if ((bi - si) > theta) {
-        baseOrderId = baseOrderId + 1;
+        baseOrderId = baseOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (b.tradingPrice + priceDelta) + ", volume=" + orderVolume)
         market ! AskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, b.tradingPrice + priceDelta, orderVolume, USD)
@@ -52,9 +52,8 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
       val it = bids.iterator
       var bi: Double = 0.0
       var vol: Double = 0
-      var currentBidOrder: T = null.asInstanceOf[T]
       for (i <- 0 to (bids.size * quartile / 4)) {
-        currentBidOrder = it.next().asInstanceOf[T]
+        val currentBidOrder = it.next()
         bi = bi + currentBidOrder.price * currentBidOrder.quantity
         vol = vol + currentBidOrder.quantity
       }

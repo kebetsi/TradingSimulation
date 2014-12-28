@@ -14,7 +14,6 @@ import ch.epfl.ts.engine.DelOrder
 import ch.epfl.ts.engine.MarketSimulator
 import akka.actor.ActorRef
 import ch.epfl.ts.impl.SimulatorPushFetchImpl
-import ch.epfl.ts.traders.VwapTrader
 import ch.epfl.ts.traders.SobiTrader
 
 object ReplayOrdersLoop {

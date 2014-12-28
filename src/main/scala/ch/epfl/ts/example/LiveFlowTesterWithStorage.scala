@@ -1,21 +1,21 @@
-package ch.epfl.main
+package ch.epfl.ts.example
 
 import akka.actor.Props
-import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.Component
+import ch.epfl.ts.component.{Component, ComponentBuilder}
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.first.{Persistance, TransactionPersistanceComponent}
 import ch.epfl.ts.first.fetcher.BtceTransactionPullFetcherComponent
+import ch.epfl.ts.first.{Persistance, TransactionPersistanceComponent}
 import ch.epfl.ts.impl.TransactionPersistorImpl
 
+/**
+ * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,
+ * saving it to a SQLite Database and printing it on the other side.
+ */
 object LiveFlowTesterWithStorage {
-
-
   def main(args: Array[String]): Unit = {
     implicit val builder = new ComponentBuilder("DataSourceSystem")
 
-    val transacPerst: Persistance[Transaction] = new TransactionPersistorImpl()
-
+    val transacPerst: Persistance[Transaction] = new TransactionPersistorImpl("FlowTester")
 
     val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
     val persistor = builder.createRef(Props(classOf[TransactionPersistanceComponent], transacPerst))
@@ -28,11 +28,13 @@ object LiveFlowTesterWithStorage {
   }
 }
 
-// Stage 2, used just to print out the result from stage 1
+/**
+ * Simple printer component for Transactions.
+ * @param name The name of the component.
+ */
 class Printer(val name: String) extends Component {
   def receiver = {
     case t: Transaction => println(System.currentTimeMillis, t.toString)
-    case x => println("Printer got: " + x.getClass.toString)
+    case _ =>
   }
 }
-

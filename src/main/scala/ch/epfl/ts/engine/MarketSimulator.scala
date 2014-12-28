@@ -1,10 +1,8 @@
 package ch.epfl.ts.engine
 
 import scala.collection.mutable.PriorityQueue
-import ch.epfl.ts.data.Currency.Currency
 import ch.epfl.ts.data.Transaction
 import akka.actor.Actor
-import com.sun.javafx.binding.SelectBinding.AsObject
 import akka.actor.ActorRef
 
 /**

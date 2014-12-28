@@ -1,7 +1,7 @@
 package ch.epfl.ts.benchmark
 
 import java.io._
-import ch.epfl.ts.data.{ Currency, Transaction }
+import ch.epfl.ts.ch.epfl.ts.data.{ Currency, Transaction }
 import scala.io.Source
 import scala.util.Random
 import akka.actor.Actor
