@@ -14,5 +14,3 @@ case class Order (id: Long, price: Double, quantity: Double, timestamp: Long, cu
   extends StreamObject {
   override def toString: String = "Order: timestamp=" + timestamp + ", id=" + id + ", orderType=" + orderType + ", volume=" + timestamp + ", volume=" + quantity + ", price=" + price + ", currency=" + currency
 }
-
-

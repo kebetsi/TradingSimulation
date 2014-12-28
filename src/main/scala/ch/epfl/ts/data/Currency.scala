@@ -8,5 +8,3 @@ object Currency extends Enumeration {
   val CHF = Value("chf")
   val RUR = Value("rur")
 }
-
-trait StreamObject
