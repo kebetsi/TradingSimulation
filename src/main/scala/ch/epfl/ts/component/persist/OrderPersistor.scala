@@ -9,12 +9,6 @@ import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
 /**
- * Order persistance component
- */
-class OrderPersistanceComponent(dbFilename: String)
-  extends PersistanceComponent[Order](new OrderPersistor(dbFilename))
-
-/**
  * Implementation of the Persistance trait for Order
  */
 class OrderPersistor(dbFilename: String) extends Persistance[Order] {

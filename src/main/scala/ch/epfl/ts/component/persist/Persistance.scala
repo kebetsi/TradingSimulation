@@ -17,14 +17,12 @@ trait Persistance[T] {
 /**
  * The Abstraction for the persistance actors
  */
-class PersistanceComponent[T: ClassTag](p: Persistance[T])
+class Persistor[T: ClassTag](p: Persistance[T])
   extends Component {
   val clazz = implicitly[ClassTag[T]].runtimeClass
 
   override def receiver = {
-    case d if clazz.isInstance(d) =>
-      println("PersistanceComponent", d)
-      p.save(d.asInstanceOf[T])
+    case d if clazz.isInstance(d) => p.save(d.asInstanceOf[T])
     case x => println("Persistance got: " + x.getClass.toString)
   }
 }

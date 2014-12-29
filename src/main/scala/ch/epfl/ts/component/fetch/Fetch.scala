@@ -36,7 +36,7 @@ class PullFetchComponent[T: ClassTag](f: PullFetch[T]) extends Component {
 
 /* Actor implementation */
 class PushFetchComponent[T: ClassTag] extends Component {
-  def receiver = {
+  override def receiver = {
     case _ =>
   }
 

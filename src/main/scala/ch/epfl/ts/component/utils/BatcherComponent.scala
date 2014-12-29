@@ -9,7 +9,7 @@ class BatcherComponent[T: ClassTag](var size: Int) extends Component {
   val clazz = implicitly[ClassTag[T]].runtimeClass
   var batch: List[T] = List()
 
-  def receiver = {
+  override def receiver = {
     case bs: BatchSize => size = bs.size
     case d if clazz.isInstance(d) =>
       batch = d.asInstanceOf[T] :: batch

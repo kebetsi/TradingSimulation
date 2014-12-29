@@ -5,7 +5,7 @@ import ch.epfl.ts.data.Transaction
 
 case class Ohlc(value: Double)
 class OhlcComponent extends Component {
-  def receiver = {
+  override def receiver = {
     case Transaction => send(new Ohlc(5.5))
   }
 }
