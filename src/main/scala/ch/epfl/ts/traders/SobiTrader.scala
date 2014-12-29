@@ -31,7 +31,7 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
     case b: Books => {
       bi = computeBiOrSi(b.bids)
       si = computeBiOrSi(b.asks)
-      if ((si - bi) > 200) {
+      if ((si - bi) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (b.tradingPrice - priceDelta) + ", volume=" + orderVolume)
