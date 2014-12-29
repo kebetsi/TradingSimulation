@@ -10,6 +10,7 @@ import ch.epfl.ts.engine.EngineOrder
 import ch.epfl.ts.engine.BidOrder
 import ch.epfl.ts.engine.AskOrder
 import ch.epfl.ts.data.Currency._
+import scala.collection.mutable.TreeSet
 
 case class FetchBooks()
 
@@ -47,7 +48,7 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
   /**
    * compute the volume-weighted average price of the top quartile*25% of the volume of the bids/asks orders book
    */
-  def computeBiOrSi[T <: EngineOrder](bids: PriorityQueue[T]): Double = {
+  def computeBiOrSi[T <: EngineOrder](bids: TreeSet[T]): Double = {
     if (bids.size > 4) {
       val it = bids.iterator
       var bi: Double = 0.0
