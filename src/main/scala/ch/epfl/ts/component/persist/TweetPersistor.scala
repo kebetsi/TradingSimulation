@@ -9,12 +9,6 @@ import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
 /**
- * Tweet persistance component
- */
-class TweetPersistanceComponent(dbFilename: String)
-  extends PersistanceComponent[Tweet](new TweetPersistor(dbFilename))
-
-/**
  * Implementation of the Persistance trait for Tweet
  */
 class TweetPersistor(dbFilename: String) extends Persistance[Tweet] {

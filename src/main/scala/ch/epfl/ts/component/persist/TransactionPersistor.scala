@@ -9,12 +9,6 @@ import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
 /**
- * Transaction persistance component
- */
-class TransactionPersistanceComponent(dbFilename: String)
-  extends PersistanceComponent[Transaction](new TransactionPersistor(dbFilename))
-
-/**
  * Implementation of the Persistance trait for Transaction
  */
 class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] {

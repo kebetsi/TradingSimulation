@@ -5,9 +5,6 @@ import ch.epfl.ts.data.{Order, OrderType, Transaction}
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 
-class BtceTransactionPullFetcherComponent(val name: String) extends PullFetchComponent[Transaction](new BtceTransactionPullFetcher)
-class BtceOrderPullFetcherComponent(val name: String) extends PullFetchComponent[Order](new BtceOrderPullFetcher)
-
 class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000

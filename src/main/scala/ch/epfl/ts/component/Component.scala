@@ -1,16 +1,11 @@
 package ch.epfl.ts.component
 
 import akka.actor.{Actor, ActorRef, ActorSystem}
-
 import scala.reflect.ClassTag
 
-
-private[component] case class StartSignal()
-
-private[component] case class StopSignal()
-
-private[component] case class ComponentRegistration(ar: ActorRef, ct: Class[_])
-
+case class StartSignal()
+case class StopSignal()
+case class ComponentRegistration(ar: ActorRef, ct: Class[_])
 
 final class ComponentBuilder(name: String) {
   type ComponentProps = akka.actor.Props
@@ -62,21 +57,22 @@ abstract class Component extends Receiver {
   var dest = Map[Class[_], List[ActorRef]]()
   var stopped = true
 
-  final def componentReceive = PartialFunction[Any, Any] {
-    case ComponentRegistration(ar, ct) => {
-      dest = dest + (ct -> (ar :: dest.getOrElse(ct, List())))
+  final def componentReceive: PartialFunction[Any, Unit] = {
+    case ComponentRegistration(ar, ct) =>  dest = dest + (ct -> (ar :: dest.getOrElse(ct, List())))
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
-    }
-    case s: StartSignal => stopped = false; println("Received Start " + this.getClass.getSimpleName); s
-    case s: StopSignal => context.stop(self); println("Received Stop " + this.getClass.getSimpleName); s
+    case s: StartSignal => stopped = false
+      receiver(s)
+      println("Received Start " + this.getClass.getSimpleName)
+    case s: StopSignal => context.stop(self)
+      receiver(s)
+      println("Received Stop " + this.getClass.getSimpleName)
     case y if stopped => println("Received data when stopped " + this.getClass.getSimpleName + " of type " + y.getClass )
-    case x => x
   }
 
   def receiver: PartialFunction[Any, Unit]
 
   /* TODO: Dirty hack, componentReceive giving back unmatched to rematch in receiver using a andThen */
-  final override def receive = componentReceive andThen receiver
+  override def receive = componentReceive orElse receiver
 
   final def send[T: ClassTag](t: T): Unit = {
     dest.get(t.getClass) match {
