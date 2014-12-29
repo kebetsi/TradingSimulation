@@ -7,8 +7,8 @@ import ch.epfl.ts.engine.RetrieveBooks
 import ch.epfl.ts.engine.Books
 import scala.collection.mutable.PriorityQueue
 import ch.epfl.ts.engine.EngineOrder
-import ch.epfl.ts.engine.BidOrder
-import ch.epfl.ts.engine.AskOrder
+import ch.epfl.ts.engine.LimitBidOrder
+import ch.epfl.ts.engine.LimitAskOrder
 import ch.epfl.ts.data.Currency._
 import scala.collection.mutable.TreeSet
 
@@ -34,13 +34,13 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
         baseOrderId = baseOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (b.tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        market ! BidOrder(myId, baseOrderId, System.currentTimeMillis, USD, b.tradingPrice - priceDelta, orderVolume, USD)
+        market ! LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, b.tradingPrice - priceDelta, orderVolume, USD)
       }
       if ((bi - si) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (b.tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        market ! AskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, b.tradingPrice + priceDelta, orderVolume, USD)
+        market ! LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, b.tradingPrice + priceDelta, orderVolume, USD)
       }
     }
   }

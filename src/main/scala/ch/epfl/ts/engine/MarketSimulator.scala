@@ -19,7 +19,7 @@ case class RetrieveBooks()
 /**
  * a tuple containing the bid and ask orders books and the last trading price
  */
-case class Books(bids: TreeSet[BidOrder], asks: TreeSet[AskOrder], tradingPrice: Double)
+case class Books(bids: TreeSet[LimitBidOrder], asks: TreeSet[LimitAskOrder], tradingPrice: Double)
 
 class MarketSimulator extends Actor {
 
@@ -31,27 +31,27 @@ class MarketSimulator extends Actor {
   var tradingPrice: Double = 185000.0 // set for SobiTrader when using with finance.csv
 
   // when used on TreeSet, head() and iterator() provide increasing order
-  def asksOrdering = new Ordering[AskOrder] {
-    def compare(first: AskOrder, second: AskOrder): Int =
+  def asksOrdering = new Ordering[LimitAskOrder] {
+    def compare(first: LimitAskOrder, second: LimitAskOrder): Int =
       if (first.price > second.price) 1 else if (first.price < second.price) -1 else {
         if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
       }
   }
 
   // when used on TreeSet, head() and iterator() provide decreasing order
-  def bidsOrdering = new Ordering[BidOrder] {
-    def compare(first: BidOrder, second: BidOrder): Int =
+  def bidsOrdering = new Ordering[LimitBidOrder] {
+    def compare(first: LimitBidOrder, second: LimitBidOrder): Int =
       if (first.price > second.price) -1 else if (first.price < second.price) 1 else {
         if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
       }
   }
 
-  val bidOrdersBook = new TreeSet[BidOrder]()(bidsOrdering)
-  val askOrdersBook = new TreeSet[AskOrder]()(asksOrdering)
+  val bidOrdersBook = new TreeSet[LimitBidOrder]()(bidsOrdering)
+  val askOrdersBook = new TreeSet[LimitAskOrder]()(asksOrdering)
 
   def handleNewOrder(newOrder: EngineOrder) {
     newOrder match {
-      case bid: BidOrder => {
+      case bid: LimitBidOrder => {
         println("Market: got bid: " + bid)
 
         if (askOrdersBook.isEmpty) {
@@ -82,7 +82,7 @@ class MarketSimulator extends Actor {
               // remove matched ask order and reinput it with updated volume
               println("removing order: " + askOrdersBook.head + " from ask orders book. enqueuing same ask with " + (testedAsk.quantity - bid.quantity) + " volume.")
               askOrdersBook -= askOrdersBook.head
-              askOrdersBook += new AskOrder(testedAsk.uid, testedAsk.oid, testedAsk.timestamp, testedAsk.whatC, testedAsk.price, testedAsk.quantity - bid.quantity, testedAsk.withC)
+              askOrdersBook += new LimitAskOrder(testedAsk.uid, testedAsk.oid, testedAsk.timestamp, testedAsk.whatC, testedAsk.price, testedAsk.quantity - bid.quantity, testedAsk.withC)
 
               // do nothing with matched bid - it was executed in the transaction
               // update price
@@ -95,7 +95,7 @@ class MarketSimulator extends Actor {
               println("removing order: " + askOrdersBook.head + " from ask orders book.")
               askOrdersBook -= askOrdersBook.head
               // call handleNewOrder on bid with updated volume
-              handleNewOrder(new BidOrder(bid.uid, bid.oid, bid.timestamp, bid.whatC, bid.price, bid.quantity - testedAsk.quantity, bid.withC))
+              handleNewOrder(new LimitBidOrder(bid.uid, bid.oid, bid.timestamp, bid.whatC, bid.price, bid.quantity - testedAsk.quantity, bid.withC))
               // update price
               tradingPrice = bid.price
             }
@@ -107,7 +107,7 @@ class MarketSimulator extends Actor {
           }
         }
       }
-      case ask: AskOrder => {
+      case ask: LimitAskOrder => {
         println("Market: got ask: " + ask)
 
         if (bidOrdersBook.isEmpty) {
@@ -136,7 +136,7 @@ class MarketSimulator extends Actor {
               // remove matched bid order and reinput it with updated volume
               println("removing order: " + bidOrdersBook.head + " from bid orders book. enqueuing same ask with " + (testedBid.quantity - ask.quantity) + " volume.")
               bidOrdersBook -= bidOrdersBook.head
-              bidOrdersBook += new BidOrder(testedBid.uid, testedBid.oid, testedBid.timestamp, testedBid.whatC, testedBid.price, testedBid.quantity - ask.quantity, testedBid.withC)
+              bidOrdersBook += new LimitBidOrder(testedBid.uid, testedBid.oid, testedBid.timestamp, testedBid.whatC, testedBid.price, testedBid.quantity - ask.quantity, testedBid.withC)
               // do nothing with matched ask - it was executed in the transaction
               // update price
               tradingPrice = ask.price
@@ -148,7 +148,7 @@ class MarketSimulator extends Actor {
               println("removing order: " + bidOrdersBook.head + " from bid orders book.")
               bidOrdersBook -= bidOrdersBook.head
               // call handleNewOrder on ask with updated volume
-              handleNewOrder(new BidOrder(ask.uid, ask.oid, ask.timestamp, ask.whatC, ask.price, ask.quantity - testedBid.quantity, ask.withC))
+              handleNewOrder(new LimitBidOrder(ask.uid, ask.oid, ask.timestamp, ask.whatC, ask.price, ask.quantity - testedBid.quantity, ask.withC))
               // update price
               tradingPrice = ask.price
             }
@@ -164,14 +164,14 @@ class MarketSimulator extends Actor {
         println("Market: got Delete: " + del)
         // look in bids
         bidOrdersBook.find { x => x.oid == del.oid } match {
-          case bidToDelete: Some[BidOrder] => {
+          case bidToDelete: Some[LimitBidOrder] => {
             println("deleted from Bids")
             bidOrdersBook -= bidToDelete.get
           }
           case _ => {
             // look in asks
             askOrdersBook.find { x => x.oid == del.oid } match {
-              case askToDelete: Some[AskOrder] => {
+              case askToDelete: Some[LimitAskOrder] => {
                 println("deleted from Asks")
                 askOrdersBook -= askToDelete.get
               }
@@ -196,7 +196,7 @@ class MarketSimulator extends Actor {
     }
 
     case RetrieveBooks => {
-      sender ! Books(bidOrdersBook.asInstanceOf[TreeSet[BidOrder]], askOrdersBook.asInstanceOf[TreeSet[AskOrder]], tradingPrice)
+      sender ! Books(bidOrdersBook, askOrdersBook, tradingPrice)
     }
 
     case _ => println("got unknown")
