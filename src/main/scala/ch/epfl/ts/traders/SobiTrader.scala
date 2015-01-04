@@ -11,13 +11,13 @@ import ch.epfl.ts.engine.LimitBidOrder
 import ch.epfl.ts.engine.LimitAskOrder
 import ch.epfl.ts.data.Currency._
 import scala.collection.mutable.TreeSet
+import ch.epfl.ts.component.StartSignal
 
 case class FetchBooks()
 
-class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double)
+class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double)
   extends Component {
   import context._
-  system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, FetchBooks)
 
   var bi: Double = 0.0
   var si: Double = 0.0
@@ -25,8 +25,11 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
   var baseOrderId: Long = 456789
 
   override def receiver = {
+    case StartSignal() => start
+
     case FetchBooks =>
-      market ! RetrieveBooks
+      send(RetrieveBooks)
+
     case b: Books => {
       bi = computeBiOrSi(b.bids)
       si = computeBiOrSi(b.asks)
@@ -34,15 +37,22 @@ class SobiTrader(market: ActorRef, intervalMillis: Int, quartile: Int, theta: Do
         baseOrderId = baseOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (b.tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        market ! LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, b.tradingPrice - priceDelta, orderVolume, USD)
+        send(new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, b.tradingPrice - priceDelta, orderVolume, USD))
       }
       if ((bi - si) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (b.tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        market ! LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, b.tradingPrice + priceDelta, orderVolume, USD)
+        send(new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, b.tradingPrice + priceDelta, orderVolume, USD))
       }
     }
+
+    case _ => println("SobiTrader: received unknown")
+  }
+
+  def start = {
+    println("SobiTrader: Started")
+    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, FetchBooks)
   }
 
   /**
