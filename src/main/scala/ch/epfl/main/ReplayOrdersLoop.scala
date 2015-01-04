@@ -13,6 +13,7 @@ import scala.reflect.ClassTag
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.traders.{SobiTrader, SimpleTrader}
+import ch.epfl.ts.engine.MarketRules
 
 class MarketConnector extends Component {
 
@@ -38,7 +39,7 @@ object ReplayOrdersLoop {
     val initTime = 25210389L
     val compression = 0.001
     implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
-    val market = builder.createRef(Props(classOf[MarketSimulator]))
+    val market = builder.createRef(Props(classOf[MarketSimulator], MarketRules()))
     val connector = builder.createRef(Props(classOf[MarketConnector]))
     val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()

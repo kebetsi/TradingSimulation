@@ -6,7 +6,25 @@ import ch.epfl.ts.data.Transaction
 object MarketRules {
   val noCommission = Commission(0, 0)
 
-  def basicMatchingFunction[A <: EngineOrder, B <: EngineOrder](newOrder: A, newOrdersBook: TreeSet[A], bestMatchsBook: TreeSet[B], send: Transaction => Unit, f: (Double, Double) => Boolean, oldTradingPrice: Double, enqueueOrElse: (EngineOrder, TreeSet[EngineOrder]) => Unit): Double = {
+  // when used on TreeSet, head() and iterator() provide increasing order
+  def defaultAsksOrdering = new Ordering[LimitAskOrder] {
+    def compare(first: LimitAskOrder, second: LimitAskOrder): Int =
+      if (first.price > second.price) 1 else if (first.price < second.price) -1 else {
+        if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
+      }
+  }
+
+  // when used on TreeSet, head() and iterator() provide decreasing order
+  def defaultBidsOrdering = new Ordering[LimitBidOrder] {
+    def compare(first: LimitBidOrder, second: LimitBidOrder): Int =
+      if (first.price > second.price) -1 else if (first.price < second.price) 1 else {
+        if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
+      }
+  }
+  
+  def alwaysTrue(a: Double, b: Double) = true
+
+  def defaultMatchingFunction[A <: EngineOrder, B <: EngineOrder](newOrder: A, newOrdersBook: TreeSet[A], bestMatchsBook: TreeSet[B], send: Transaction => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (EngineOrder, TreeSet[EngineOrder]) => Unit): Double = {
     println("Market: got new order: " + newOrder)
 
     if (bestMatchsBook.isEmpty) {
@@ -17,7 +35,7 @@ object MarketRules {
 
       val bestMatch = bestMatchsBook.head
       // check if a matching order exists when used with a limit order, if market order: f = true
-      if (f(bestMatch.price, newOrder.price)) {
+      if (matchExists(bestMatch.price, newOrder.price)) {
 
         // perfect match
         if (bestMatch.quantity == newOrder.quantity) {
@@ -56,13 +74,13 @@ object MarketRules {
           bestMatchsBook -= bestMatchsBook.head
           // call handleNewOrder on bid with updated volume
           if (newOrder.isInstanceOf[LimitBidOrder]) {
-            basicMatchingFunction(new LimitBidOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, f, oldTradingPrice, enqueueOrElse)
+            defaultMatchingFunction(LimitBidOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[LimitAskOrder]) {
-            basicMatchingFunction(new LimitAskOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, f, oldTradingPrice, enqueueOrElse)
+            defaultMatchingFunction(LimitAskOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[MarketBidOrder]) {
-            basicMatchingFunction(new MarketBidOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, f, oldTradingPrice, enqueueOrElse)
+            defaultMatchingFunction(MarketBidOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[MarketAskOrder]) {
-            basicMatchingFunction(new MarketAskOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, f, oldTradingPrice, enqueueOrElse)
+            defaultMatchingFunction(MarketAskOrder(newOrder.uid, newOrder.oid, newOrder.timestamp, newOrder.whatC, newOrder.price, newOrder.quantity - bestMatch.quantity, newOrder.withC), newOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else {
             println("MarketRules: casting error")
           }
@@ -93,6 +111,6 @@ case class Commission(limitOrder: Double, marketOrder: Double)
  * @param matchingFunction
  *
  */
-class MarketRules(bidOrdersBookPriority: Ordering[LimitBidOrder], askOrdersBookPriority: Ordering[LimitAskOrder], matchingFunction: (EngineOrder, TreeSet[EngineOrder], TreeSet[EngineOrder], Transaction => Unit, (Double, Double) => Boolean, Double, (EngineOrder, TreeSet[EngineOrder]) => Unit) => Double = MarketRules.basicMatchingFunction, commission: Commission = MarketRules.noCommission) {
+case class MarketRules(bidOrdersBookPriority: Ordering[LimitBidOrder] = MarketRules.defaultBidsOrdering, askOrdersBookPriority: Ordering[LimitAskOrder] = MarketRules.defaultAsksOrdering, matchingFunction: (EngineOrder, TreeSet[EngineOrder], TreeSet[EngineOrder], Transaction => Unit, (Double, Double) => Boolean, Double, (EngineOrder, TreeSet[EngineOrder]) => Unit) => Double = MarketRules.defaultMatchingFunction, commission: Commission = MarketRules.noCommission) {
 
 }
