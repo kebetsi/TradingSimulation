@@ -16,7 +16,6 @@ case class EngineTransaction() extends EngineMessage
 /* *****************************
  * Orders
  */
-// Limit and market order
 
 /**
  * uid: user id

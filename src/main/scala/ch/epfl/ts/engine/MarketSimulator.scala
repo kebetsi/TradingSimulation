@@ -5,6 +5,7 @@ import ch.epfl.ts.data.Transaction
 import akka.actor.Actor
 import akka.actor.ActorRef
 import scala.collection.mutable.TreeSet
+import ch.epfl.ts.component.Component
 
 /**
  *  message used to print the books contents (since we use PriotityQueues, it's the heap order)
@@ -21,9 +22,7 @@ case class RetrieveBooks()
  */
 case class Books(bids: TreeSet[LimitBidOrder], asks: TreeSet[LimitAskOrder], tradingPrice: Double)
 
-class MarketSimulator extends Actor {
-
-  var dest: List[ActorRef] = Nil
+class MarketSimulator extends Component {
 
   /**
    * the price at which the last transaction was executed
@@ -49,214 +48,58 @@ class MarketSimulator extends Actor {
   val bidOrdersBook = new TreeSet[LimitBidOrder]()(bidsOrdering)
   val askOrdersBook = new TreeSet[LimitAskOrder]()(asksOrdering)
 
-  def handleNewOrder(newOrder: EngineOrder) {
-    newOrder match {
-      case limitBid: LimitBidOrder => {
-        println("Market: got limit bid: " + limitBid)
+//  def handleNewOrder(newOrder: EngineOrder) {
+//    newOrder match {
+//      case limitBid: LimitBidOrder => {
+//        tradingPrice = MarketRules.basicMatchingFunction(limitBid, bidOrdersBook.asInstanceOf[TreeSet[EngineOrder]], askOrdersBook, this.send[Transaction], (a, b) => a <= b, tradingPrice, (limitBid, bidOrdersBook) => {bidOrdersBook += limitBid; println("order enqueued")})
+//      }
+//      case limitAsk: LimitAskOrder => {
+//        tradingPrice = MarketRules.basicMatchingFunction(limitAsk, askOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bidOrdersBook, this.send[Transaction], (a, b) => a >= b, tradingPrice, (limitAsk, askOrdersBook) => {askOrdersBook += limitAsk; println("order enqueued")})
+//      }
+//      case marketBid: MarketBidOrder => {
+//        tradingPrice = MarketRules.basicMatchingFunction(marketBid, bidOrdersBook.asInstanceOf[TreeSet[EngineOrder]], askOrdersBook, this.send[Transaction], (a, b) => true, tradingPrice, (marketBid, bidOrdersBook) => (println("market order discarded")))
+//      }
+//
+//      case marketAsk: MarketAskOrder => {
+//        tradingPrice = MarketRules.basicMatchingFunction(marketAsk, askOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bidOrdersBook, this.send[Transaction], (a, b) => true, tradingPrice, (marketAsk, askOrdersBook) => (println("market order discarded")))
+//      }
+//
+//      case del: DelOrder => {
+//        println("Market: got Delete: " + del)
+//        // look in bids
+//        bidOrdersBook.find { x => x.oid == del.oid } match {
+//          case bidToDelete: Some[LimitBidOrder] => {
+//            println("deleted from Bids")
+//            bidOrdersBook -= bidToDelete.get
+//          }
+//          case _ => {
+//            // look in asks
+//            askOrdersBook.find { x => x.oid == del.oid } match {
+//              case askToDelete: Some[LimitAskOrder] => {
+//                println("deleted from Asks")
+//                askOrdersBook -= askToDelete.get
+//              }
+//              case _ =>
+//            }
+//          }
+//        }
+//      }
+//    }
+//  }
 
-        if (askOrdersBook.isEmpty) {
-          println("Market: ask orders book empty: enqueuing bid")
-          bidOrdersBook += limitBid
-        } else {
-
-          val testedAsk = askOrdersBook.head
-          // check if a matching order exists
-          if (testedAsk.price <= limitBid.price) {
-
-            // perfect match
-            if (testedAsk.quantity == limitBid.quantity) {
-              println("Market: perfect match with " + testedAsk)
-              // create transaction
-              dest.map { _ ! new Transaction(limitBid.price, limitBid.quantity, limitBid.timestamp, limitBid.whatC, limitBid.uid, limitBid.oid, testedAsk.uid, testedAsk.oid) }
-              // remove matched ask order
-              println("removing order: " + askOrdersBook.head + " from ask orders book.")
-              askOrdersBook -= askOrdersBook.head
-              // do nothing with matched bid - it was executed in the transaction
-              // update price
-              tradingPrice = limitBid.price
-
-            } else if (testedAsk.quantity > limitBid.quantity) {
-              println("Market: bid quantity inferior - cutting matched order")
-              // create transaction
-              dest.map { _ ! new Transaction(limitBid.price, limitBid.quantity, limitBid.timestamp, limitBid.whatC, limitBid.uid, limitBid.oid, testedAsk.uid, testedAsk.oid) }
-              // remove matched ask order and reinput it with updated volume
-              println("removing order: " + askOrdersBook.head + " from ask orders book. enqueuing same ask with " + (testedAsk.quantity - limitBid.quantity) + " volume.")
-              askOrdersBook -= askOrdersBook.head
-              askOrdersBook += new LimitAskOrder(testedAsk.uid, testedAsk.oid, testedAsk.timestamp, testedAsk.whatC, testedAsk.price, testedAsk.quantity - limitBid.quantity, testedAsk.withC)
-
-              // do nothing with matched bid - it was executed in the transaction
-              // update price
-              tradingPrice = limitBid.price
-            } else {
-              println("Market: bid quantity superior - gonna continue ")
-              // create transaction
-              dest.map { _ ! new Transaction(limitBid.price, testedAsk.quantity, limitBid.timestamp, limitBid.whatC, limitBid.uid, limitBid.oid, testedAsk.uid, testedAsk.oid) }
-              // remove matched ask order
-              println("removing order: " + askOrdersBook.head + " from ask orders book.")
-              askOrdersBook -= askOrdersBook.head
-              // call handleNewOrder on bid with updated volume
-              handleNewOrder(new LimitBidOrder(limitBid.uid, limitBid.oid, limitBid.timestamp, limitBid.whatC, limitBid.price, limitBid.quantity - testedAsk.quantity, limitBid.withC))
-              // update price
-              tradingPrice = limitBid.price
-            }
-            // no match found
-          } else {
-            println("Market: no match found - enqueuing")
-            // enqueue
-            bidOrdersBook += limitBid
-          }
-        }
+  override def receiver = {
+    
+    case limitBid: LimitBidOrder => {
+        tradingPrice = MarketRules.basicMatchingFunction(limitBid, bidOrdersBook.asInstanceOf[TreeSet[EngineOrder]], askOrdersBook, this.send[Transaction], (a, b) => a <= b, tradingPrice, (limitBid, bidOrdersBook) => {bidOrdersBook += limitBid; println("order enqueued")})
       }
       case limitAsk: LimitAskOrder => {
-        println("Market: got limit ask: " + limitAsk)
-
-        if (bidOrdersBook.isEmpty) {
-          println("Market: bid orders book empty: enqueuing ask")
-          askOrdersBook += limitAsk
-        } else {
-          // check if a matching order exists
-          val testedBid = bidOrdersBook.head
-
-          if (testedBid.price >= limitAsk.price) {
-            // perfect match
-            if (testedBid.quantity == limitAsk.quantity) {
-              println("Market: perfect match with " + testedBid)
-              // create transaction
-              dest.map { _ ! new Transaction(limitAsk.price, limitAsk.quantity, limitAsk.timestamp, limitAsk.whatC, testedBid.uid, testedBid.oid, limitAsk.uid, limitAsk.oid) }
-              // remove matched ask order
-              println("removing order: " + bidOrdersBook.head + " from bid orders book.")
-              bidOrdersBook -= bidOrdersBook.head
-              // do nothing with matched ask - it was executed in the transaction
-              // update price
-              tradingPrice = limitAsk.price
-            } else if (testedBid.quantity > limitAsk.quantity) {
-              println("Market: ask quantity inferior - cutting matched order")
-              // create transaction
-              dest.map { _ ! new Transaction(limitAsk.price, limitAsk.quantity, limitAsk.timestamp, limitAsk.whatC, testedBid.uid, testedBid.oid, limitAsk.uid, limitAsk.oid) }
-              // remove matched bid order and reinput it with updated volume
-              println("removing order: " + bidOrdersBook.head + " from bid orders book. enqueuing same ask with " + (testedBid.quantity - limitAsk.quantity) + " volume.")
-              bidOrdersBook -= bidOrdersBook.head
-              bidOrdersBook += new LimitBidOrder(testedBid.uid, testedBid.oid, testedBid.timestamp, testedBid.whatC, testedBid.price, testedBid.quantity - limitAsk.quantity, testedBid.withC)
-              // do nothing with matched ask - it was executed in the transaction
-              // update price
-              tradingPrice = limitAsk.price
-            } else {
-              println("Market: ask quantity superior - gonna continue ")
-              // create transaction
-              dest.map { _ ! new Transaction(limitAsk.price, testedBid.quantity, limitAsk.timestamp, limitAsk.whatC, testedBid.uid, testedBid.oid, limitAsk.uid, limitAsk.oid) }
-              // remove matched bid order
-              println("removing order: " + bidOrdersBook.head + " from bid orders book.")
-              bidOrdersBook -= bidOrdersBook.head
-              // call handleNewOrder on ask with updated volume
-              handleNewOrder(new LimitBidOrder(limitAsk.uid, limitAsk.oid, limitAsk.timestamp, limitAsk.whatC, limitAsk.price, limitAsk.quantity - testedBid.quantity, limitAsk.withC))
-              // update price
-              tradingPrice = limitAsk.price
-            }
-            // no match found
-          } else {
-            println("Market: no match found - enqueuing")
-            // enqueue
-            askOrdersBook += limitAsk
-          }
-        }
+        tradingPrice = MarketRules.basicMatchingFunction(limitAsk, askOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bidOrdersBook, this.send[Transaction], (a, b) => a >= b, tradingPrice, (limitAsk, askOrdersBook) => {askOrdersBook += limitAsk; println("order enqueued")})
       }
       case marketBid: MarketBidOrder => {
-        println("Market: got market bid: " + marketBid)
-        if (askOrdersBook.isEmpty) {
-          println("Market: ask orders book empty: discarding market bid order")
-        } else {
-          val testedAsk = askOrdersBook.head
-          // check if a matching order exists
-          if (testedAsk.price <= marketBid.price) {
-
-            // perfect match
-            if (testedAsk.quantity == marketBid.quantity) {
-              println("Market: perfect match with " + testedAsk)
-              // create transaction
-              dest.map { _ ! new Transaction(testedAsk.price, marketBid.quantity, marketBid.timestamp, marketBid.whatC, marketBid.uid, marketBid.oid, testedAsk.uid, testedAsk.oid) }
-              // remove matched ask order
-              println("removing order: " + askOrdersBook.head + " from ask orders book.")
-              askOrdersBook -= askOrdersBook.head
-              // do nothing with matched bid - it was executed in the transaction
-              // update price
-              tradingPrice = testedAsk.price
-
-            } else if (testedAsk.quantity > marketBid.quantity) {
-              println("Market: bid quantity inferior - cutting matched order")
-              // create transaction
-              dest.map { _ ! new Transaction(testedAsk.price, marketBid.quantity, marketBid.timestamp, marketBid.whatC, marketBid.uid, marketBid.oid, testedAsk.uid, testedAsk.oid) }
-              // remove matched ask order and reinput it with updated volume
-              println("removing order: " + askOrdersBook.head + " from ask orders book. enqueuing same ask with " + (testedAsk.quantity - marketBid.quantity) + " volume.")
-              askOrdersBook -= askOrdersBook.head
-              askOrdersBook += new LimitAskOrder(testedAsk.uid, testedAsk.oid, testedAsk.timestamp, testedAsk.whatC, testedAsk.price, testedAsk.quantity - marketBid.quantity, testedAsk.withC)
-
-              // do nothing with matched bid - it was executed in the transaction
-              // update price
-              tradingPrice = testedAsk.price
-            } else {
-              println("Market: bid quantity superior - gonna continue ")
-              // create transaction
-              dest.map { _ ! new Transaction(testedAsk.price, testedAsk.quantity, marketBid.timestamp, marketBid.whatC, marketBid.uid, marketBid.oid, testedAsk.uid, testedAsk.oid) }
-              // remove matched ask order
-              println("removing order: " + askOrdersBook.head + " from ask orders book.")
-              askOrdersBook -= askOrdersBook.head
-              // call handleNewOrder on bid with updated volume
-              handleNewOrder(new MarketBidOrder(marketBid.uid, marketBid.oid, marketBid.timestamp, marketBid.whatC, testedAsk.price, marketBid.quantity - testedAsk.quantity, marketBid.withC))
-              // update price
-              tradingPrice = testedAsk.price
-            }
-            // no match found
-          }
-        }
+        tradingPrice = MarketRules.basicMatchingFunction(marketBid, bidOrdersBook.asInstanceOf[TreeSet[EngineOrder]], askOrdersBook, this.send[Transaction], (a, b) => true, tradingPrice, (marketBid, bidOrdersBook) => (println("market order discarded")))
       }
-      
       case marketAsk: MarketAskOrder => {
-        println("Market: got market ask: " + marketAsk)
-
-        if (bidOrdersBook.isEmpty) {
-          println("Market: bid orders book empty: discarding ask")
-        } else {
-          // check if a matching order exists
-          val testedBid = bidOrdersBook.head
-
-          if (testedBid.price >= marketAsk.price) {
-            // perfect match
-            if (testedBid.quantity == marketAsk.quantity) {
-              println("Market: perfect match with " + testedBid)
-              // create transaction
-              dest.map { _ ! new Transaction(testedBid.price, marketAsk.quantity, marketAsk.timestamp, marketAsk.whatC, testedBid.uid, testedBid.oid, marketAsk.uid, marketAsk.oid) }
-              // remove matched ask order
-              println("removing order: " + bidOrdersBook.head + " from bid orders book.")
-              bidOrdersBook -= bidOrdersBook.head
-              // do nothing with matched ask - it was executed in the transaction
-              // update price
-              tradingPrice = testedBid.price
-            } else if (testedBid.quantity > marketAsk.quantity) {
-              println("Market: ask quantity inferior - cutting matched order")
-              // create transaction
-              dest.map { _ ! new Transaction(testedBid.price, marketAsk.quantity, marketAsk.timestamp, marketAsk.whatC, testedBid.uid, testedBid.oid, marketAsk.uid, marketAsk.oid) }
-              // remove matched bid order and reinput it with updated volume
-              println("removing order: " + bidOrdersBook.head + " from bid orders book. enqueuing same ask with " + (testedBid.quantity - marketAsk.quantity) + " volume.")
-              bidOrdersBook -= bidOrdersBook.head
-              bidOrdersBook += new LimitBidOrder(testedBid.uid, testedBid.oid, testedBid.timestamp, testedBid.whatC, testedBid.price, testedBid.quantity - marketAsk.quantity, testedBid.withC)
-              // do nothing with matched ask - it was executed in the transaction
-              // update price
-              tradingPrice = testedBid.price
-            } else {
-              println("Market: ask quantity superior - gonna continue ")
-              // create transaction
-              dest.map { _ ! new Transaction(testedBid.price, testedBid.quantity, marketAsk.timestamp, marketAsk.whatC, testedBid.uid, testedBid.oid, marketAsk.uid, marketAsk.oid) }
-              // remove matched bid order
-              println("removing order: " + bidOrdersBook.head + " from bid orders book.")
-              bidOrdersBook -= bidOrdersBook.head
-              // call handleNewOrder on ask with updated volume
-              handleNewOrder(new MarketAskOrder(marketAsk.uid, marketAsk.oid, marketAsk.timestamp, marketAsk.whatC, testedBid.price, marketAsk.quantity - testedBid.quantity, marketAsk.withC))
-              // update price
-              tradingPrice = testedBid.price
-            }
-            // no match found
-          }
-        }
+        tradingPrice = MarketRules.basicMatchingFunction(marketAsk, askOrdersBook.asInstanceOf[TreeSet[EngineOrder]], bidOrdersBook, this.send[Transaction], (a, b) => true, tradingPrice, (marketAsk, askOrdersBook) => (println("market order discarded")))
       }
 
       case del: DelOrder => {
@@ -279,14 +122,6 @@ class MarketSimulator extends Actor {
           }
         }
       }
-    }
-  }
-
-  def receive = {
-
-    case order: EngineOrder    => handleNewOrder(order)
-
-    case newListener: ActorRef => dest = newListener :: dest
 
     case PrintBooks => {
       // print shows heap order (binary tree)
@@ -298,6 +133,6 @@ class MarketSimulator extends Actor {
       sender ! Books(bidOrdersBook, askOrdersBook, tradingPrice)
     }
 
-    case _ => println("got unknown")
+    case _ => println("Market: got unknown")
   }
 }
