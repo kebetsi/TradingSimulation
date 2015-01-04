@@ -1,51 +1,64 @@
 package ch.epfl.main
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
 import ch.epfl.ts.component.fetch.SimulatorBackLoop
 import ch.epfl.ts.component.persist.OrderPersistor
-import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
+import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
 import ch.epfl.ts.data.OrderType._
-import ch.epfl.ts.data.{Order, Transaction}
-import ch.epfl.ts.engine.{LimitAskOrder, LimitBidOrder, DelOrder, MarketSimulator}
-import ch.epfl.ts.traders.SobiTrader
+import ch.epfl.ts.data.{ Order, Transaction }
+import ch.epfl.ts.engine.{ EngineOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder, MarketSimulator }
+import ch.epfl.ts.component.persist.TransactionPersistor
+import ch.epfl.ts.component.{ComponentBuilder, Component}
+import scala.reflect.ClassTag
+import ch.epfl.ts.component.utils.Printer
+import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.traders.{SobiTrader, SimpleTrader}
+
+class MarketConnector extends Component {
+
+  override def receiver = {
+    case o: Order => {
+      println("Connector: " + System.currentTimeMillis + ", " + o.toString)
+      o.orderType match {
+        case BID => send(new LimitBidOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
+        case ASK => send(new LimitAskOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
+        case DEL => send(new DelOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
+        case _   => println("Printer: order with unknown type received")
+      }
+    }
+    case _ => {
+      print("Connector: unknown thing received: ")
+    }
+  }
+}
 
 object ReplayOrdersLoop {
 
-  class MarketConnector(out: List[ActorRef]) extends Actor {
-    override def receive = {
-      case o: Order => {
-        println("Connector: " + System.currentTimeMillis + ", " + o.toString)
-        o.orderType match {
-          case BID => out.map { _ ! new LimitBidOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency) }
-          case ASK => out.map { _ ! new LimitAskOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency) }
-          case DEL => out.map { _ ! new DelOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency) }
-          case _   => println("Printer: order with unknown type received")
-        }
-      }
-      case _ => {
-        print("Connector: unknown thing received: ")
-      }
-    }
-  }
-
   def main(args: Array[String]) {
-    val initTime = 28320299L
-    val compression = 0.00001
-    val system = ActorSystem("ReplayFinanceSystem")
-    val market = system.actorOf(Props(classOf[MarketSimulator]))
-    val connector = system.actorOf(Props(classOf[MarketConnector], List(market)))
-    val persistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
-    persistor.init()
-    val replay = system.actorOf(Props(classOf[Replay[Order]], persistor, List(connector), ReplayConfig(initTime, compression)))
-    //    val transactionsPersistor = system.actorOf(Props(new TransactionPersistorImpl("persistance")))
-    //    val transactionsPersistor = system.actorOf(Props(classOf[TransactionPersistorImpl],"persistance"))
+    val initTime = 25210389L
+    val compression = 0.001
+    implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
+    val market = builder.createRef(Props(classOf[MarketSimulator]))
+    val connector = builder.createRef(Props(classOf[MarketConnector]))
+    val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
+    financePersistor.init()
+    val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
+    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 3000, 2, 700.0, 50, 100.0))
+    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 10000, 50.0))
+    val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
 
-//    (market: ActorRef, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double)
-    val sobiTrader = system.actorOf(Props(classOf[SobiTrader], market, 3000, 2, 700.0, 50, 100.0))
-    //    val pusher = system.actorOf(Props(classOf[SimulatorPushFetchImpl[Transaction]], List(market), List(sobiTrader, transactionsPersistor)))
-    val pusher = system.actorOf(Props(classOf[SimulatorBackLoop[Transaction]], List(market), List(sobiTrader)))
+    replayer.addDestination(connector, classOf[Order])
+    connector.addDestination(market, classOf[LimitAskOrder])
+    connector.addDestination(market, classOf[LimitBidOrder])
+    connector.addDestination(market, classOf[DelOrder])
+    simpleTrader.addDestination(market, classOf[MarketBidOrder])
+    simpleTrader.addDestination(market, classOf[MarketAskOrder])
+    //        market.addDestination(pusher, classOf[Transaction])
+    market.addDestination(printer, classOf[Transaction])
+    sobiTrader.addDestination(market, classOf[LimitBidOrder])
+    sobiTrader.addDestination(market, classOf[LimitAskOrder])
 
-    pusher ! "Start" // sends his ActorRef to source (here market)
-    replay ! "Start"
+    builder.start
   }
+
 }
