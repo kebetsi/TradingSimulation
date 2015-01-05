@@ -21,7 +21,7 @@ object ReplayOrdersLoop {
     val initTime = 25210389L
     val compression = 0.001
     implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
-    val market = builder.createRef(Props(classOf[MarketSimulator], MarketRules()))
+    val market = builder.createRef(Props(classOf[MarketSimulator], new MarketRules()))
     val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
     val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))

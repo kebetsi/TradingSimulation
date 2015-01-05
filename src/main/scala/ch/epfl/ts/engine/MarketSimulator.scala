@@ -29,8 +29,8 @@ class MarketSimulator(rules: MarketRules) extends Component {
    */
   var tradingPrice: Double = 185000.0 // set for SobiTrader when using with finance.csv
 
-  val bidOrdersBook = new TreeSet[LimitBidOrder]()(rules.bidOrdersBookPriority)
-  val askOrdersBook = new TreeSet[LimitAskOrder]()(rules.askOrdersBookPriority)
+  val bidOrdersBook = new TreeSet[LimitBidOrder]()(rules.bidsOrdering)
+  val askOrdersBook = new TreeSet[LimitAskOrder]()(rules.asksOrdering)
 
   override def receiver = {
     case limitBid: LimitBidOrder => {

@@ -44,7 +44,7 @@ object MarketSimulatorTest {
     //    val market = system.actorOf(Props(new MarketSimulator), "market")
 
     implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
-    val market = builder.createRef(Props(classOf[MarketSimulator], MarketRules()))
+    val market = builder.createRef(Props(classOf[MarketSimulator], new MarketRules()))
     val tester = builder.createRef(Props(classOf[testOrdersSender]))
     val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
     market.addDestination(printer, classOf[Transaction])
