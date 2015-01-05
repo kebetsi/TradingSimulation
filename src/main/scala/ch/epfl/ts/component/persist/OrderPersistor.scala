@@ -1,30 +1,37 @@
 package ch.epfl.ts.component.persist
 
-import ch.epfl.ts.data.{Currency, Order, OrderType}
-
+import ch.epfl.ts.data.{ Currency, OrderType, Order, LimitBidOrder, LimitAskOrder, MarketBidOrder, MarketAskOrder, DelOrder }
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
-import scala.slick.lifted.{Column, TableQuery, Tag}
+import scala.slick.lifted.{ Column, TableQuery, Tag }
+import ch.epfl.ts.data.OrderType._
+import ch.epfl.ts.data.Currency._
+
+case class PersistorOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double, val orderType: OrderType) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
 
 /**
  * Implementation of the Persistance trait for Order
  */
 class OrderPersistor(dbFilename: String) extends Persistance[Order] {
 
-  class Orders(tag: Tag) extends Table[(Int, Long, Double, Double, Long, String, String)](tag, "ORDERS") {
-    def * = (id, externalId, price, quantity, timestamp, currency, orderType)
-    def id: Column[Int] = column[Int]("ORD_ID", O.PrimaryKey, O.AutoInc)
-    def externalId: Column[Long] = column[Long]("EXT_ID")
-    def price: Column[Double] = column[Double]("PRICE")
-    def quantity: Column[Double] = column[Double]("QUANTITY")
+  val nullStringValue = "NULL"
+
+  class Orders(tag: Tag) extends Table[(Int, Long, Long, Long, String, String, Double, Double, String)](tag, "ORDERS") {
+    def * = (id, oid, uid, timestamp, whatC, withC, volume, price, orderType)
+    def id: Column[Int] = column[Int]("ID", O.PrimaryKey, O.AutoInc)
+    def oid: Column[Long] = column[Long]("ORDER_ID")
+    def uid: Column[Long] = column[Long]("USER_ID")
     def timestamp: Column[Long] = column[Long]("TIMESTAMP")
-    def currency: Column[String] = column[String]("CURRENCY")
+    def whatC: Column[String] = column[String]("WHAT_C")
+    def withC: Column[String] = column[String]("WITH_C")
+    def volume: Column[Double] = column[Double]("VOLUME")
+    def price: Column[Double] = column[Double]("PRICE")
     def orderType: Column[String] = column[String]("ORDER_TYPE")
   }
 
-  type OrderEntry = (Int, Long, Double, Double, Long, String, String)
+  type OrderEntry = (Int, Long, Long, Long, String, String, Double, Double, String)
   lazy val order = TableQuery[Orders]
   val db = Database.forURL("jdbc:sqlite:" + dbFilename + ".db", driver = "org.sqlite.JDBC")
 
@@ -44,7 +51,14 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
    */
   def save(newOrder: Order) = {
     db.withDynSession {
-      order +=(1, newOrder.id, newOrder.price, newOrder.quantity, newOrder.timestamp, newOrder.currency.toString, newOrder.orderType.toString) // AutoInc are implicitly ignored
+      newOrder match {
+        case la: LimitAskOrder  => order += (1, la.oid, la.uid, la.timestamp, la.whatC.toString, la.withC.toString, la.volume, la.price, LIMIT_ASK.toString)
+        case lb: LimitBidOrder  => order += (1, lb.oid, lb.uid, lb.timestamp, lb.whatC.toString, lb.withC.toString, lb.volume, lb.price, LIMIT_BID.toString)
+        case mb: MarketBidOrder => order += (1, mb.oid, mb.uid, mb.timestamp, mb.whatC.toString, mb.withC.toString, mb.volume, 0, MARKET_BID.toString)
+        case ma: MarketAskOrder => order += (1, ma.oid, ma.uid, ma.timestamp, ma.whatC.toString, ma.withC.toString, ma.volume, 0, MARKET_ASK.toString)
+        case del: DelOrder      => order += (1, del.oid, del.uid, del.timestamp, nullStringValue, nullStringValue, 0, 0, DEL.toString)
+        case _                  => println(dbFilename + " Persistor: save error")
+      }
     }
   }
 
@@ -53,7 +67,16 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
    */
   def save(os: List[Order]) = {
     db.withDynSession {
-      order ++= os.toIterable.map { x => (1, x.id, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString)}
+      //      order ++= os.toIterable.map { x => (1, x.id, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString) }
+      order ++= os.toIterable.map { x =>
+        x match {
+          case la: LimitAskOrder  => (1, la.oid, la.uid, la.timestamp, la.whatC.toString, la.withC.toString, la.volume, la.price, LIMIT_ASK.toString)
+          case lb: LimitBidOrder  => (1, lb.oid, lb.uid, lb.timestamp, lb.whatC.toString, lb.withC.toString, lb.volume, lb.price, LIMIT_BID.toString)
+          case mb: MarketBidOrder => (1, mb.oid, mb.uid, mb.timestamp, mb.whatC.toString, mb.withC.toString, mb.volume, 0.0, MARKET_BID.toString)
+          case ma: MarketAskOrder => (1, ma.oid, ma.uid, ma.timestamp, ma.whatC.toString, ma.withC.toString, ma.volume, 0.0, MARKET_ASK.toString)
+          case del: DelOrder      => (1, del.oid, del.uid, del.timestamp, nullStringValue, nullStringValue, 0.0, 0.0, DEL.toString)
+        }
+      }
     }
   }
 
@@ -63,7 +86,14 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
   def loadSingle(id: Int): Order /*Option[Order]*/ = {
     db.withDynSession {
       val r = order.filter(_.id === id).invoker.firstOption.get
-      return Order(r._2, r._3, r._4, r._5, Currency.withName(r._6), OrderType.withName(r._7))
+      OrderType.withName(r._9) match {
+        case LIMIT_BID  => return LimitBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8)
+        case LIMIT_ASK  => return LimitAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8)
+        case MARKET_BID => return MarketBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0)
+        case MARKET_ASK => return MarketAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0)
+        case DEL        => return DelOrder(r._2, r._3, r._4, DEF, DEF, 0.0, 0.0)
+        case _          => println(dbFilename + " Persistor: loadSingle error"); return null
+      }
     }
   }
 
@@ -73,7 +103,16 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
     var res: List[Order] = List()
     db.withDynSession {
-      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Order(r._2, r._3, r._4, r._5, Currency.withName(r._6), OrderType.withName(r._7)) :: res}
+      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r =>
+        OrderType.withName(r._9) match {
+          case LIMIT_BID  => res = LimitBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8) :: res
+          case LIMIT_ASK  => res = LimitAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8) :: res
+          case MARKET_BID => res = MarketBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0) :: res
+          case MARKET_ASK => res = MarketAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0) :: res
+          case DEL        => res = DelOrder(r._2, r._3, r._4, DEF, DEF, 0.0, 0.0) :: res
+          case _          => println(dbFilename + " Persistor: loadBatch error")
+        }
+      }
     }
     return res
   }

@@ -1,14 +1,14 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{Order, OrderType, Transaction}
+import ch.epfl.ts.data.{Order, OrderType, Transaction, LimitAskOrder, LimitBidOrder}
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 
 class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000
-  var latest = new Transaction(0.0, 0.0, 0, USD, 0, 0, 0, 0)
+  var latest = new Transaction(0.0, 0.0, 0, BTC, USD, 0, 0, 0, 0)
   
   override def interval(): Int = 12000
 
@@ -56,7 +56,7 @@ class BtceAPI(from: Currency, to: Currency) {
     }
 
     if (t.length != 0) {
-      t.map(f => new Transaction(f.price, f.amount, f.date * 1000, USD, 0, 0, 0, 0))
+      t.map(f => new Transaction(f.price, f.amount, f.date * 1000, BTC, USD, 0, 0, 0, 0))
     } else {
       List[Transaction]()
     }
@@ -70,11 +70,11 @@ class BtceAPI(from: Currency, to: Currency) {
       val a = parse(json).extract[Map[String, List[List[Double]]]]
       
       val asks = a.get("asks") match {
-        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.ASK))
+//        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.ASK))
         case _ => List[Order]()
       }
       val bids = a.get("bids") match {
-        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.BID))
+//        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.BID))
         case _ => List[Order]()
       }
       t = asks ++ bids

@@ -11,7 +11,7 @@ class BitfinexTransactionPullFetcherComponent(val name: String) extends PullFetc
 class BitfinexTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BitfinexAPI(USD, BTC)
   var count = 2000
-  var latest = new Transaction(0.0, 0.0, 0, USD, 0, 0, 0, 0)
+  var latest = new Transaction(0.0, 0.0, 0, BTC, USD, 0, 0, 0, 0)
 
   override def interval(): Int = 12000
 
@@ -46,7 +46,7 @@ class BitfinexAPI(from: Currency, to: Currency){
     val t = parse(json).extract[List[BitfinexCaseTransaction]]
 
     if (t.length != 0) {
-      t.map(f => new Transaction(f.price.toDouble, f.amount.toDouble, f.timestamp, USD, 0, 0, 0, 0))
+      t.map(f => new Transaction(f.price.toDouble, f.amount.toDouble, f.timestamp, BTC, USD, 0, 0, 0, 0))
     } else {
       List[Transaction]()
     }

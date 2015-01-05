@@ -5,27 +5,29 @@ import ch.epfl.ts.component.fetch.SimulatorBackLoop
 import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
 import ch.epfl.ts.data.OrderType._
-import ch.epfl.ts.data.{ Order, Transaction }
-import ch.epfl.ts.engine.{ EngineOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder, MarketSimulator }
+import ch.epfl.ts.data.{ Order }
+import ch.epfl.ts.engine.{ MarketSimulator, MarketRules }
 import ch.epfl.ts.component.persist.TransactionPersistor
-import ch.epfl.ts.component.{ComponentBuilder, Component}
+import ch.epfl.ts.component.{ ComponentBuilder, Component }
 import scala.reflect.ClassTag
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.traders.{SobiTrader, SimpleTrader}
-import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.traders.{ SobiTrader, SimpleTrader }
+import ch.epfl.ts.data.{LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder, Transaction}
+import ch.epfl.ts.data.Transaction
 
 class MarketConnector extends Component {
 
   override def receiver = {
     case o: Order => {
       println("Connector: " + System.currentTimeMillis + ", " + o.toString)
-      o.orderType match {
-        case BID => send(new LimitBidOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
-        case ASK => send(new LimitAskOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
-        case DEL => send(new DelOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
-        case _   => println("Printer: order with unknown type received")
-      }
+      send(o)
+//      o.orderType match {
+//        case BID => send(new LimitBidOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
+//        case ASK => send(new LimitAskOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
+//        case DEL => send(new DelOrder(1, o.id, o.timestamp, o.currency, o.price, o.quantity, o.currency))
+//        case _   => println("Printer: order with unknown type received")
+//      }
     }
     case _ => {
       print("Connector: unknown thing received: ")
@@ -36,6 +38,7 @@ class MarketConnector extends Component {
 object ReplayOrdersLoop {
 
   def main(args: Array[String]) {
+    println("dwaddwadwawwa")
     val initTime = 25210389L
     val compression = 0.001
     implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
@@ -56,6 +59,9 @@ object ReplayOrdersLoop {
     simpleTrader.addDestination(market, classOf[MarketAskOrder])
     //        market.addDestination(pusher, classOf[Transaction])
     market.addDestination(printer, classOf[Transaction])
+    market.addDestination(printer, classOf[LimitBidOrder])
+    market.addDestination(printer, classOf[LimitAskOrder])
+    market.addDestination(printer, classOf[DelOrder])
     sobiTrader.addDestination(market, classOf[LimitBidOrder])
     sobiTrader.addDestination(market, classOf[LimitAskOrder])
 

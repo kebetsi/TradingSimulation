@@ -1,32 +1,33 @@
 package ch.epfl.ts.component.persist
 
-import ch.epfl.ts.data.{Currency, Transaction}
+import ch.epfl.ts.data.{ Currency, Transaction }
 
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
-import scala.slick.lifted.{Column, TableQuery, Tag}
+import scala.slick.lifted.{ Column, TableQuery, Tag }
 
 /**
  * Implementation of the Persistance trait for Transaction
  */
 class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] {
 
-  class Transactions(tag: Tag) extends Table[(Int, Double, Double, Long, String, Long, Long, Long, Long)](tag, "TRANSACTIONS") {
-    def * = (id, price, quantity, timestamp, currency, buyerId, buyerOrderId, sellerId, sellerOrderId)
-    def id: Column[Int] = column[Int]("TRANSACTION_ID", O.PrimaryKey, O.AutoInc)
+  class Transactions(tag: Tag) extends Table[(Int, Double, Double, Long, String, String, Long, Long, Long, Long)](tag, "TRANSACTIONS") {
+    def * = (id, price, volume, timestamp, whatC, withC, buyerId, buyerOrderId, sellerId, sellerOrderId)
+    def id: Column[Int] = column[Int]("ID", O.PrimaryKey, O.AutoInc)
     def price: Column[Double] = column[Double]("PRICE")
-    def quantity: Column[Double] = column[Double]("QUANTITY")
+    def volume: Column[Double] = column[Double]("QUANTITY")
     def timestamp: Column[Long] = column[Long]("TIMESTAMP")
-    def currency: Column[String] = column[String]("CURRENCY")
+    def whatC: Column[String] = column[String]("WHAT_C")
+    def withC: Column[String] = column[String]("WITH_C")
     def buyerId: Column[Long] = column[Long]("BUYER_ID")
     def buyerOrderId: Column[Long] = column[Long]("BUYER_ORDER_ID")
     def sellerId: Column[Long] = column[Long]("SELLER_ID")
     def sellerOrderId: Column[Long] = column[Long]("SELLER_ORDER_ID")
   }
 
-  type TransactionEntry = (Int, Double, Double, Long, String, Long, Long, Long, Long)
+  type TransactionEntry = (Int, Double, Double, Long, String, String, Long, Long, Long, Long)
   lazy val transaction = TableQuery[Transactions]
   val db = Database.forURL("jdbc:sqlite:" + dbFilename + ".db", driver = "org.sqlite.JDBC")
 
@@ -46,7 +47,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
    */
   def save(newTransaction: Transaction) = {
     db.withDynSession {
-      transaction +=(1, newTransaction.price, newTransaction.quantity, newTransaction.timestamp, newTransaction.currency.toString, newTransaction.buyerId, newTransaction.buyOrderId, newTransaction.sellerId, newTransaction.sellOrderId) // AutoInc are implicitly ignored
+      transaction += (1, newTransaction.price, newTransaction.volume, newTransaction.timestamp, newTransaction.whatC.toString, newTransaction.withC.toString, newTransaction.buyerId, newTransaction.buyOrderId, newTransaction.sellerId, newTransaction.sellOrderId) // AutoInc are implicitly ignored
     }
   }
 
@@ -55,7 +56,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
    */
   def save(ts: List[Transaction]) = {
     db.withDynSession {
-      transaction ++= ts.toIterable.map { x => (1, x.price, x.quantity, x.timestamp, x.currency.toString, x.buyerId, x.buyOrderId, x.sellerId, x.sellOrderId)}
+      transaction ++= ts.toIterable.map { x => (1, x.price, x.volume, x.timestamp, x.whatC.toString, x.withC.toString, x.buyerId, x.buyOrderId, x.sellerId, x.sellOrderId) }
     }
   }
 
@@ -65,7 +66,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
   def loadSingle(id: Int): Transaction = {
     db.withDynSession {
       val r = transaction.filter(_.id === id).invoker.firstOption.get
-      return Transaction(r._2, r._3, r._4, Currency.withName(r._5), r._6, r._7, r._8, r._9)
+      return Transaction(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8, r._9, r._10)
     }
   }
 
@@ -75,7 +76,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
   def loadBatch(startTime: Long, endTime: Long): List[Transaction] = {
     var res: List[Transaction] = List()
     db.withDynSession {
-      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Transaction(r._2, r._3, r._4, Currency.withName(r._5), r._6, r._7, r._8, r._9) :: res}
+      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Transaction(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8, r._9, r._10) :: res }
     }
     res
   }

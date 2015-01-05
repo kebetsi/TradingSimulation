@@ -6,9 +6,7 @@ import scala.concurrent.duration.DurationInt
 import ch.epfl.ts.engine.RetrieveBooks
 import ch.epfl.ts.engine.Books
 import scala.collection.mutable.PriorityQueue
-import ch.epfl.ts.engine.EngineOrder
-import ch.epfl.ts.engine.LimitBidOrder
-import ch.epfl.ts.engine.LimitAskOrder
+import ch.epfl.ts.data.{Order, LimitAskOrder, LimitBidOrder}
 import ch.epfl.ts.data.Currency._
 import scala.collection.mutable.TreeSet
 import ch.epfl.ts.component.StartSignal
@@ -37,13 +35,13 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
         baseOrderId = baseOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (b.tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        send(new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, b.tradingPrice - priceDelta, orderVolume, USD))
+        send(new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, USD, orderVolume, b.tradingPrice - priceDelta))
       }
       if ((bi - si) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (b.tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        send(new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, b.tradingPrice + priceDelta, orderVolume, USD))
+        send(new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, USD, orderVolume, b.tradingPrice + priceDelta))
       }
     }
 
@@ -58,15 +56,15 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
   /**
    * compute the volume-weighted average price of the top quartile*25% of the volume of the bids/asks orders book
    */
-  def computeBiOrSi[T <: EngineOrder](bids: TreeSet[T]): Double = {
+  def computeBiOrSi[T <: Order](bids: TreeSet[T]): Double = {
     if (bids.size > 4) {
       val it = bids.iterator
       var bi: Double = 0.0
       var vol: Double = 0
       for (i <- 0 to ((bids.size * quartile) / 4)) {
         val currentBidOrder = it.next()
-        bi = bi + currentBidOrder.price * currentBidOrder.quantity
-        vol = vol + currentBidOrder.quantity
+        bi = bi + currentBidOrder.price * currentBidOrder.volume
+        vol = vol + currentBidOrder.volume
       }
       bi / vol
     } else {
