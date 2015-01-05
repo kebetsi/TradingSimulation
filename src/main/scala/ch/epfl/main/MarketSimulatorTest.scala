@@ -16,17 +16,17 @@ class testOrdersSender extends Component {
     case StartSignal() => {
       //      send(new LimitAskOrder(1, 1, 1, USD, 90, 50, USD))
 
-      send(new LimitBidOrder(2, 1, 8, USD, USD, 90, 100))
+      send(new LimitBidOrder(2, 1, 8, USD, USD, 100, 90))
 
       //      send(MarketAskOrder(3, 1, 2, USD, 0, 50, USD))
       //            send(MarketBidOrder(3, 1, 2, USD, 0, 50, USD))
-      send(LimitAskOrder(1, 3, 3, USD, USD, 110, 50))
-      send(LimitAskOrder(1, 3, 1, USD, USD, 110, 50))
-      send(LimitAskOrder(1, 4, 4, USD, USD, 120, 50))
-      send(LimitAskOrder(1, 5, 5, USD, USD, 110, 50))
-      send(LimitAskOrder(1, 6, 6, USD, USD, 140, 50))
-      send(LimitAskOrder(1, 7, 7, USD, USD, 80, 50))
-      send(LimitAskOrder(1, 2, 2, USD, USD, 90, 50))
+      send(LimitAskOrder(1, 3, 3, USD, USD, 50, 110))
+      send(LimitAskOrder(1, 3, 1, USD, USD, 50, 110))
+      send(LimitAskOrder(1, 4, 4, USD, USD, 50, 120))
+      send(LimitAskOrder(1, 5, 5, USD, USD, 50, 110))
+      send(LimitAskOrder(1, 6, 6, USD, USD, 50, 140))
+      send(LimitAskOrder(1, 7, 7, USD, USD, 50, 80))
+      send(LimitAskOrder(1, 2, 2, USD, USD, 50, 90))
 
     }
     case _ => {
