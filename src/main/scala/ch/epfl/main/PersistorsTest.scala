@@ -9,8 +9,8 @@ import ch.epfl.ts.data.MarketAskOrder
 object PersistorsTest {
 
   def main(args: Array[String]) {
-    basicTest
-    //    financeOrdersTest
+//    basicTest
+        financeOrdersTest
   }
 
   def financeOrdersTest = {

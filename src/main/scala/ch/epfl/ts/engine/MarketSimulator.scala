@@ -48,7 +48,6 @@ class MarketSimulator(rules: MarketRules) extends Component {
 
     case del: DelOrder => {
       println("Market: got Delete: " + del)
-      println("Market: sending del")
       send(del)
       // look in bids
       bidOrdersBook.find { x => x.oid == del.oid } match {

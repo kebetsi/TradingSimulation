@@ -6,16 +6,21 @@ import scala.concurrent.duration.DurationInt
 import ch.epfl.ts.engine.RetrieveBooks
 import ch.epfl.ts.engine.Books
 import scala.collection.mutable.PriorityQueue
-import ch.epfl.ts.data.{Order, LimitAskOrder, LimitBidOrder}
+import ch.epfl.ts.data.{ Order, LimitAskOrder, LimitBidOrder, DelOrder, Transaction }
 import ch.epfl.ts.data.Currency._
 import scala.collection.mutable.TreeSet
 import ch.epfl.ts.component.StartSignal
+import ch.epfl.ts.engine.MarketRules
 
-case class FetchBooks()
-
-class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double)
+class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double, rules: MarketRules)
   extends Component {
   import context._
+
+  case class PossibleOrder()
+  
+  val bidsOrdersBook = new TreeSet[LimitBidOrder]()(rules.bidsOrdering)
+  val asksOrdersBook = new TreeSet[LimitAskOrder]()(rules.asksOrdering)
+  var tradingPrice = 0.0
 
   var bi: Double = 0.0
   var si: Double = 0.0
@@ -23,25 +28,27 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
   var baseOrderId: Long = 456789
 
   override def receiver = {
-    case StartSignal() => start
+    case StartSignal()            => start
 
-    case FetchBooks =>
-      send(RetrieveBooks)
+    case limitAsk: LimitAskOrder  => asksOrdersBook += limitAsk
+    case limitBid: LimitBidOrder  => bidsOrdersBook += limitBid
+    case delete: DelOrder         => removeOrder(delete)
+    case transaction: Transaction => tradingPrice = transaction.price
 
-    case b: Books => {
-      bi = computeBiOrSi(b.bids)
-      si = computeBiOrSi(b.asks)
+    case b: PossibleOrder => {
+      bi = computeBiOrSi(bidsOrdersBook)
+      si = computeBiOrSi(asksOrdersBook)
       if ((si - bi) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
-        println("SobiTrader: making buy order: price=" + (b.tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        send(new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, USD, orderVolume, b.tradingPrice - priceDelta))
+        println("SobiTrader: making buy order: price=" + (tradingPrice - priceDelta) + ", volume=" + orderVolume)
+        send(new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
       }
       if ((bi - si) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
-        println("SobiTrader: making sell order: price=" + (b.tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        send(new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, USD, orderVolume, b.tradingPrice + priceDelta))
+        println("SobiTrader: making sell order: price=" + (tradingPrice + priceDelta) + ", volume=" + orderVolume)
+        send(new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
       }
     }
 
@@ -50,7 +57,25 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
 
   def start = {
     println("SobiTrader: Started")
-    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, FetchBooks)
+    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder)
+  }
+
+  def removeOrder(order: Order) = {
+    // look in bids
+    bidsOrdersBook.find { x => x.oid == order.oid } match {
+      case bidToDelete: Some[LimitBidOrder] => {
+        bidsOrdersBook -= bidToDelete.get
+      }
+      case _ => {
+        // look in asks
+        asksOrdersBook.find { x => x.oid == order.oid } match {
+          case askToDelete: Some[LimitAskOrder] => {
+            asksOrdersBook -= askToDelete.get
+          }
+          case _ =>
+        }
+      }
+    }
   }
 
   /**

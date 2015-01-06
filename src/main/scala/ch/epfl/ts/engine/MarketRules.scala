@@ -7,7 +7,7 @@ import ch.epfl.ts.data.Currency._
 /**
  * represents the cost of placing a bid and market order
  */
-case class Commission(limitOrder: Double, marketOrder: Double)
+case class Commission(limitOrderFee: Double, marketOrderFee: Double)
 
 /**
  * Market Simulator Configuration class. Defines the orders books priority implementation, the matching function and the commission costs of limit and market orders.
