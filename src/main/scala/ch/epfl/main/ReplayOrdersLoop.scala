@@ -5,7 +5,7 @@ import ch.epfl.ts.component.fetch.SimulatorBackLoop
 import ch.epfl.ts.component.persist.{ TransactionPersistor, OrderPersistor }
 import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
 import ch.epfl.ts.data.OrderType._
-import ch.epfl.ts.engine.{ MarketSimulator, MarketRules, Looper }
+import ch.epfl.ts.engine.{ MarketSimulator, MarketRules, BackLoop }
 import ch.epfl.ts.component.{ ComponentBuilder, Component }
 import scala.reflect.ClassTag
 import ch.epfl.ts.component.utils.Printer
@@ -15,7 +15,6 @@ import ch.epfl.ts.data.{ Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, Ma
 object ReplayOrdersLoop {
 
   def main(args: Array[String]) {
-    println("dwaddwadwawwa")
     val initTime = 25210389L
     val compression = 0.001
     val rules = new MarketRules()
@@ -29,7 +28,7 @@ object ReplayOrdersLoop {
     val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 3000, 2, 700.0, 50, 100.0, rules))
     val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 10000, 50.0))
     val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
-    val backloop = builder.createRef(Props(classOf[Looper], transactionsPersistor))
+    val backloop = builder.createRef(Props(classOf[BackLoop], transactionsPersistor))
     val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 10000))
 
     replayer.addDestination(market, classOf[Order])

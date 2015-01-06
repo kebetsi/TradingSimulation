@@ -11,16 +11,16 @@ import ch.epfl.ts.data.DelOrder
  * Backloop component, plugged as Market Simulator's output. Saves the transactions in a persistor.
  * distributes the transactions and delta orders to the trading agents
  */
-class Looper(p: Persistance[Transaction]) extends Component {
+class BackLoop(p: Persistance[Transaction]) extends Component {
 
   override def receiver = {
     case t: Transaction => {
       p.save(t)
       send(t)
     }
-    case la: LimitAskOrder => send(la) //; println("Looper: sendin " + la)
-    case lb: LimitBidOrder => send(lb) //; println("Looper: sendin " + lb)
-    case d: DelOrder       => send(d) //; println("Looper: sendin " + d)
+    case la: LimitAskOrder => send(la)
+    case lb: LimitBidOrder => send(lb)
+    case d: DelOrder       => send(d)
     case _                 => println("Looper: received unknown")
   }
 }
