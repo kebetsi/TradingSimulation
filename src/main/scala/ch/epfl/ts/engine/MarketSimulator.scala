@@ -12,16 +12,6 @@ import ch.epfl.ts.component.Component
  */
 case class PrintBooks()
 
-/**
- * message sent to retrieve the contents of ask and bid orders books
- */
-case class RetrieveBooks()
-
-/**
- * a tuple containing the bid and ask orders books and the last trading price
- */
-case class Books(bids: TreeSet[LimitBidOrder], asks: TreeSet[LimitAskOrder], tradingPrice: Double)
-
 class MarketSimulator(rules: MarketRules) extends Component {
 
   /**
@@ -72,10 +62,6 @@ class MarketSimulator(rules: MarketRules) extends Component {
       // print shows heap order (binary tree)
       println("Ask Orders Book: " + askOrdersBook)
       println("Bid Orders Book: " + bidOrdersBook)
-    }
-
-    case RetrieveBooks => {
-      sender ! Books(bidOrdersBook, askOrdersBook, tradingPrice)
     }
 
     case _ => println("Market: got unknown")
