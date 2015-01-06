@@ -10,7 +10,6 @@ import scala.reflect.ClassTag
 
 case class ReplayConfig(initTimeMs: Long, compression: Double)
 
-
 class Replay[T: ClassTag](p: Persistance[T], conf: ReplayConfig) extends Component {
   import context._
   case class Tick()

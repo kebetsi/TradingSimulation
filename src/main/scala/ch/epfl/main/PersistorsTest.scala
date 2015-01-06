@@ -16,7 +16,7 @@ object PersistorsTest {
   def financeOrdersTest = {
     val persistor = new OrderPersistor("finance")
     persistor.init()
-    persistor.loadBatch(25210389, 25252541).map { x => println(x) }
+    persistor.loadBatch(25210389, 25211389).map { x => println(x) }
   }
 
   def basicTest = {

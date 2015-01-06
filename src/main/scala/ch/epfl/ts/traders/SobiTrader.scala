@@ -3,8 +3,6 @@ package ch.epfl.ts.traders
 import akka.actor.ActorRef
 import ch.epfl.ts.component.Component
 import scala.concurrent.duration.DurationInt
-import ch.epfl.ts.engine.RetrieveBooks
-import ch.epfl.ts.engine.Books
 import scala.collection.mutable.PriorityQueue
 import ch.epfl.ts.data.{ Order, LimitAskOrder, LimitBidOrder, DelOrder, Transaction }
 import ch.epfl.ts.data.Currency._
@@ -17,10 +15,10 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
   import context._
 
   case class PossibleOrder()
-  
+
   val bidsOrdersBook = new TreeSet[LimitBidOrder]()(rules.bidsOrdering)
   val asksOrdersBook = new TreeSet[LimitAskOrder]()(rules.asksOrdering)
-  var tradingPrice = 0.0
+  var tradingPrice = 188700.0 // for finance.csv
 
   var bi: Double = 0.0
   var si: Double = 0.0
@@ -56,8 +54,7 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
   }
 
   def start = {
-    println("SobiTrader: Started")
-    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder)
+    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder())
   }
 
   def removeOrder(order: Order) = {

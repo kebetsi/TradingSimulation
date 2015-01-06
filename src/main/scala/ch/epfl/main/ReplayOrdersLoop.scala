@@ -9,11 +9,8 @@ import ch.epfl.ts.engine.{ MarketSimulator, MarketRules, Looper }
 import ch.epfl.ts.component.{ ComponentBuilder, Component }
 import scala.reflect.ClassTag
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.traders.{ SobiTrader, SimpleTrader }
+import ch.epfl.ts.traders.{ SobiTrader, SimpleTrader, TransactionVwapTrader }
 import ch.epfl.ts.data.{ Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder, Transaction }
-import ch.epfl.ts.data.LimitAskOrder
-import ch.epfl.ts.data.LimitBidOrder
-import ch.epfl.ts.data.DelOrder
 
 object ReplayOrdersLoop {
 
@@ -27,15 +24,15 @@ object ReplayOrdersLoop {
     val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
     val transactionsPersistor = new TransactionPersistor("ReplayTransactions")
+    transactionsPersistor.init()
     val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
     val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 3000, 2, 700.0, 50, 100.0, rules))
     val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 10000, 50.0))
     val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
     val backloop = builder.createRef(Props(classOf[Looper], transactionsPersistor))
+    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 10000))
 
-    replayer.addDestination(market, classOf[LimitAskOrder])
-    replayer.addDestination(market, classOf[LimitBidOrder])
-    replayer.addDestination(market, classOf[DelOrder])
+    replayer.addDestination(market, classOf[Order])
     simpleTrader.addDestination(market, classOf[MarketBidOrder])
     simpleTrader.addDestination(market, classOf[MarketAskOrder])
     sobiTrader.addDestination(market, classOf[LimitBidOrder])
@@ -47,6 +44,9 @@ object ReplayOrdersLoop {
     backloop.addDestination(sobiTrader, classOf[LimitAskOrder])
     backloop.addDestination(sobiTrader, classOf[LimitBidOrder])
     backloop.addDestination(sobiTrader, classOf[DelOrder])
+    backloop.addDestination(transactionVwap, classOf[Transaction])
+    transactionVwap.addDestination(market, classOf[MarketAskOrder])
+    transactionVwap.addDestination(market, classOf[MarketBidOrder])
     
     builder.start
   }
