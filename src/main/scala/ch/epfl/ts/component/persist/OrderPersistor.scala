@@ -1,8 +1,7 @@
 package ch.epfl.ts.component.persist
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.OrderType._
-import ch.epfl.ts.data.{Currency, DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, OrderType}
+import ch.epfl.ts.data.{Currency, DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order}
 
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
@@ -10,12 +9,24 @@ import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
 
+object OrderType extends Enumeration {
+  type OrderType = Value
+  val LIMIT_BID = Value("LB")
+  val LIMIT_ASK = Value("LA")
+  val MARKET_BID = Value("MB")
+  val MARKET_ASK = Value("MA")
+  val DEL = Value("D")
+}
+import OrderType._
+
+
 case class PersistorOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double, val orderType: OrderType) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
 
 /**
  * Implementation of the Persistance trait for Order
  */
 class OrderPersistor(dbFilename: String) extends Persistance[Order] {
+
 
   val nullStringValue = "NULL"
 
