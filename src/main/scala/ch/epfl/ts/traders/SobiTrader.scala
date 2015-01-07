@@ -40,13 +40,13 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
         baseOrderId = baseOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        send(new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
+        send(new LimitBidOrder(baseOrderId, myId, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
       }
       if ((bi - si) > theta) {
         baseOrderId = baseOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        send(new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
+        send(new LimitAskOrder(baseOrderId, myId, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
       }
     }
 
