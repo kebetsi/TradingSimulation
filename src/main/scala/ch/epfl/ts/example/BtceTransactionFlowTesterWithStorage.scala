@@ -1,10 +1,10 @@
 package ch.epfl.ts.example
 
 import akka.actor.Props
+import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.fetch.{BtceTransactionPullFetcher, PullFetchComponent}
 import ch.epfl.ts.component.persist.{Persistor, TransactionPersistor}
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.data.Transaction
 
 import scala.reflect.ClassTag

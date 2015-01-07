@@ -2,7 +2,7 @@ package ch.epfl.ts.component.fetch
 
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{Order, OrderType, Transaction}
+import ch.epfl.ts.data.Transaction
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 

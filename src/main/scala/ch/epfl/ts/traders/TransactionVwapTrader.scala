@@ -1,14 +1,10 @@
 package ch.epfl.ts.traders
 
-import akka.actor.Actor
-import akka.actor.ActorRef
-import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.component.Component
-import scala.concurrent.duration.DurationInt
-import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.component.{Component, StartSignal}
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.component.StartSignal
+import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Transaction}
+
+import scala.concurrent.duration.DurationInt
 
 class TransactionVwapTrader(timeFrameMillis: Int) extends Component {
   import context._

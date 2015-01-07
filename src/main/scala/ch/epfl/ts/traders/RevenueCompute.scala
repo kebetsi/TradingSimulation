@@ -12,7 +12,8 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   case class Wallet(var shares: Double = 0.0, var money: Double = 0.0)
 
   var wallets = Map[Long, Wallet]()
-  var tradingPrice: Double = 0.0
+  var oldTradingPrice: Double = 0.0
+  var currentTradingPrice: Double = 0.0
 
   def receiver = {
     case StartSignal()  => startScheduler
@@ -22,7 +23,7 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   }
 
   def process(t: Transaction) = {
-    tradingPrice = t.price
+    currentTradingPrice = t.price
     // buyer has more shares but less money
     val buyerWallet = wallets.getOrElse(t.buyerId, Wallet())
     buyerWallet.money = buyerWallet.money - t.volume * t.price
@@ -37,9 +38,13 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   }
 
   def display = {
-    println("Stats:")
-    wallets.keys.map { x => println("uid: " + x + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * tradingPrice)) }
-    
+    println("Stats: trading price=" + currentTradingPrice + ", change=" + computePriceEvolution + " %")
+    wallets.keys.map { x => println("uid: " + x + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice)) }
+    oldTradingPrice = currentTradingPrice
+  }
+  
+  def computePriceEvolution: Double = {
+    (currentTradingPrice - oldTradingPrice) / oldTradingPrice
   }
 
   def startScheduler = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())

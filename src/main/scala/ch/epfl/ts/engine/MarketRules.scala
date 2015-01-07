@@ -1,8 +1,9 @@
 package ch.epfl.ts.engine
 
-import scala.collection.mutable.TreeSet
-import ch.epfl.ts.data.{ Message, Transaction, Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder }
 import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Streamable, Transaction}
+
+import scala.collection.mutable.TreeSet
 
 /**
  * represents the cost of placing a bid and market order
@@ -34,8 +35,8 @@ class MarketRules {
   }
 
   def alwaysTrue(a: Double, b: Double) = true
-
-  def matchingFunction(newOrder: Order, newOrdersBook: TreeSet[Order], bestMatchsBook: TreeSet[Order], send: Message => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, TreeSet[Order]) => Unit): Double = {
+  
+  def matchingFunction(newOrder: Order, newOrdersBook: TreeSet[Order], bestMatchsBook: TreeSet[Order], send: Streamable => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, TreeSet[Order]) => Unit): Double = {
     println("MS: got new order: " + newOrder)
 
     if (bestMatchsBook.isEmpty) {

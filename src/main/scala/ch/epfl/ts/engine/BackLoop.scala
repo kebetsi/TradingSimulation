@@ -1,11 +1,8 @@
 package ch.epfl.ts.engine
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.{ Transaction, Order }
 import ch.epfl.ts.component.persist.Persistance
-import ch.epfl.ts.data.LimitAskOrder
-import ch.epfl.ts.data.LimitBidOrder
-import ch.epfl.ts.data.DelOrder
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, Transaction}
 
 /**
  * Backloop component, plugged as Market Simulator's output. Saves the transactions in a persistor.

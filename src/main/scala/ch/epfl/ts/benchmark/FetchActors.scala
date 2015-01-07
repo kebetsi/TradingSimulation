@@ -1,7 +1,6 @@
 package ch.epfl.ts.benchmark
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import ch.epfl.ts.data.{Currency, Transaction}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.io.Source

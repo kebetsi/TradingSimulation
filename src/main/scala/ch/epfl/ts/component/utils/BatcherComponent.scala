@@ -1,6 +1,7 @@
 package ch.epfl.ts.component.utils
 
 import ch.epfl.ts.component.Component
+
 import scala.reflect.ClassTag
 
 case class BatchSize(size: Int)

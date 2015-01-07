@@ -1,10 +1,10 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.component.Component
-import scala.concurrent.duration.DurationInt
-import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder}
+import ch.epfl.ts.component.{Component, StartSignal}
 import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Order}
+
+import scala.concurrent.duration.DurationInt
 
 case class SendMarketOrder()
 
@@ -22,10 +22,10 @@ class SimpleTrader(intervalMillis: Int, orderVolume: Double) extends Component {
     case SendMarketOrder => {
       if (alternate % 2 == 0) {
         println("SimpleTrader: sending market bid order")
-        send(new MarketBidOrder(orderId, uid, System.currentTimeMillis(), USD, USD, 50, 0))
+        send[Order](new MarketBidOrder(orderId, uid, System.currentTimeMillis(), USD, USD, 50, 0))
       } else {
         println("SimpleTrader: sending market ask order")
-        send(new MarketAskOrder(orderId, uid, System.currentTimeMillis(), USD, USD, 0, 50))
+        send[Order](new MarketAskOrder(orderId, uid, System.currentTimeMillis(), USD, USD, 0, 50))
       }
       alternate = alternate + 1
       orderId = orderId + 1

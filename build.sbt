@@ -1,6 +1,5 @@
+import sbt.Keys._
 import sbt._
-import Process._
-import Keys._
 
 name := "TradingSimProject"
 

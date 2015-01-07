@@ -2,7 +2,8 @@ package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ Order, OrderType, LimitBidOrder, LimitAskOrder, DelOrder }
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder}
+
 import scala.io.Source
 
 object CSVFetcherImpl {

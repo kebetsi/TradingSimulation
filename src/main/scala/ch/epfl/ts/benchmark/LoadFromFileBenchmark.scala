@@ -1,13 +1,11 @@
 package ch.epfl.ts.benchmark
 
 import java.io._
-import ch.epfl.ts.data.{ Currency, Transaction }
+
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+
 import scala.io.Source
 import scala.util.Random
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.actor.ActorRef
 
 /**
  * Benchmarking reading data from a csv file, parsing it and instantiating Transaction objects from it

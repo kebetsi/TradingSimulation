@@ -1,12 +1,12 @@
 package ch.epfl.ts.component.persist
 
-import ch.epfl.ts.data.{ Currency, Transaction }
+import ch.epfl.ts.data.{Currency, Transaction}
 
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
-import scala.slick.lifted.{ Column, TableQuery, Tag }
+import scala.slick.lifted.{Column, TableQuery, Tag}
 
 /**
  * Implementation of the Persistance trait for Transaction

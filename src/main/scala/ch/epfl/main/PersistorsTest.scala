@@ -1,10 +1,8 @@
 package ch.epfl.main
 
-import ch.epfl.ts.component.persist.{ OrderPersistor, TransactionPersistor, TweetPersistor }
+import ch.epfl.ts.component.persist.{OrderPersistor, TransactionPersistor, TweetPersistor}
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.OrderType._
-import ch.epfl.ts.data.{ Order, Transaction, Tweet, DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder }
-import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Transaction, Tweet}
 
 object PersistorsTest {
 
