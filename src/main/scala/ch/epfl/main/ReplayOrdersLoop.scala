@@ -1,16 +1,15 @@
 package ch.epfl.main
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, Props }
-import ch.epfl.ts.component.fetch.SimulatorBackLoop
-import ch.epfl.ts.component.persist.{ TransactionPersistor, OrderPersistor }
-import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
-import ch.epfl.ts.data.OrderType._
-import ch.epfl.ts.engine.{ MarketSimulator, MarketRules, BackLoop }
-import ch.epfl.ts.component.{ ComponentBuilder, Component }
-import scala.reflect.ClassTag
+import akka.actor.Props
+import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.component.persist.{OrderPersistor, TransactionPersistor}
+import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.traders.{ SobiTrader, SimpleTrader, TransactionVwapTrader }
-import ch.epfl.ts.data.{ Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder, Transaction }
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction}
+import ch.epfl.ts.engine.{BackLoop, MarketRules, MarketSimulator}
+import ch.epfl.ts.traders.{SimpleTrader, SobiTrader, TransactionVwapTrader}
+
+import scala.reflect.ClassTag
 
 object ReplayOrdersLoop {
 
@@ -32,10 +31,8 @@ object ReplayOrdersLoop {
     val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 10000))
 
     replayer.addDestination(market, classOf[Order])
-    simpleTrader.addDestination(market, classOf[MarketBidOrder])
-    simpleTrader.addDestination(market, classOf[MarketAskOrder])
-    sobiTrader.addDestination(market, classOf[LimitBidOrder])
-    sobiTrader.addDestination(market, classOf[LimitAskOrder])
+    simpleTrader.addDestination(market, classOf[Order])
+    sobiTrader.addDestination(market, classOf[Order])
     market.addDestination(backloop, classOf[Transaction])
     market.addDestination(backloop, classOf[LimitBidOrder])
     market.addDestination(backloop, classOf[LimitAskOrder])

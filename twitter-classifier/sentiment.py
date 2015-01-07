@@ -1,9 +1,11 @@
-import csv, random
+import csv
+import random
 import nltk
 import re
 import pickle
 import sys
 from collections import Counter
+
 
 class SentimentUtils:
 	

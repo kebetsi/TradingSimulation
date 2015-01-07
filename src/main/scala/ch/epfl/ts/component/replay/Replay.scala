@@ -1,9 +1,8 @@
 package ch.epfl.ts.component.replay
 
 import akka.actor.Cancellable
-import ch.epfl.ts.component.{StopSignal, StartSignal, Component}
 import ch.epfl.ts.component.persist.Persistance
-import ch.epfl.ts.data.{Order, Transaction, Tweet}
+import ch.epfl.ts.component.{Component, StartSignal, StopSignal}
 
 import scala.concurrent.duration.DurationLong
 import scala.reflect.ClassTag

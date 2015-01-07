@@ -1,6 +1,7 @@
 package ch.epfl.ts.component.persist
 
 import ch.epfl.ts.component.Component
+
 import scala.reflect.ClassTag
 
 /**

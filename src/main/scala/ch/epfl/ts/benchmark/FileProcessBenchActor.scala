@@ -1,7 +1,7 @@
 package ch.epfl.ts.benchmark
 
-import akka.actor.{Props,ActorRef}
-import ch.epfl.ts.component.{Component, ComponentBuilder}
+import akka.actor.ActorRef
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Transaction
 
 object FileProcessBenchActor {

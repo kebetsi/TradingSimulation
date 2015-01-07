@@ -1,13 +1,10 @@
 package ch.epfl.main
 
-import akka.actor.{ ActorSystem, Props }
-import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.engine.PrintBooks
-import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.component.Component
+import akka.actor.Props
+import ch.epfl.ts.component.{Component, ComponentBuilder, StartSignal}
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.data.{Transaction, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, DelOrder}
+import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.{LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Transaction}
 import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
 
 class testOrdersSender extends Component {

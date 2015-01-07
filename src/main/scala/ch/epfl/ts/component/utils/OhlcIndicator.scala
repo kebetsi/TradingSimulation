@@ -1,7 +1,7 @@
 package ch.epfl.ts.component.utils
 
-import ch.epfl.ts.component.Component
-import ch.epfl.ts.component.StartSignal
+import ch.epfl.ts.component.{Component, StartSignal}
+
 import scala.concurrent.duration.DurationInt
 
 case class OHLC(open: Double, high: Double, low: Double, close: Double)

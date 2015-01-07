@@ -1,7 +1,7 @@
 package ch.epfl.ts.component.utils
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.{ Order, Tweet, Transaction, DelOrder, LimitAskOrder, LimitBidOrder }
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, Transaction, Tweet}
 
 /**
  * Simple printer component for Transactions.

@@ -1,10 +1,10 @@
 package ch.epfl.ts.benchmark
 
 import ch.epfl.ts.component.fetch.PullFetch
-import ch.epfl.ts.data.{Currency, Transaction}
 import ch.epfl.ts.data.Currency._
-import scala.io.Source
 import ch.epfl.ts.data.Transaction
+
+import scala.io.Source
 
 class PullFetchBenchmarkImpl extends PullFetch[Transaction] {
   override def interval = 12000 * 1000 * 1000

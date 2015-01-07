@@ -1,6 +1,7 @@
 package ch.epfl.ts.component
 
 import akka.actor.{Actor, ActorRef, ActorSystem}
+
 import scala.reflect.ClassTag
 
 case class StartSignal()

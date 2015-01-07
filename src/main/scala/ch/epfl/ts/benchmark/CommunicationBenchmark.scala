@@ -1,23 +1,9 @@
 package ch.epfl.ts.benchmark
 
-import java.net.Socket
-import java.net.ServerSocket
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.SocketAddress
-import java.net.InetAddress
-import java.io.BufferedOutputStream
-import java.io.PrintStream
-import akka.actor.Actor
-import akka.actor.ActorRef
-import akka.actor.ActorSystem
-import akka.actor.Props
-import java.io.ObjectOutputStream
-import java.io.ObjectInputStream
-import java.io.BufferedInputStream
-import java.io.PrintWriter
-import java.io.File
-import java.io.FileOutputStream
+import java.io.{BufferedInputStream, BufferedOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.net.{ServerSocket, Socket}
+
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
 /**
  * Compares message transferring throughput between Java Sockets (serialized Tuples over Buffered socket) and akka Actors.
