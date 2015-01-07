@@ -11,6 +11,7 @@ import scala.reflect.ClassTag
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.traders.{ SobiTrader, SimpleTrader, TransactionVwapTrader }
 import ch.epfl.ts.data.{ Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder, Transaction }
+import ch.epfl.ts.traders.RevenueCompute
 
 object ReplayOrdersLoop {
 
@@ -30,23 +31,30 @@ object ReplayOrdersLoop {
     val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
     val backloop = builder.createRef(Props(classOf[BackLoop], transactionsPersistor))
     val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 10000))
+    val display = builder.createRef(Props(classOf[RevenueCompute], 5000))
 
     replayer.addDestination(market, classOf[Order])
+    //    simpleTrader.addDestination(market, classOf[Order])
     simpleTrader.addDestination(market, classOf[MarketBidOrder])
     simpleTrader.addDestination(market, classOf[MarketAskOrder])
+    //    sobiTrader.addDestination(market, classOf[Order])
     sobiTrader.addDestination(market, classOf[LimitBidOrder])
     sobiTrader.addDestination(market, classOf[LimitAskOrder])
     market.addDestination(backloop, classOf[Transaction])
+    //    market.addDestination(backloop, classOf[Order])
     market.addDestination(backloop, classOf[LimitBidOrder])
     market.addDestination(backloop, classOf[LimitAskOrder])
     market.addDestination(backloop, classOf[DelOrder])
+    market.addDestination(display, classOf[Transaction])
+    //    backloop.addDestination(sobiTrader, classOf[Order])
     backloop.addDestination(sobiTrader, classOf[LimitAskOrder])
     backloop.addDestination(sobiTrader, classOf[LimitBidOrder])
     backloop.addDestination(sobiTrader, classOf[DelOrder])
     backloop.addDestination(transactionVwap, classOf[Transaction])
+    //    transactionVwap.addDestination(market, classOf[Order])
     transactionVwap.addDestination(market, classOf[MarketAskOrder])
     transactionVwap.addDestination(market, classOf[MarketBidOrder])
-    
+
     builder.start
   }
 
