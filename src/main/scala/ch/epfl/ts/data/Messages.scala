@@ -47,13 +47,13 @@ case class Transaction(price: Double, volume: Double, timestamp: Long, whatC: Cu
  */
 abstract class Order(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double) extends Streamable
 
-case class LimitOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+abstract class LimitOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
 
 case class LimitBidOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends LimitOrder(oid, uid, timestamp, whatC, withC, volume, price)
 
 case class LimitAskOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends LimitOrder(oid, uid, timestamp, whatC, withC, volume, price)
 
-case class MarketOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+abstract class MarketOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
 
 case class MarketBidOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends MarketOrder(oid, uid, timestamp, whatC, withC, volume, price)
 
