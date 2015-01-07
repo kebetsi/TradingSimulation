@@ -36,10 +36,10 @@ class MarketRules {
   def alwaysTrue(a: Double, b: Double) = true
 
   def matchingFunction(newOrder: Order, newOrdersBook: TreeSet[Order], bestMatchsBook: TreeSet[Order], send: Message => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, TreeSet[Order]) => Unit): Double = {
-    println("Market: got new order: " + newOrder)
+    println("MS: got new order: " + newOrder)
 
     if (bestMatchsBook.isEmpty) {
-      println("Market: matching orders book empty")
+      println("MS: matching orders book empty")
       enqueueOrElse(newOrder, newOrdersBook)
       return oldTradingPrice
     } else {
@@ -50,7 +50,7 @@ class MarketRules {
 
         // perfect match
         if (bestMatch.volume == newOrder.volume) {
-          println("Market: volume match with " + bestMatch)
+          println("MS: volume match with " + bestMatch)
           // send transaction
           if (bestMatch.isInstanceOf[LimitBidOrder]) {
             send(Transaction(bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
@@ -60,7 +60,7 @@ class MarketRules {
             println("error")
           }
           // remove matched order
-          println("removing order: " + bestMatch + " from bestMatch orders book.")
+          println("MS: removing order: " + bestMatch + " from bestMatch orders book.")
           bestMatchsBook -= bestMatch
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
@@ -68,9 +68,9 @@ class MarketRules {
           return bestMatch.price
 
         } else if (bestMatch.volume > newOrder.volume) {
-          println("Market: matched with " + bestMatch + ", new order volume inferior - cutting matched order.")
+          println("MS: matched with " + bestMatch + ", new order volume inferior - cutting matched order.")
           // remove matched order and reinput it with updated volume
-          println("removing order: " + bestMatch + " from match orders book. enqueuing same order with " + (bestMatch.volume - newOrder.volume) + " volume.")
+          println("MS: removing order: " + bestMatch + " from match orders book. enqueuing same order with " + (bestMatch.volume - newOrder.volume) + " volume.")
           bestMatchsBook -= bestMatch
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
@@ -92,9 +92,9 @@ class MarketRules {
           // update price
           return bestMatch.price
         } else {
-          println("Market: matched with " + bestMatch + ", new order volume superior - reiterate")
+          println("MS: matched with " + bestMatch + ", new order volume superior - reiterate")
           // remove matched ask order
-          println("removing order: " + bestMatch + " from match orders book.")
+          println("MS: removing order: " + bestMatch + " from match orders book.")
           bestMatchsBook -= bestMatch
           // send diff
           send(DelOrder(bestMatch.uid, bestMatch.oid, bestMatch.timestamp, DEF, DEF, 0.0, 0.0))
@@ -123,7 +123,7 @@ class MarketRules {
         }
         // no match found
       } else {
-        println("Market: no match found - enqueuing")
+        println("MS: no match found - enqueuing")
         // enqueue
         enqueueOrElse(newOrder, newOrdersBook.asInstanceOf[TreeSet[Order]])
         return oldTradingPrice

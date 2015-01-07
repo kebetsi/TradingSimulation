@@ -1,7 +1,7 @@
 package ch.epfl.ts.engine
 
 import scala.collection.mutable.PriorityQueue
-import ch.epfl.ts.data.{Message, Transaction, Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder}
+import ch.epfl.ts.data.{ Message, Transaction, Order, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, DelOrder }
 import akka.actor.Actor
 import akka.actor.ActorRef
 import scala.collection.mutable.TreeSet
@@ -24,32 +24,32 @@ class MarketSimulator(rules: MarketRules) extends Component {
 
   override def receiver = {
     case limitBid: LimitBidOrder => {
-      tradingPrice = rules.matchingFunction(limitBid.asInstanceOf[Order], bidOrdersBook.asInstanceOf[TreeSet[Order]], askOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => a <= b, tradingPrice, (limitBid, bidOrdersBook) => { bidOrdersBook += limitBid; send(limitBid); println("order enqueued") })
+      tradingPrice = rules.matchingFunction(limitBid.asInstanceOf[Order], bidOrdersBook.asInstanceOf[TreeSet[Order]], askOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => a <= b, tradingPrice, (limitBid, bidOrdersBook) => { bidOrdersBook += limitBid; send(limitBid); println("MS: order enqueued") })
     }
     case limitAsk: LimitAskOrder => {
-      tradingPrice = rules.matchingFunction(limitAsk.asInstanceOf[Order], askOrdersBook.asInstanceOf[TreeSet[Order]], bidOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => a >= b, tradingPrice, (limitAsk, askOrdersBook) => { askOrdersBook += limitAsk; send(limitAsk); println("order enqueued") })
+      tradingPrice = rules.matchingFunction(limitAsk.asInstanceOf[Order], askOrdersBook.asInstanceOf[TreeSet[Order]], bidOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => a >= b, tradingPrice, (limitAsk, askOrdersBook) => { askOrdersBook += limitAsk; send(limitAsk); println("MS: order enqueued") })
     }
     case marketBid: MarketBidOrder => {
-      tradingPrice = rules.matchingFunction(marketBid.asInstanceOf[Order], bidOrdersBook.asInstanceOf[TreeSet[Order]], askOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => true, tradingPrice, (marketBid, bidOrdersBook) => (println("market order discarded")))
+      tradingPrice = rules.matchingFunction(marketBid.asInstanceOf[Order], bidOrdersBook.asInstanceOf[TreeSet[Order]], askOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => true, tradingPrice, (marketBid, bidOrdersBook) => (println("MS: market order discarded")))
     }
     case marketAsk: MarketAskOrder => {
-      tradingPrice = rules.matchingFunction(marketAsk.asInstanceOf[Order], askOrdersBook.asInstanceOf[TreeSet[Order]], bidOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => true, tradingPrice, (marketAsk, askOrdersBook) => (println("market order discarded")))
+      tradingPrice = rules.matchingFunction(marketAsk.asInstanceOf[Order], askOrdersBook.asInstanceOf[TreeSet[Order]], bidOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Message], (a, b) => true, tradingPrice, (marketAsk, askOrdersBook) => (println("MS: market order discarded")))
     }
 
     case del: DelOrder => {
-      println("Market: got Delete: " + del)
+      println("MS: got Delete: " + del)
       send(del)
       // look in bids
       bidOrdersBook.find { x => x.oid == del.oid } match {
         case bidToDelete: Some[LimitBidOrder] => {
-          println("deleted from Bids")
+          println("MS: order deleted from Bids")
           bidOrdersBook -= bidToDelete.get
         }
         case _ => {
           // look in asks
           askOrdersBook.find { x => x.oid == del.oid } match {
             case askToDelete: Some[LimitAskOrder] => {
-              println("deleted from Asks")
+              println("MS: order deleted from Asks")
               askOrdersBook -= askToDelete.get
             }
             case _ =>
@@ -64,6 +64,6 @@ class MarketSimulator(rules: MarketRules) extends Component {
       println("Bid Orders Book: " + bidOrdersBook)
     }
 
-    case _ => println("Market: got unknown")
+    case _ => println("MS: got unknown")
   }
 }
