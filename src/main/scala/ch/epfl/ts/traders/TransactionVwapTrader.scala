@@ -1,8 +1,8 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.{ Component, StartSignal }
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Transaction}
+import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Transaction }
 
 import scala.concurrent.duration.DurationInt
 
@@ -38,10 +38,12 @@ class TransactionVwapTrader(timeFrameMillis: Int) extends Component {
       computeVWAP
       if (tradingPrice > vwap) {
         // sell
+        println("TransactionVWAPTrader: sending market ask order")
         send(MarketAskOrder(oid, uid, System.currentTimeMillis(), USD, USD, volumeToTrade, 0))
         oid = oid + 1
       } else {
         // buy
+        println("TransactionVWAPTrader: sending market bid order")
         send(MarketBidOrder(oid, uid, System.currentTimeMillis(), USD, USD, volumeToTrade, 0))
         oid = oid + 1
       }
