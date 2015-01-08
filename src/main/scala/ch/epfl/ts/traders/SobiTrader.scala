@@ -1,8 +1,8 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.{ Component, StartSignal }
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, Order, Transaction}
+import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, Order, Transaction }
 import ch.epfl.ts.engine.MarketRules
 
 import scala.collection.mutable.TreeSet
@@ -20,8 +20,8 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
 
   var bi: Double = 0.0
   var si: Double = 0.0
-  val myId = 123
-  var baseOrderId: Long = 456789
+  val sobiTraderUserId = 123
+  var currentOrderId: Long = 456789
 
   override def receiver = {
     case StartSignal()            => start
@@ -35,16 +35,16 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
       bi = computeBiOrSi(bidsOrdersBook)
       si = computeBiOrSi(asksOrdersBook)
       if ((si - bi) > theta) {
-        baseOrderId = baseOrderId + 1
+        currentOrderId = currentOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        send[Order](new LimitBidOrder(myId, baseOrderId, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
+        send[Order](LimitBidOrder(currentOrderId, sobiTraderUserId, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
       }
       if ((bi - si) > theta) {
-        baseOrderId = baseOrderId + 1
+        currentOrderId = currentOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        send[Order](new LimitAskOrder(myId, baseOrderId, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
+        send[Order](LimitAskOrder(currentOrderId, sobiTraderUserId, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
       }
     }
 
