@@ -2,14 +2,13 @@ package ch.epfl.main
 
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.persist.{OrderPersistor, TransactionPersistor}
-import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
+import ch.epfl.ts.component.persist.{ OrderPersistor, TransactionPersistor }
+import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.traders.RevenueCompute
-import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction}
-import ch.epfl.ts.engine.{BackLoop, MarketRules, MarketSimulator}
-import ch.epfl.ts.traders.{SimpleTrader, SobiTrader, TransactionVwapTrader}
-
+import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction }
+import ch.epfl.ts.engine.{ BackLoop, MarketRules, MarketSimulator }
+import ch.epfl.ts.traders.{ SimpleTrader, SobiTrader, TransactionVwapTrader }
 import scala.reflect.ClassTag
 
 object ReplayOrdersLoop {
@@ -33,15 +32,18 @@ object ReplayOrdersLoop {
     val display = builder.createRef(Props(classOf[RevenueCompute], 5000))
 
     replayer.addDestination(market, classOf[Order])
-    simpleTrader.addDestination(market, classOf[Order])
-    sobiTrader.addDestination(market, classOf[Order])
+    //    simpleTrader.addDestination(market, classOf[Order])
+    simpleTrader.addDestination(market, classOf[MarketAskOrder])
+    simpleTrader.addDestination(market, classOf[MarketBidOrder])
+//    sobiTrader.addDestination(market, classOf[Order])
+    sobiTrader.addDestination(market, classOf[LimitBidOrder])
+    sobiTrader.addDestination(market, classOf[LimitAskOrder])
     market.addDestination(backloop, classOf[Transaction])
     //    market.addDestination(backloop, classOf[Order])
     market.addDestination(backloop, classOf[LimitBidOrder])
     market.addDestination(backloop, classOf[LimitAskOrder])
     market.addDestination(backloop, classOf[DelOrder])
     market.addDestination(display, classOf[Transaction])
-    //    backloop.addDestination(sobiTrader, classOf[Order])
     backloop.addDestination(sobiTrader, classOf[LimitAskOrder])
     backloop.addDestination(sobiTrader, classOf[LimitBidOrder])
     backloop.addDestination(sobiTrader, classOf[DelOrder])
