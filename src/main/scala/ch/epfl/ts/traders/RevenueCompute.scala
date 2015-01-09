@@ -38,11 +38,12 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   }
 
   def display = {
-    println(f"Stats: trading price=" + currentTradingPrice + ", change= $computePriceEvolution%.2f %")
+    val changeInPrice: Double = (currentTradingPrice - oldTradingPrice) / oldTradingPrice
+    println(f"Stats: trading price=$currentTradingPrice%s, change=$changeInPrice%.2f %%")
     wallets.keys.map { x => println("Stats: uid: " + x + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice)) }
     oldTradingPrice = currentTradingPrice
   }
-  
+
   def computePriceEvolution: Double = {
     (currentTradingPrice - oldTradingPrice) / oldTradingPrice
   }
