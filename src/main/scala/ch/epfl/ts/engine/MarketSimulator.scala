@@ -55,6 +55,8 @@ class MarketSimulator(rules: MarketRules) extends Component {
         }
       }
     }
+    
+    case t:Transaction => tradingPrice = t.price
 
     case PrintBooks => {
       // print shows heap order (binary tree)
