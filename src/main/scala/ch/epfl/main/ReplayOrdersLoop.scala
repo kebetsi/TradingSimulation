@@ -28,7 +28,7 @@ object ReplayOrdersLoop {
     val compression = 0.001
     val rules = new MarketRules()
     implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
-    val market = builder.createRef(Props(classOf[MarketSimulator], rules))
+    val market = builder.createRef(Props(classOf[MarketSimulator], 1L, rules))
     val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
     val transactionsPersistor = new TransactionPersistor("ReplayTransactions")

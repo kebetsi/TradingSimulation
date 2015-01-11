@@ -13,9 +13,10 @@ import scala.slick.lifted.{Column, TableQuery, Tag}
  */
 class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] {
 
-  class Transactions(tag: Tag) extends Table[(Int, Double, Double, Long, String, String, Long, Long, Long, Long)](tag, "TRANSACTIONS") {
-    def * = (id, price, volume, timestamp, whatC, withC, buyerId, buyerOrderId, sellerId, sellerOrderId)
+  class Transactions(tag: Tag) extends Table[(Int, Long, Double, Double, Long, String, String, Long, Long, Long, Long)](tag, "TRANSACTIONS") {
+    def * = (id, mid, price, volume, timestamp, whatC, withC, buyerId, buyerOrderId, sellerId, sellerOrderId)
     def id: Column[Int] = column[Int]("ID", O.PrimaryKey, O.AutoInc)
+    def mid: Column[Long] = column[Long]("MARKET_ID")
     def price: Column[Double] = column[Double]("PRICE")
     def volume: Column[Double] = column[Double]("QUANTITY")
     def timestamp: Column[Long] = column[Long]("TIMESTAMP")
@@ -27,7 +28,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
     def sellerOrderId: Column[Long] = column[Long]("SELLER_ORDER_ID")
   }
 
-  type TransactionEntry = (Int, Double, Double, Long, String, String, Long, Long, Long, Long)
+  type TransactionEntry = (Int, Long, Double, Double, Long, String, String, Long, Long, Long, Long)
   lazy val transaction = TableQuery[Transactions]
   val db = Database.forURL("jdbc:sqlite:" + dbFilename + ".db", driver = "org.sqlite.JDBC")
 
@@ -47,7 +48,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
    */
   def save(newTransaction: Transaction) = {
     db.withDynSession {
-      transaction += (1, newTransaction.price, newTransaction.volume, newTransaction.timestamp, newTransaction.whatC.toString, newTransaction.withC.toString, newTransaction.buyerId, newTransaction.buyOrderId, newTransaction.sellerId, newTransaction.sellOrderId) // AutoInc are implicitly ignored
+      transaction += (1, newTransaction.mid, newTransaction.price, newTransaction.volume, newTransaction.timestamp, newTransaction.whatC.toString, newTransaction.withC.toString, newTransaction.buyerId, newTransaction.buyOrderId, newTransaction.sellerId, newTransaction.sellOrderId) // AutoInc are implicitly ignored
     }
   }
 
@@ -56,7 +57,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
    */
   def save(ts: List[Transaction]) = {
     db.withDynSession {
-      transaction ++= ts.toIterable.map { x => (1, x.price, x.volume, x.timestamp, x.whatC.toString, x.withC.toString, x.buyerId, x.buyOrderId, x.sellerId, x.sellOrderId) }
+      transaction ++= ts.toIterable.map { x => (1, x.mid, x.price, x.volume, x.timestamp, x.whatC.toString, x.withC.toString, x.buyerId, x.buyOrderId, x.sellerId, x.sellOrderId) }
     }
   }
 
@@ -66,7 +67,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
   def loadSingle(id: Int): Transaction = {
     db.withDynSession {
       val r = transaction.filter(_.id === id).invoker.firstOption.get
-      return Transaction(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8, r._9, r._10)
+      return Transaction(r._2, r._3, r._4, r._5, Currency.withName(r._6), Currency.withName(r._7), r._8, r._9, r._10, r._11)
     }
   }
 
@@ -76,7 +77,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
   def loadBatch(startTime: Long, endTime: Long): List[Transaction] = {
     var res: List[Transaction] = List()
     db.withDynSession {
-      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Transaction(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8, r._9, r._10) :: res }
+      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = Transaction(r._2, r._3, r._4, r._5, Currency.withName(r._6), Currency.withName(r._7), r._8, r._9, r._10, r._11) :: res }
     }
     res
   }

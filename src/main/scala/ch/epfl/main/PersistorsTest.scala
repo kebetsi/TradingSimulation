@@ -7,8 +7,8 @@ import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, 
 object PersistorsTest {
 
   def main(args: Array[String]) {
-//    basicTest
-        financeOrdersTest
+    basicTest
+//        financeOrdersTest
   }
 
   def financeOrdersTest = {
@@ -35,8 +35,8 @@ object PersistorsTest {
     ordersPersistor.clearAll
 
     println("testing TransactionPersistor")
-    val trans1 = Transaction(33, 41, 1, BTC, USD, 1, 1, 2, 2)
-    val trans2 = Transaction(221, 23, 2, BTC, USD, 3, 3, 4, 4)
+    val trans1 = Transaction(1, 33, 41, 1, BTC, USD, 1, 1, 2, 2)
+    val trans2 = Transaction(2, 221, 23, 2, BTC, USD, 3, 3, 4, 4)
     val transList = trans1 :: trans2 :: Nil
     val transPersistor = new TransactionPersistor("test")
     transPersistor.init()

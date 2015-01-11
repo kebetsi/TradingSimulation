@@ -23,17 +23,18 @@ trait Streamable
 
 /**
  * Data Transfer Object representing a Transaction
- * @param price
+ * @param mid market id
+ * @param price 
  * @param volume
  * @param timestamp
  * @param whatC
  * @param withC
- * @param buyerId
- * @param buyOrderId
- * @param sellerId
- * @param sellOrderId
+ * @param buyerId buyer user id
+ * @param buyOrderId buyer order id
+ * @param sellerId seller user id
+ * @param sellOrderId seller order id
  */
-case class Transaction(price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
+case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
 
 /**
  * Data Transfer Object representing a Order
