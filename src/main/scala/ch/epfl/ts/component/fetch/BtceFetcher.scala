@@ -1,27 +1,27 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{Order, Transaction}
+import ch.epfl.ts.data.{ Order, Transaction, LimitBidOrder, LimitAskOrder }
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 
 class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
-  var count = 2000
+  var count = 100
   var latest = new Transaction(0, 0.0, 0.0, 0, BTC, USD, 0, 0, 0, 0)
-  
+
   override def interval(): Int = 12000
 
   override def fetch(): List[Transaction] = {
     val trades = btce.getTrade(count)
     val idx = trades.indexOf(latest)
-    count = if (idx < 0)  2000 else Math.min(10*idx, 2000)
+    count = if (idx < 0) 100 else Math.min(10 * idx, 100)
     latest = if (trades.length == 0) latest else trades.head
-    
-    if(idx > 0)
-      trades.slice(0, idx)
+
+    if (idx > 0)
+      trades.slice(0, idx).reverse
     else
-      trades
+      trades.reverse
   }
 }
 
@@ -32,9 +32,8 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
   override def fetch(): List[Order] = btce.getDepth(count)
 }
 
-case class BTCeCaseTransaction(date: Long, price: Double, amount: Double, 
-    tid: Int, price_currency: String, item: String, trade_type: String)
-    
+case class BTCeCaseTransaction(date: Long, price: Double, amount: Double,
+                               tid: Int, price_currency: String, item: String, trade_type: String)
 
 class BtceAPI(from: Currency, to: Currency) {
   implicit val formats = net.liftweb.json.DefaultFormats
@@ -52,7 +51,7 @@ class BtceAPI(from: Currency, to: Currency) {
       val json = Request.Get(path).execute().returnContent().asString()
       t = parse(json).extract[List[BTCeCaseTransaction]]
     } catch {
-      case _ : Throwable => t = List[BTCeCaseTransaction]();
+      case _: Throwable => t = List[BTCeCaseTransaction]();
     }
 
     if (t.length != 0) {
@@ -68,18 +67,18 @@ class BtceAPI(from: Currency, to: Currency) {
       val path = serverBase + pair + "/depth/" + count
       val json = Request.Get(path).execute().returnContent().asString()
       val a = parse(json).extract[Map[String, List[List[Double]]]]
-      
+
       val asks = a.get("asks") match {
-//        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.ASK))
-        case _ => List[Order]()
+        case Some(l) => l.map { e => LimitAskOrder(0, 0, System.currentTimeMillis, from, to, e.last, e.head) }
+        case _       => List[Order]()
       }
       val bids = a.get("bids") match {
-//        case Some(l) => l.map(e => Order(0, e.head, e.last, 0, from, OrderType.BID))
-        case _ => List[Order]()
+        case Some(l) => l.map { e => LimitBidOrder(0, 0, System.currentTimeMillis(), from, to, e.last, e.head) }
+        case _       => List[Order]()
       }
       t = asks ++ bids
     } catch {
-      case _ : Throwable => t = List[Order]()
+      case _: Throwable => t = List[Order]()
     }
     t
   }
