@@ -6,6 +6,8 @@ import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, Transaction }
 import akka.actor.Cancellable
 import scala.concurrent.duration.DurationLong
 
+case class OHLC(open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long)
+
 /**
  * Backloop component, plugged as Market Simulator's output. Saves the transactions in a persistor.
  * distributes the transactions and delta orders to the trading agents
@@ -14,7 +16,6 @@ class BackLoop(ohlcTimeFrameMillis: Int, p: Persistance[Transaction]) extends Co
   import context._
 
   case class Tick()
-  case class OHLC(open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long)
 
   var schedule: Cancellable = null
   var values: List[Double] = Nil
@@ -47,6 +48,7 @@ class BackLoop(ohlcTimeFrameMillis: Int, p: Persistance[Transaction]) extends Co
       // clean anciant vals
       volume = 0
       values = Nil
+      println("BackLoop: sending OHLC : " + ret)
       ret
     } else {
       OHLC(close, close, close, close, 0, System.currentTimeMillis(), ohlcTimeFrameMillis)
