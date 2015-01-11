@@ -8,10 +8,9 @@ import scala.concurrent.duration.DurationInt
 
 case class SendMarketOrder()
 
-class SimpleTrader(intervalMillis: Int, orderVolume: Double) extends Component {
+class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends Component {
   import context._
 
-  val uid = 132
   var orderId = 4567
   val initDelayMillis = 10000
 

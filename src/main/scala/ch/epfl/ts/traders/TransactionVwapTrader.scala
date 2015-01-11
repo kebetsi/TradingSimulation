@@ -6,7 +6,7 @@ import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Transaction }
 
 import scala.concurrent.duration.DurationInt
 
-class TransactionVwapTrader(timeFrameMillis: Int) extends Component {
+class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
   import context._
 
   case class Tick()
@@ -27,7 +27,6 @@ class TransactionVwapTrader(timeFrameMillis: Int) extends Component {
   var vwap: Double = 0.0;
   var tradingPrice: Double = 0.0;
 
-  val uid = 333
   var oid = uid
   val volumeToTrade = 50
 

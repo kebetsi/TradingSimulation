@@ -8,7 +8,7 @@ import ch.epfl.ts.engine.MarketRules
 import scala.collection.mutable.TreeSet
 import scala.concurrent.duration.DurationInt
 
-class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double, rules: MarketRules)
+class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double, rules: MarketRules)
   extends Component {
   import context._
 
@@ -20,7 +20,6 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
 
   var bi: Double = 0.0
   var si: Double = 0.0
-  val sobiTraderUserId = 123
   var currentOrderId: Long = 456789
 
   override def receiver = {
@@ -38,13 +37,13 @@ class SobiTrader(intervalMillis: Int, quartile: Int, theta: Double, orderVolume:
         currentOrderId = currentOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
         println("SobiTrader: making buy order: price=" + (tradingPrice - priceDelta) + ", volume=" + orderVolume)
-        send[Order](LimitBidOrder(currentOrderId, sobiTraderUserId, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
+        send[Order](LimitBidOrder(currentOrderId, uid, System.currentTimeMillis, USD, USD, orderVolume, tradingPrice - priceDelta))
       }
       if ((bi - si) > theta) {
         currentOrderId = currentOrderId + 1
         //"place an order to sell x shares at (lastPrice+p)"
         println("SobiTrader: making sell order: price=" + (tradingPrice + priceDelta) + ", volume=" + orderVolume)
-        send[Order](LimitAskOrder(currentOrderId, sobiTraderUserId, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
+        send[Order](LimitAskOrder(currentOrderId, uid, System.currentTimeMillis(), USD, USD, orderVolume, tradingPrice + priceDelta))
       }
     }
 
