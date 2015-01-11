@@ -15,6 +15,10 @@ import ch.epfl.ts.traders.DoubleCrossoverTrader
 import ch.epfl.ts.engine.OHLC
 import ch.epfl.ts.indicators.MA
 import ch.epfl.ts.indicators.SMA
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.traders.DoubleEnvelopeTrader
+import ch.epfl.ts.engine.BackLoop
 
 object ReplayOrdersLoop {
 
@@ -39,6 +43,7 @@ object ReplayOrdersLoop {
     val smaShort = builder.createRef(Props(classOf[SmaIndicator], ohlcTimeFrameMillis, 5))
     val smaLong = builder.createRef(Props(classOf[SmaIndicator], ohlcTimeFrameMillis, 10))
     val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0))
+    val deTrader = builder.createRef(Props(classOf[DoubleEnvelopeTrader], 555L, 0.025, 50.0))
         
 
     replayer.addDestination(market, classOf[Order])
@@ -60,8 +65,12 @@ object ReplayOrdersLoop {
     backloop.addDestination(transactionVwap, classOf[Transaction])
     backloop.addDestination(smaShort, classOf[OHLC])
     backloop.addDestination(smaLong, classOf[OHLC])
+    backloop.addDestination(deTrader, classOf[OHLC])
+    smaLong.addDestination(deTrader, classOf[SMA])
     smaShort.addDestination(dcTrader, classOf[SMA])
     smaLong.addDestination(dcTrader, classOf[SMA])
+    dcTrader.addDestination(market, classOf[MarketAskOrder])
+    dcTrader.addDestination(dcTrader, classOf[MarketBidOrder])
     //    transactionVwap.addDestination(market, classOf[Order])
     transactionVwap.addDestination(market, classOf[MarketAskOrder])
     transactionVwap.addDestination(market, classOf[MarketBidOrder])

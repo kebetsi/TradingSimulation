@@ -18,30 +18,31 @@ class DoubleCrossoverTrader(val uid: Long, val shortPeriod: Int, val longPeriod:
   var oid = 876543
 
   def receiver = {
-    case ma: MA => println("DoubleCrossoverTrader: received " + ma); ma.period match {
-      case `shortPeriod` => {
-        previousShortMa = currentShortMa
-        currentShortMa = ma.value
-        makeOrder
+    case ma: MA =>
+      println("DoubleCrossoverTrader: received " + ma); ma.period match {
+        case `shortPeriod` => {
+          previousShortMa = currentShortMa
+          currentShortMa = ma.value
+          makeOrder
+        }
+        case `longPeriod` => {
+          previousLongMa = currentLongMa
+          currentLongMa = ma.value
+          makeOrder
+        }
+
       }
-      case `longPeriod` => {
-        previousLongMa = currentLongMa
-        currentLongMa = ma.value
-        makeOrder
-      }
-      
-    }
     case _ =>
   }
 
   def makeOrder = {
     if ((previousShortMa > previousLongMa) && (currentShortMa < currentLongMa)) {
-      send(new MarketAskOrder(oid, uid, System.currentTimeMillis(), USD, USD, volume, 0))
+      send(MarketAskOrder(oid, uid, System.currentTimeMillis(), USD, USD, volume, 0))
       println("DoubleCrossoverTrader: sending sell")
       oid = oid + 1
     } else if ((previousShortMa < previousLongMa) && (currentShortMa > currentLongMa)) {
-      send(new MarketBidOrder(oid, uid, System.currentTimeMillis(), USD, USD, volume, 0))
-      println("DoubleCrossoverTrader: sending sell")
+      send(MarketBidOrder(oid, uid, System.currentTimeMillis(), USD, USD, volume, 0))
+      println("DoubleCrossoverTrader: sending buy")
       oid = oid + 1
     }
   }
