@@ -7,7 +7,7 @@ import scala.concurrent.duration.DurationLong
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.component.StopSignal
 
-abstract class MA(value: Double, period: Int)
+abstract class MA(val value: Double, val period: Int)
 
 abstract class MaIndicator(updatePeriodMillis: Int, period: Int) extends Component {
   import context._

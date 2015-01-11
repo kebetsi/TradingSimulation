@@ -7,7 +7,7 @@ import scala.concurrent.duration.DurationLong
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.component.StopSignal
 
-case class SMA(value: Double, period: Int) extends MA(value, period)
+case class SMA(override val value: Double, override val period: Int) extends MA(value, period)
 
 class SmaIndicator(updatePeriodMillis: Int, period: Int) extends MaIndicator(updatePeriodMillis, period) {
 

@@ -7,7 +7,7 @@ import ch.epfl.ts.component.utils.OHLC
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.component.StopSignal
 
-case class EMA(value: Double, period: Int) extends MA(value: Double, period: Int)
+case class EMA(override val value: Double, override val period: Int) extends MA(value: Double, period: Int)
 
 class EmaIndicator(val updatePeriodMillis: Int, val period: Int) extends MaIndicator(updatePeriodMillis, period) {
   import context._
