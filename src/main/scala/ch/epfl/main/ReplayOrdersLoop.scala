@@ -10,11 +10,17 @@ import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder,
 import ch.epfl.ts.engine.{ BackLoop, MarketRules, MarketSimulator }
 import ch.epfl.ts.traders.{ SimpleTrader, SobiTrader, TransactionVwapTrader }
 import scala.reflect.ClassTag
+import ch.epfl.ts.indicators.SmaIndicator
+import ch.epfl.ts.traders.DoubleCrossoverTrader
+import ch.epfl.ts.engine.OHLC
+import ch.epfl.ts.indicators.MA
+import ch.epfl.ts.indicators.SMA
 
 object ReplayOrdersLoop {
 
   def main(args: Array[String]) {
     val initTime = 25210389L
+    val ohlcTimeFrameMillis = 10000
     val compression = 0.001
     val rules = new MarketRules()
     implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
@@ -24,12 +30,16 @@ object ReplayOrdersLoop {
     val transactionsPersistor = new TransactionPersistor("ReplayTransactions")
     transactionsPersistor.init()
     val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
-    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123, 3000, 2, 700.0, 50, 100.0, rules))
-    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132, 10000, 50.0))
+    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules))
+    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0))
     val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
-    val backloop = builder.createRef(Props(classOf[BackLoop], transactionsPersistor))
-    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333, 10000))
+    val backloop = builder.createRef(Props(classOf[BackLoop], 10000, transactionsPersistor))
+    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, ohlcTimeFrameMillis))
     val display = builder.createRef(Props(classOf[RevenueCompute], 5000))
+    val smaShort = builder.createRef(Props(classOf[SmaIndicator], ohlcTimeFrameMillis, 5))
+    val smaLong = builder.createRef(Props(classOf[SmaIndicator], ohlcTimeFrameMillis, 10))
+    val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0))
+        
 
     replayer.addDestination(market, classOf[Order])
     //    simpleTrader.addDestination(market, classOf[Order])
@@ -48,9 +58,14 @@ object ReplayOrdersLoop {
     backloop.addDestination(sobiTrader, classOf[LimitBidOrder])
     backloop.addDestination(sobiTrader, classOf[DelOrder])
     backloop.addDestination(transactionVwap, classOf[Transaction])
+    backloop.addDestination(smaShort, classOf[OHLC])
+    backloop.addDestination(smaLong, classOf[OHLC])
+    smaShort.addDestination(dcTrader, classOf[SMA])
+    smaLong.addDestination(dcTrader, classOf[SMA])
     //    transactionVwap.addDestination(market, classOf[Order])
     transactionVwap.addDestination(market, classOf[MarketAskOrder])
     transactionVwap.addDestination(market, classOf[MarketBidOrder])
+    
 
     builder.start
   }

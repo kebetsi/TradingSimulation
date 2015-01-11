@@ -1,7 +1,7 @@
 package ch.epfl.ts.indicators
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.component.utils.OHLC
+import ch.epfl.ts.engine.OHLC
 import akka.actor.Cancellable
 import scala.concurrent.duration.DurationLong
 import ch.epfl.ts.component.StartSignal
@@ -19,8 +19,8 @@ abstract class MaIndicator(updatePeriodMillis: Int, period: Int) extends Compone
   def receiver = {
     case StartSignal() => schedule = start
     case StopSignal()  => schedule.cancel()
-    case o: OHLC       => values = o :: values
-    case Tick()        => send(computeMa)
+    case o: OHLC       => values = o :: values; println("maIndicator: received ohlc: " + o)
+    case Tick()        => if (!values.isEmpty) send(computeMa); println("maIndicator: sending " + computeMa)
     case _             =>
   }
   

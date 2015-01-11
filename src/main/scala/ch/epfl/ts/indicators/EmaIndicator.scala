@@ -3,7 +3,7 @@ package ch.epfl.ts.indicators
 import ch.epfl.ts.component.Component
 import akka.actor.Cancellable
 import scala.concurrent.duration.DurationLong
-import ch.epfl.ts.component.utils.OHLC
+import ch.epfl.ts.engine.OHLC
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.component.StopSignal
 
