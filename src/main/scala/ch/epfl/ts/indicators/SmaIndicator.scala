@@ -7,28 +7,14 @@ import scala.concurrent.duration.DurationLong
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.component.StopSignal
 
-case class SMA(value: Double, timeframe: Int)
+case class SMA(value: Double, period: Int) extends MA(value, period)
 
-class SmaIndicator(timeFrameMillis: Int) extends Component {
-  import context._
+class SmaIndicator(updatePeriodMillis: Int, period: Int) extends MaIndicator(updatePeriodMillis, period) {
 
-  case class Tick()
-  var schedule: Cancellable = null
-  var values: List[OHLC] = Nil
-
-  def receiver = {
-    case StartSignal() => schedule = start
-    case StopSignal()  => schedule.cancel()
-    case o: OHLC       => values = o :: values
-    case Tick()        => send(computeSMA)
-    case _             =>
-  }
-
-  def computeSMA: SMA = {
+  def computeMa: SMA = {
     var sma: Double = 0.0
+    values = values.take(period)
     values.map { o => sma = sma + o.close }
-    SMA(sma / values.size, timeFrameMillis)
+    SMA(sma / values.size, period)
   }
-
-  private def start = system.scheduler.schedule(10 milliseconds, timeFrameMillis milliseconds, self, Tick())
 }
