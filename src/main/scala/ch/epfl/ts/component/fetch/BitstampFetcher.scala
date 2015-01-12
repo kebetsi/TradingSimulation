@@ -31,7 +31,7 @@ class BitstampOrderPullFetcher extends PullFetch[Order] {
   var count = 2000
   override def interval(): Int = 12000
   var oldOrders = Map[LimitOrder, Long]()
-  var oid = 5000000000L
+  var oid = 10000000000L
   override def fetch(): List[Order] = {
     // acquire currently active orders
     val currentOrders = bitstampApi.getDepth(count)
@@ -96,8 +96,6 @@ class BitstampAPI(from: Currency, to: Currency) {
       val path = serverBase + "order_book/"
       val json = Request.Get(path).execute().returnContent().asString()
       val a = parse(json).extract[BitstampDepth]
-      println("asks: " + a.asks.size)
-
       val asks = a.asks.map { e => LiveLimitAskOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble) }
 
       val bids = a.bids.map { e => LiveLimitBidOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble) }
