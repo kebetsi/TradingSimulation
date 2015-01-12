@@ -2,6 +2,8 @@ package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.engine.OHLC
+import ch.epfl.ts.component.fetch.MarketNames
 
 class Arbitrageur(uid: Long, firstMid: Long, secondMid: Long) extends Component {
 
@@ -10,14 +12,15 @@ class Arbitrageur(uid: Long, firstMid: Long, secondMid: Long) extends Component 
 
   def receiver = {
     case t: Transaction => {
-      println("Arbitrageur: received transaction: " + t)
+      //println("Arbitrageur: received transaction: " + t)
       t.mid match {
         case `firstMid`  => firstTradingPrice = t.price
         case `secondMid` => secondTradingPrice = t.price
         case _ => println("Arbitrageur: unknown MarketId")
       }
-      println("Arbitrageur: firstP=" + firstTradingPrice + ", secondP=" + secondTradingPrice + ". diff=" + (firstTradingPrice-secondTradingPrice)/secondTradingPrice)
+      //println("Arbitrageur: firstP=" + firstTradingPrice + ", secondP=" + secondTradingPrice + ". diff=" + (firstTradingPrice-secondTradingPrice)/secondTradingPrice)
     }
+    case ohlc: OHLC => println("Arbitrageur: received OHLC from " + MarketNames.marketIdToName(ohlc.marketId) + ": " + ohlc)
     case _ => println("Arbitrageur: received unknown")
   }
 }
