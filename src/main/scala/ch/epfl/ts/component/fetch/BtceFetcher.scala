@@ -32,7 +32,7 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
   override def interval(): Int = 12000
 
   var oldOrders = Map[LimitOrder, Long]()
-  var oid = 76543L
+  var oid = 5000000000L
   override def fetch(): List[Order] = {
     // acquire currently active orders
     val currentOrders = btce.getDepth(count)
