@@ -5,12 +5,15 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.fetch.{ BtceTransactionPullFetcher, PullFetchComponent, BitstampTransactionPullFetcher }
 import ch.epfl.ts.component.persist.{ Persistor, TransactionPersistor }
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.data.{ Transaction, LimitOrder }
 import scala.reflect.ClassTag
 import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.engine.MarketSimulator
 import ch.epfl.ts.engine.MarketRules
 import ch.epfl.ts.component.fetch.MarketNames
+import ch.epfl.ts.component.fetch.BtceOrderPullFetcher
+import ch.epfl.ts.component.fetch.PullFetchListComponent
+import ch.epfl.ts.component.fetch.BitstampOrderPullFetcher
 
 object BTCArbitrage {
 
@@ -26,28 +29,40 @@ object BTCArbitrage {
     // Instantiate Transaction fetchers Bitcoin exchange markets
     val btceMarketId = MarketNames.BTCE_ID
     val bitstampMarketId = MarketNames.BITSTAMP_ID
-    val btcePullFetcher = new BtceTransactionPullFetcher
-    val bitstampPullFetcher = new BitstampTransactionPullFetcher
+    val btceTransactionPullFetcher = new BtceTransactionPullFetcher
+    val btceOrderPullFetcher = new BtceOrderPullFetcher
+    val bitstampTransactionPullFetcher = new BitstampTransactionPullFetcher
+    val bitstampOrderPullFetcher = new BitstampOrderPullFetcher
 
     // Create Components
     // markets
     val rules = new MarketRules()
     val btceMarket = builder.createRef(Props(classOf[MarketSimulator], btceMarketId, rules))
     val bitstampMarket = builder.createRef(Props(classOf[MarketSimulator], bitstampMarketId, rules))
+    // printer
     val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
+    // persistors
     val btcePersistor = builder.createRef(Props(classOf[Persistor[Transaction]], btceXactPersit, implicitly[ClassTag[Transaction]]))
     val bitstampPersistor = builder.createRef(Props(classOf[Persistor[Transaction]], bitstampXactPersist, implicitly[ClassTag[Transaction]]))
-    val btceFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btcePullFetcher, implicitly[ClassTag[Transaction]]))
-    val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampPullFetcher, implicitly[ClassTag[Transaction]]))
+    // fetchers
+    val btceFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btceTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
+    val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
+    val btceOrderFetcher = builder.createRef(Props(classOf[PullFetchListComponent[LimitOrder]], btceOrderPullFetcher, implicitly[ClassTag[List[LimitOrder]]]))
+    val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchListComponent[LimitOrder]], bitstampOrderPullFetcher, implicitly[ClassTag[List[LimitOrder]]]))
+    // trading agents
     val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, btceMarketId, bitstampMarketId))
 
     // Create the connections
-    //    btceFetcher.addDestination(printer, classOf[Transaction])
-    //    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
+    // BTC-e
+    btceFetcher.addDestination(printer, classOf[Transaction])
+    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
     btceFetcher.addDestination(arbitrageur, classOf[Transaction])
-    //    bitstampFetcher.addDestination(printer, classOf[Transaction])
+    btceOrderFetcher.addDestination(printer, classOf[List[LimitOrder]])
+    // Bitstamp
+    bitstampFetcher.addDestination(printer, classOf[Transaction])
     bitstampFetcher.addDestination(arbitrageur, classOf[Transaction])
-    //    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
+    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
+    bitstampOrderFetcher.addDestination(printer, classOf[List[LimitOrder]])
 
     // Start the system
     builder.start

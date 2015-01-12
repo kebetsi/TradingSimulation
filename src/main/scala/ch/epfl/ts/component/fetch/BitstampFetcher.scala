@@ -26,6 +26,13 @@ class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
   }
 }
 
+class BitstampOrderPullFetcher extends PullFetch[LimitOrder] {
+  val btce = new BitstampAPI(USD, BTC)
+  var count = 2000
+  override def interval(): Int = 12000
+  override def fetch(): List[LimitOrder] = btce.getDepth(count)
+}
+
 case class BitstampCaseTransaction(date: String, tid: Int, price: String, amount: String)
 
 class BitstampAPI(from: Currency, to: Currency) {
