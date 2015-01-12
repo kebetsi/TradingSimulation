@@ -40,7 +40,7 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
     // find which are new by computing the difference: newOrders = currentOrders - oldOrders
     val newOrders: List[LimitOrder] = currentOrders.filterNot(oldOrders.keySet)
     println("BtceOrderPullFetcher: new Orders size: " + newOrders.size + ", should be currentOrders - oldOrders - deletedOrders.")
-    // assign oid to new orders & add new orders to currently active orders (will be old orders in the next iteration)
+    // assign oid to new orders & add new orders to currently active orders (which will be old orders in the next iteration)
     val newOrdersWithId: List[LimitOrder] = newOrders.map { x =>
       x match {
         case lb: LiveLimitBidOrder =>
@@ -61,8 +61,7 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
     // convert deleted orders into DelOrders
     val delOrders: List[DelOrder] = deletedOrders.map { x => DelOrder(oldOrders(x), x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price) }
 
-    // add new orders to currently active orders (will be old orders in the next iteration)
-    // remove deleted orders from currently active orders (will be old orders in the next iteration)
+    // remove deleted orders from currently active orders (which will be old orders in the next iteration)
     deletedOrders.map { x => oldOrders -= x }
     println("BtceOrderPullFetcher: updated old orders size: " + oldOrders.size + ", should be same as currentOrders")
 
