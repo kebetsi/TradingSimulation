@@ -6,8 +6,8 @@ import ch.epfl.ts.component.fetch.{ BtceTransactionPullFetcher, PullFetchCompone
 import ch.epfl.ts.component.persist.{ Persistor, TransactionPersistor }
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.data.Transaction
-
 import scala.reflect.ClassTag
+import ch.epfl.ts.component.fetch.MarketNames
 
 /**
  * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,
@@ -24,8 +24,8 @@ object BtceTransactionFlowTesterWithStorage {
     bitstampXactPersit.init()
 
     // Instantiate a Transaction etcher for BTC-e and Bitstamp
-    val btceMarketId= 1
-    val bitstampMarketId= 2
+    val btceMarketId= MarketNames.marketNameToId("BTC-e")
+    val bitstampMarketId= MarketNames.marketNameToId("Bitstamp")
     val btcePullFetcher = new BtceTransactionPullFetcher(btceMarketId)
     val bitstampPullFetcher = new BitstampTransactionPullFetcher(bitstampMarketId)
 
