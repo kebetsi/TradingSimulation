@@ -1,9 +1,10 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ LimitOrder, Transaction, LimitBidOrder, LimitAskOrder }
+import ch.epfl.ts.data.{ Order, LimitOrder, Transaction, LiveLimitBidOrder, LiveLimitAskOrder, DelOrder }
 import net.liftweb.json._
 import org.apache.http.client.fluent._
+import ch.epfl.ts.data.LiveLimitBidOrder
 
 class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   val btce = new BtceAPI(USD, BTC)
@@ -25,11 +26,53 @@ class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   }
 }
 
-class BtceOrderPullFetcher extends PullFetch[LimitOrder] {
+class BtceOrderPullFetcher extends PullFetch[Order] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000
   override def interval(): Int = 12000
-  override def fetch(): List[LimitOrder] = btce.getDepth(count)
+
+  var oldOrders = Map[LimitOrder, Long]()
+  var oid = 76543L
+  override def fetch(): List[Order] = {
+    // acquire currently active orders
+    val currentOrders = btce.getDepth(count)
+    println("BtceOrderPullFetcher: current orders size: " + currentOrders.size)
+//    println("BtceOrderPullFetcher: currentOrders: " + currentOrders)
+    // find which are new by computing the difference: newOrders = currentOrders - oldOrders
+    val newOrders: List[LimitOrder] = currentOrders.filterNot(oldOrders.keySet)
+    println("BtceOrderPullFetcher: new Orders size: " + newOrders.size + ", should be currentOrders - oldOrders.")
+//    println("BtceOrderPullFetcher: newOrders: " + newOrders)
+    // assign oid to new orders
+    val newOrdersWithId: List[LimitOrder] = newOrders.map { x =>
+      x match {
+        case lb: LiveLimitBidOrder =>
+          oid = oid + 1
+          LiveLimitBidOrder(oid, x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price)
+        case la: LiveLimitAskOrder =>
+          oid = oid + 1
+          LiveLimitAskOrder(oid, x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price)
+      }
+    }
+//    println("BtceOrderPullFetcher: newOrdersWithId: " + newOrdersWithId)
+
+    // find which were deleted (or executed) by computing the difference: deletedOrders = oldOrders - currentOrders
+    val deletedOrders: List[LimitOrder] = oldOrders.keySet.filterNot(currentOrders.toSet).toList
+    println("BtceOrderPullFetcher: deletedOrders size: " + deletedOrders.size + ", should be oldOrders - currentOrders")
+//    println("BtceOrderPullFetcher: deletedOrders: " + deletedOrders)
+
+    // add new orders to currently active orders (will be old orders in the next iteration)
+    newOrdersWithId.map { x => oldOrders += (x -> x.oid) }
+    // remove deleted orders from currently active orders (will be old orders in the next iteration)
+    deletedOrders.map { x => oldOrders -= x }
+    println("BtceOrderPullFetcher: updated old orders size: " + oldOrders.size + ", should be oldOrders - deletedOrders + newOrders")
+//    println("BtceOrderPullFetcher: updated old orders: " + oldOrders)
+
+    // convert deleted orders into DelOrders
+    val delOrders: List[DelOrder] = deletedOrders.map { x => DelOrder(x.oid, x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price) }
+//    println("BtceOrderPullFetcher: DelOrders: "  + delOrders)
+
+    newOrdersWithId ::: delOrders
+  }
 }
 
 case class BTCeCaseTransaction(date: Long, price: Double, amount: Double,
@@ -69,11 +112,11 @@ class BtceAPI(from: Currency, to: Currency) {
       val a = parse(json).extract[Map[String, List[List[Double]]]]
 
       val asks = a.get("asks") match {
-        case Some(l) => l.map { e => LimitAskOrder(0, MarketNames.BTCE_ID, System.currentTimeMillis, from, to, e.last, e.head) }
+        case Some(l) => l.map { e => LiveLimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head) }
         case _       => List[LimitOrder]()
       }
       val bids = a.get("bids") match {
-        case Some(l) => l.map { e => LimitBidOrder(0, MarketNames.BTCE_ID, System.currentTimeMillis(), from, to, e.last, e.head) }
+        case Some(l) => l.map { e => LiveLimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head) }
         case _       => List[LimitOrder]()
       }
       t = asks ++ bids

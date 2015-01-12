@@ -5,7 +5,7 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.fetch.{ BtceTransactionPullFetcher, PullFetchComponent, BitstampTransactionPullFetcher }
 import ch.epfl.ts.component.persist.{ Persistor, TransactionPersistor }
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.data.{ Transaction, LimitOrder }
+import ch.epfl.ts.data.{ Order, Transaction, LimitOrder, LiveLimitAskOrder, LiveLimitBidOrder, DelOrder }
 import scala.reflect.ClassTag
 import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.engine.MarketSimulator
@@ -45,24 +45,26 @@ object BTCArbitrage {
     val btcePersistor = builder.createRef(Props(classOf[Persistor[Transaction]], btceXactPersit, implicitly[ClassTag[Transaction]]))
     val bitstampPersistor = builder.createRef(Props(classOf[Persistor[Transaction]], bitstampXactPersist, implicitly[ClassTag[Transaction]]))
     // fetchers
-    val btceFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btceTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
-    val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
-    val btceOrderFetcher = builder.createRef(Props(classOf[PullFetchListComponent[LimitOrder]], btceOrderPullFetcher, implicitly[ClassTag[List[LimitOrder]]]))
-    val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchListComponent[LimitOrder]], bitstampOrderPullFetcher, implicitly[ClassTag[List[LimitOrder]]]))
+    //    val btceFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btceTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
+    //    val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
+    val btceOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], btceOrderPullFetcher, implicitly[ClassTag[Order]]))
+    //    val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchListComponent[LimitOrder]], bitstampOrderPullFetcher, implicitly[ClassTag[List[LimitOrder]]]))
     // trading agents
     val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, btceMarketId, bitstampMarketId))
 
     // Create the connections
     // BTC-e
-    btceFetcher.addDestination(printer, classOf[Transaction])
-    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
-    btceFetcher.addDestination(arbitrageur, classOf[Transaction])
-    btceOrderFetcher.addDestination(printer, classOf[List[LimitOrder]])
+    //    btceFetcher.addDestination(printer, classOf[Transaction])
+    //    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
+    //    btceFetcher.addDestination(arbitrageur, classOf[Transaction])
+//    btceOrderFetcher.addDestination(printer, classOf[LiveLimitAskOrder])
+//    btceOrderFetcher.addDestination(printer, classOf[DelOrder])
+//    btceOrderFetcher.addDestination(printer, classOf[LiveLimitBidOrder])
     // Bitstamp
-    bitstampFetcher.addDestination(printer, classOf[Transaction])
-    bitstampFetcher.addDestination(arbitrageur, classOf[Transaction])
-    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
-    bitstampOrderFetcher.addDestination(printer, classOf[List[LimitOrder]])
+    //    bitstampFetcher.addDestination(printer, classOf[Transaction])
+    //    bitstampFetcher.addDestination(arbitrageur, classOf[Transaction])
+    //    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
+    //    bitstampOrderFetcher.addDestination(printer, classOf[List[LimitOrder]])
 
     // Start the system
     builder.start

@@ -55,8 +55,23 @@ class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
         }
       }
     }
+
+    case t: Transaction => tradingPrice = t.price
     
-    case t:Transaction => tradingPrice = t.price
+    case lla:LiveLimitAskOrder =>
+    case llb:LiveLimitBidOrder =>
+
+    // replaces the order books with the content of the received ones
+//    case books: List[LimitOrder] => {
+//      bidOrdersBook.clear()
+//      askOrdersBook.clear()
+//      books.map { o =>
+//        o match {
+//          case lb: LimitBidOrder => bidOrdersBook += lb
+//          case la: LimitAskOrder => askOrdersBook += la
+//        }
+//      }
+//    }
 
     case PrintBooks => {
       // print shows heap order (binary tree)

@@ -23,7 +23,7 @@ abstract class PushFetch[T] extends Fetch[T] {
 class PullFetchComponent[T: ClassTag](f: PullFetch[T]) extends Component {
   import context._
   case object Fetch
-  system.scheduler.schedule(0 milliseconds, f.interval() milliseconds, self, Fetch)
+  system.scheduler.schedule(10 milliseconds, f.interval() milliseconds, self, Fetch)
 
   override def receiver = {
     // pull and send to each listener
