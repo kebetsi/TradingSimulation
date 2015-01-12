@@ -1,10 +1,9 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.data.{ Transaction, LimitOrder, LimitAskOrder, LimitBidOrder }
 import net.liftweb.json._
 import org.apache.http.client.fluent._
-
 
 class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
   val bitstamp = new BitstampAPI(USD, BTC)
@@ -29,23 +28,46 @@ class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
 
 case class BitstampCaseTransaction(date: String, tid: Int, price: String, amount: String)
 
-
 class BitstampAPI(from: Currency, to: Currency) {
   implicit val formats = net.liftweb.json.DefaultFormats
 
-  val serverBase = "https://www.bitstamp.net/api/transactions/"
+  val serverBase = "https://www.bitstamp.net/api/"
 
   def getInfo {}
 
   def getTicker {}
 
   def getTrade(count: Int): List[Transaction] = {
-    val path = serverBase
+    val path = serverBase + "transactions/"
     val json = Request.Get(path).execute().returnContent().asString()
     val t = parse(json).extract[List[BitstampCaseTransaction]]
 
     t.map(f => new Transaction(2, f.price.toDouble, f.amount.toDouble, f.date.toLong * 1000, BTC, USD, 0, 0, 0, 0))
   }
 
-  def getDepth {}
+  case class BitstampDepth(timestamp: String, bids: List[List[String]], asks: List[List[String]])
+
+  def getDepth(count: Int): List[LimitOrder] = {
+    var t = List[LimitOrder]()
+    try {
+      val path = serverBase + "/order_book/"
+      val json = Request.Get(path).execute().returnContent().asString()
+      println("received orders: ")
+      println(json)
+      val a = parse(json).extract[BitstampDepth]
+
+      val asks = a.asks match {
+        case l: List[List[String]] => l.map { e => LimitAskOrder(0, 0, System.currentTimeMillis, from, to, e.last.toDouble, e.head.toDouble) }
+        case _                     => List[LimitOrder]()
+      }
+      val bids = a.bids match {
+        case l: List[List[String]] => l.map { e => LimitBidOrder(0, 0, System.currentTimeMillis(), from, to, e.last.toDouble, e.head.toDouble) }
+        case _                     => List[LimitOrder]()
+      }
+      t = asks ++ bids
+    } catch {
+      case _: Throwable => t = List[LimitOrder]()
+    }
+    t
+  }
 }

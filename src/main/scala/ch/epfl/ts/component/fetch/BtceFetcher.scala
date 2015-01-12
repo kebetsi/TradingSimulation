@@ -1,7 +1,7 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ Order, Transaction, LimitBidOrder, LimitAskOrder }
+import ch.epfl.ts.data.{ LimitOrder, Transaction, LimitBidOrder, LimitAskOrder }
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 
@@ -25,11 +25,11 @@ class BtceTransactionPullFetcher extends PullFetch[Transaction] {
   }
 }
 
-class BtceOrderPullFetcher extends PullFetch[Order] {
+class BtceOrderPullFetcher extends PullFetch[LimitOrder] {
   val btce = new BtceAPI(USD, BTC)
   var count = 2000
   override def interval(): Int = 12000
-  override def fetch(): List[Order] = btce.getDepth(count)
+  override def fetch(): List[LimitOrder] = btce.getDepth(count)
 }
 
 case class BTCeCaseTransaction(date: Long, price: Double, amount: Double,
@@ -55,14 +55,14 @@ class BtceAPI(from: Currency, to: Currency) {
     }
 
     if (t.length != 0) {
-      t.map(f => new Transaction(0, f.price, f.amount, f.date * 1000, BTC, USD, 0, 0, 0, 0))
+      t.map(f => new Transaction(1, f.price, f.amount, f.date * 1000, BTC, USD, 0, 0, 0, 0))
     } else {
       List[Transaction]()
     }
   }
 
-  def getDepth(count: Int): List[Order] = {
-    var t = List[Order]()
+  def getDepth(count: Int): List[LimitOrder] = {
+    var t = List[LimitOrder]()
     try {
       val path = serverBase + pair + "/depth/" + count
       val json = Request.Get(path).execute().returnContent().asString()
@@ -70,15 +70,15 @@ class BtceAPI(from: Currency, to: Currency) {
 
       val asks = a.get("asks") match {
         case Some(l) => l.map { e => LimitAskOrder(0, 0, System.currentTimeMillis, from, to, e.last, e.head) }
-        case _       => List[Order]()
+        case _       => List[LimitOrder]()
       }
       val bids = a.get("bids") match {
         case Some(l) => l.map { e => LimitBidOrder(0, 0, System.currentTimeMillis(), from, to, e.last, e.head) }
-        case _       => List[Order]()
+        case _       => List[LimitOrder]()
       }
       t = asks ++ bids
     } catch {
-      case _: Throwable => t = List[Order]()
+      case _: Throwable => t = List[LimitOrder]()
     }
     t
   }
