@@ -2,8 +2,8 @@ package ch.epfl.main
 
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.fetch.{BtceTransactionPullFetcher, PullFetchComponent, BitstampTransactionPullFetcher}
-import ch.epfl.ts.component.persist.{Persistor, TransactionPersistor}
+import ch.epfl.ts.component.fetch.{ BtceTransactionPullFetcher, PullFetchComponent, BitstampTransactionPullFetcher }
+import ch.epfl.ts.component.persist.{ Persistor, TransactionPersistor }
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.data.Transaction
 import scala.reflect.ClassTag
@@ -22,13 +22,13 @@ object BTCArbitrage {
     btceXactPersit.init()
     val bitstampXactPersist = new TransactionPersistor("bitstamp-transaction-db2")
     bitstampXactPersist.init()
-    
+
     // Instantiate Transaction fetchers Bitcoin exchange markets
-    val btceMarketId = MarketNames.marketNameToId("BTC-e")
-    val bitstampMarketId = MarketNames.marketNameToId("Bitstamp")
-    val btcePullFetcher = new BtceTransactionPullFetcher(btceMarketId)
-    val bitstampPullFetcher = new BitstampTransactionPullFetcher(bitstampMarketId)
-    
+    val btceMarketId = MarketNames.BTCE_ID
+    val bitstampMarketId = MarketNames.BITSTAMP_ID
+    val btcePullFetcher = new BtceTransactionPullFetcher
+    val bitstampPullFetcher = new BitstampTransactionPullFetcher
+
     // Create Components
     // markets
     val rules = new MarketRules()
@@ -42,13 +42,12 @@ object BTCArbitrage {
     val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, btceMarketId, bitstampMarketId))
 
     // Create the connections
-//    btceFetcher.addDestination(printer, classOf[Transaction])
-//    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
+    //    btceFetcher.addDestination(printer, classOf[Transaction])
+    //    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
     btceFetcher.addDestination(arbitrageur, classOf[Transaction])
-//    bitstampFetcher.addDestination(printer, classOf[Transaction])
+    //    bitstampFetcher.addDestination(printer, classOf[Transaction])
     bitstampFetcher.addDestination(arbitrageur, classOf[Transaction])
-//    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
-    
+    //    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
 
     // Start the system
     builder.start

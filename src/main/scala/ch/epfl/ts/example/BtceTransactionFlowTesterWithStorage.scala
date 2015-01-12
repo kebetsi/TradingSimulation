@@ -24,10 +24,10 @@ object BtceTransactionFlowTesterWithStorage {
     bitstampXactPersit.init()
 
     // Instantiate a Transaction etcher for BTC-e and Bitstamp
-    val btceMarketId= MarketNames.marketNameToId("BTC-e")
-    val bitstampMarketId= MarketNames.marketNameToId("Bitstamp")
-    val btcePullFetcher = new BtceTransactionPullFetcher(btceMarketId)
-    val bitstampPullFetcher = new BitstampTransactionPullFetcher(bitstampMarketId)
+    val btceMarketId = MarketNames.BTCE_ID
+    val bitstampMarketId = MarketNames.BITSTAMP_ID
+    val btcePullFetcher = new BtceTransactionPullFetcher
+    val bitstampPullFetcher = new BitstampTransactionPullFetcher
 
     // Create Components
     val printer = builder.createRef(Props(classOf[Printer], "my-printer"))

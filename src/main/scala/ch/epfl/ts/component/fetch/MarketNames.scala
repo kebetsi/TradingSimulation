@@ -2,6 +2,12 @@ package ch.epfl.ts.component.fetch
 
 object MarketNames {
 
-  val marketIdToName = Map(1L -> "BTC-e", 2L -> "Bitstamp", 3L -> "Bitfinex")
-  val marketNameToId = Map("BTC-e" -> 1L, "Bitstamp" -> 2L, "Bitfinex" -> 3L)
+  val BTCE_NAME = "BTC-e"
+  val BTCE_ID = 1L
+  val BITSTAMP_NAME = "Bitstamp"
+  val BITSTAMP_ID = 2L
+  val BITFINEX_NAME = "Bitfinex"
+  val BITFINEX_ID = 3L
+  val marketIdToName = Map(BTCE_ID -> BTCE_NAME, BITSTAMP_ID -> BITSTAMP_NAME, BITFINEX_ID -> BITFINEX_NAME)
+  val marketNameToId = Map(BTCE_NAME -> BTCE_ID, BITSTAMP_NAME -> BITSTAMP_ID, BITFINEX_NAME -> BITFINEX_ID)
 }

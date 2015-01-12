@@ -5,8 +5,8 @@ import ch.epfl.ts.data.{ LimitOrder, Transaction, LimitBidOrder, LimitAskOrder }
 import net.liftweb.json._
 import org.apache.http.client.fluent._
 
-class BtceTransactionPullFetcher(marketId: Long) extends PullFetch[Transaction] {
-  val btce = new BtceAPI(marketId, USD, BTC)
+class BtceTransactionPullFetcher extends PullFetch[Transaction] {
+  val btce = new BtceAPI(USD, BTC)
   var count = 100
   var latest = new Transaction(0, 0.0, 0.0, 0, BTC, USD, 0, 0, 0, 0)
 
@@ -25,8 +25,8 @@ class BtceTransactionPullFetcher(marketId: Long) extends PullFetch[Transaction] 
   }
 }
 
-class BtceOrderPullFetcher(marketId: Long) extends PullFetch[LimitOrder] {
-  val btce = new BtceAPI(marketId, USD, BTC)
+class BtceOrderPullFetcher extends PullFetch[LimitOrder] {
+  val btce = new BtceAPI(USD, BTC)
   var count = 2000
   override def interval(): Int = 12000
   override def fetch(): List[LimitOrder] = btce.getDepth(count)
@@ -35,7 +35,7 @@ class BtceOrderPullFetcher(marketId: Long) extends PullFetch[LimitOrder] {
 case class BTCeCaseTransaction(date: Long, price: Double, amount: Double,
                                tid: Int, price_currency: String, item: String, trade_type: String)
 
-class BtceAPI(marketId: Long, from: Currency, to: Currency) {
+class BtceAPI(from: Currency, to: Currency) {
   implicit val formats = net.liftweb.json.DefaultFormats
 
   val serverBase = "https://btc-e.com/api/2/"
@@ -55,7 +55,7 @@ class BtceAPI(marketId: Long, from: Currency, to: Currency) {
     }
 
     if (t.length != 0) {
-      t.map(f => new Transaction(marketId, f.price, f.amount, f.date * 1000, BTC, USD, 0, 0, 0, 0))
+      t.map(f => new Transaction(MarketNames.BTCE_ID, f.price, f.amount, f.date * 1000, BTC, USD, 0, 0, 0, 0))
     } else {
       List[Transaction]()
     }
@@ -69,11 +69,11 @@ class BtceAPI(marketId: Long, from: Currency, to: Currency) {
       val a = parse(json).extract[Map[String, List[List[Double]]]]
 
       val asks = a.get("asks") match {
-        case Some(l) => l.map { e => LimitAskOrder(0, marketId, System.currentTimeMillis, from, to, e.last, e.head) }
+        case Some(l) => l.map { e => LimitAskOrder(0, MarketNames.BTCE_ID, System.currentTimeMillis, from, to, e.last, e.head) }
         case _       => List[LimitOrder]()
       }
       val bids = a.get("bids") match {
-        case Some(l) => l.map { e => LimitBidOrder(0, marketId, System.currentTimeMillis(), from, to, e.last, e.head) }
+        case Some(l) => l.map { e => LimitBidOrder(0, MarketNames.BTCE_ID, System.currentTimeMillis(), from, to, e.last, e.head) }
         case _       => List[LimitOrder]()
       }
       t = asks ++ bids
