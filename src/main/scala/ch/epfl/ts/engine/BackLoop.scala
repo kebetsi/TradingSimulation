@@ -6,13 +6,13 @@ import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, Transaction }
 import akka.actor.Cancellable
 import scala.concurrent.duration.DurationLong
 
-case class OHLC(open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long)
+case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long)
 
 /**
  * Backloop component, plugged as Market Simulator's output. Saves the transactions in a persistor.
  * distributes the transactions and delta orders to the trading agents
  */
-class BackLoop(ohlcTimeFrameMillis: Int, p: Persistance[Transaction]) extends Component {
+class BackLoop(marketId: Long, ohlcTimeFrameMillis: Int, p: Persistance[Transaction]) extends Component {
   import context._
 
   case class Tick()
@@ -25,7 +25,7 @@ class BackLoop(ohlcTimeFrameMillis: Int, p: Persistance[Transaction]) extends Co
   override def receiver = {
     case StartSignal() => schedule = startScheduler
     case StopSignal()  => schedule.cancel()
-    case Tick()        => send(computeOHLC)
+    case this.Tick()        => send(computeOHLC)
     case t: Transaction => {
       p.save(t)
       send(t)
@@ -44,14 +44,14 @@ class BackLoop(ohlcTimeFrameMillis: Int, p: Persistance[Transaction]) extends Co
   private def computeOHLC: OHLC = {
     if (!values.isEmpty) {
       close = values.head
-      val ret = OHLC(values.last, values.max(Ordering.Double), values.min(Ordering.Double), values.head, volume, System.currentTimeMillis(), ohlcTimeFrameMillis)
+      val ret = OHLC(marketId, values.last, values.max(Ordering.Double), values.min(Ordering.Double), values.head, volume, System.currentTimeMillis(), ohlcTimeFrameMillis)
       // clean anciant vals
       volume = 0
       values = Nil
       println("BackLoop: sending OHLC : " + ret)
       ret
     } else {
-      OHLC(close, close, close, close, 0, System.currentTimeMillis(), ohlcTimeFrameMillis)
+      OHLC(marketId, close, close, close, close, 0, System.currentTimeMillis(), ohlcTimeFrameMillis)
     }
   }
 
