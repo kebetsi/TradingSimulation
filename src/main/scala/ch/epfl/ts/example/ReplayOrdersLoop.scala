@@ -1,4 +1,4 @@
-package ch.epfl.main
+package ch.epfl.ts.example
 
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
@@ -7,18 +7,10 @@ import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.traders.RevenueCompute
 import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction }
-import ch.epfl.ts.engine.{ BackLoop, MarketRules, MarketSimulator }
-import ch.epfl.ts.traders.{ SimpleTrader, SobiTrader, TransactionVwapTrader }
+import ch.epfl.ts.engine.{ BackLoop, MarketRules, MarketSimulator, OHLC }
+import ch.epfl.ts.traders.{ SimpleTrader, SobiTrader, TransactionVwapTrader, DoubleEnvelopeTrader, DoubleCrossoverTrader }
 import scala.reflect.ClassTag
-import ch.epfl.ts.indicators.SmaIndicator
-import ch.epfl.ts.traders.DoubleCrossoverTrader
-import ch.epfl.ts.engine.OHLC
-import ch.epfl.ts.indicators.MA
-import ch.epfl.ts.indicators.SMA
-import ch.epfl.ts.data.MarketAskOrder
-import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.traders.DoubleEnvelopeTrader
-import ch.epfl.ts.engine.BackLoop
+import ch.epfl.ts.indicators.{SmaIndicator, SMA}
 
 object ReplayOrdersLoop {
 
@@ -74,7 +66,6 @@ object ReplayOrdersLoop {
     //    transactionVwap.addDestination(market, classOf[Order])
     transactionVwap.addDestination(market, classOf[MarketAskOrder])
     transactionVwap.addDestination(market, classOf[MarketBidOrder])
-    
 
     builder.start
   }
