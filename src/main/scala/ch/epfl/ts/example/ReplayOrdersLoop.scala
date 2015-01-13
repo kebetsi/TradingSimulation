@@ -16,61 +16,83 @@ import ch.epfl.ts.indicators.OhlcIndicator
 object ReplayOrdersLoop {
 
   def main(args: Array[String]) {
+    implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
+
+    // replayer params
     val initTime = 25210389L
-    val ohlcTimeFrameMillis = 10000
     val compression = 0.001
+    // market params
     val marketId = 0L
     val rules = new MarketRules()
-    implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
-    val market = builder.createRef(Props(classOf[MarketSimulator], 1L, rules))
+
+    // Persistors
+    // source
     val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
+    // destination
     val transactionsPersistor = new TransactionPersistor("ReplayTransactions")
     transactionsPersistor.init()
+
+    // Create components
+    // market
+    val market = builder.createRef(Props(classOf[MarketSimulator], 1L, rules))
+    // Replay
     val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
-    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules))
-    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0))
+    // Printer
     val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
     // backloop
     val backloop = builder.createRef(Props(classOf[BackLoop], marketId, transactionsPersistor))
     // ohlc computation
-    val shortTickSizeMillis = 5000
+    val shortTickSizeMillis = 5000L
     val ohlcShort = builder.createRef(Props(classOf[OhlcIndicator], marketId, shortTickSizeMillis))
-    val longTickSizeMillis = 5000
+    val longTickSizeMillis = 10000L
     val ohlclong = builder.createRef(Props(classOf[OhlcIndicator], marketId, longTickSizeMillis))
-    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, ohlcTimeFrameMillis))
-    val display = builder.createRef(Props(classOf[RevenueCompute], 5000))
-    val smaShort = builder.createRef(Props(classOf[SmaIndicator], ohlcTimeFrameMillis, 5))
-    val smaLong = builder.createRef(Props(classOf[SmaIndicator], ohlcTimeFrameMillis, 10))
+    // Indicators
+    val shortPeriod = 5
+    val longPeriod = 10
+    val smaShort = builder.createRef(Props(classOf[SmaIndicator], shortPeriod))
+    val smaLong = builder.createRef(Props(classOf[SmaIndicator], longPeriod))
+    // Traders
+    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules))
+    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0))
+    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, longTickSizeMillis.toInt))
     val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0))
     val deTrader = builder.createRef(Props(classOf[DoubleEnvelopeTrader], 555L, 0.025, 50.0))
+    // Display
+    val display = builder.createRef(Props(classOf[RevenueCompute], 5000))
 
+    // Create connections
+    // replay
     replayer.addDestination(market, classOf[Order])
-    //    simpleTrader.addDestination(market, classOf[Order])
+    // simpleTrader
     simpleTrader.addDestination(market, classOf[MarketAskOrder])
     simpleTrader.addDestination(market, classOf[MarketBidOrder])
-    //    sobiTrader.addDestination(market, classOf[Order])
+    // SobiTrader
     sobiTrader.addDestination(market, classOf[LimitBidOrder])
     sobiTrader.addDestination(market, classOf[LimitAskOrder])
+    // market
     market.addDestination(backloop, classOf[Transaction])
-    //    market.addDestination(backloop, classOf[Order])
     market.addDestination(backloop, classOf[LimitBidOrder])
     market.addDestination(backloop, classOf[LimitAskOrder])
     market.addDestination(backloop, classOf[DelOrder])
     market.addDestination(display, classOf[Transaction])
+    // backLoop
     backloop.addDestination(sobiTrader, classOf[LimitAskOrder])
     backloop.addDestination(sobiTrader, classOf[LimitBidOrder])
     backloop.addDestination(sobiTrader, classOf[DelOrder])
     backloop.addDestination(transactionVwap, classOf[Transaction])
-    backloop.addDestination(smaShort, classOf[OHLC])
-    backloop.addDestination(smaLong, classOf[OHLC])
-    backloop.addDestination(deTrader, classOf[OHLC])
+    backloop.addDestination(ohlcShort, classOf[Transaction])
+    backloop.addDestination(ohlclong, classOf[Transaction])
+    // ohlc
+    ohlclong.addDestination(smaLong, classOf[OHLC])
+    ohlcShort.addDestination(smaShort, classOf[OHLC])
+    // moving averages
     smaLong.addDestination(deTrader, classOf[SMA])
     smaShort.addDestination(dcTrader, classOf[SMA])
     smaLong.addDestination(dcTrader, classOf[SMA])
+    // traders
     dcTrader.addDestination(market, classOf[MarketAskOrder])
     dcTrader.addDestination(dcTrader, classOf[MarketBidOrder])
-    //    transactionVwap.addDestination(market, classOf[Order])
     transactionVwap.addDestination(market, classOf[MarketAskOrder])
     transactionVwap.addDestination(market, classOf[MarketBidOrder])
 
