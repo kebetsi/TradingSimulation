@@ -27,7 +27,7 @@ class BtceTransactionPullFetcher extends PullFetch[Transaction] {
 }
 
 class BtceOrderPullFetcher extends PullFetch[Order] {
-  val btce = new BtceAPI(USD, BTC)
+  val btceApi = new BtceAPI(USD, BTC)
   var count = 2000
   override def interval(): Int = 12000
 
@@ -35,28 +35,31 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
   var oid = 5000000000L
   override def fetch(): List[Order] = {
     // acquire currently active orders
-    val currentOrders = btce.getDepth(count)
-    println("BtceOrderPullFetcher: current orders size: " + currentOrders.size)
+    val currentOrders = btceApi.getDepth(count)
+    println("BtceOrderPullFetcher: current orders size: " + currentOrders.size + ", old orders size: " + oldOrders.size)
+    
     // find which are new by computing the difference: newOrders = currentOrders - oldOrders
     val newOrders: List[LimitOrder] = currentOrders.filterNot(oldOrders.keySet)
-    println("BtceOrderPullFetcher: new Orders size: " + newOrders.size + ", should be currentOrders - oldOrders - deletedOrders.")
+    println("BtceOrderPullFetcher: new Orders size: " + newOrders.size + ", should be currentOrders - oldOrders.")
+    
     // assign oid to new orders & add new orders to currently active orders (which will be old orders in the next iteration)
+    // set timestamp of order as current
     val newOrdersWithId: List[LimitOrder] = newOrders.map { x =>
       x match {
         case lb: LiveLimitBidOrder =>
           oid = oid + 1
           oldOrders += (x -> oid)
-          LiveLimitBidOrder(oid, x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price)
+          LiveLimitBidOrder(oid, x.uid, System.currentTimeMillis(), x.whatC, x.withC, x.volume, x.price)
         case la: LiveLimitAskOrder =>
           oid = oid + 1
           oldOrders += (x -> oid)
-          LiveLimitAskOrder(oid, x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price)
+          LiveLimitAskOrder(oid, x.uid, System.currentTimeMillis(), x.whatC, x.withC, x.volume, x.price)
       }
     }
 
     // find which were deleted (or executed) by computing the difference: deletedOrders = oldOrders - currentOrders
     val deletedOrders: List[LimitOrder] = oldOrders.keySet.filterNot(currentOrders.toSet).toList
-    println("BtceOrderPullFetcher: deletedOrders size: " + deletedOrders.size + ", should be oldOrders - currentOrders - newOrders")
+    println("BtceOrderPullFetcher: deletedOrders size: " + deletedOrders.size + ", should be oldOrders - currentOrders")
 
     // convert deleted orders into DelOrders
     val delOrders: List[DelOrder] = deletedOrders.map { x => DelOrder(oldOrders(x), x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price) }
