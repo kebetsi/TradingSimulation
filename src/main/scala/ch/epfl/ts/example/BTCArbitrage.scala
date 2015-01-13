@@ -1,8 +1,8 @@
 package ch.epfl.ts.example
 
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.data.{ Order, DelOrder, LiveLimitAskOrder, LiveLimitBidOrder, Transaction }
-import ch.epfl.ts.engine.{ BackLoop, MarketSimulator, MarketRules, OHLC }
+import ch.epfl.ts.data.{ Order, DelOrder, LiveLimitAskOrder, LiveLimitBidOrder, Transaction, OHLC }
+import ch.epfl.ts.engine.{ BackLoop, MarketSimulator, MarketRules }
 import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.component.fetch.{ PullFetchComponent, BitstampTransactionPullFetcher, BitstampOrderPullFetcher, BtceTransactionPullFetcher, BtceOrderPullFetcher, MarketNames }
 import ch.epfl.ts.component.persist.TransactionPersistor

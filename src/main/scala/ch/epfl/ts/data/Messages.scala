@@ -70,6 +70,12 @@ case class DelOrder(override val oid: Long, override val uid: Long, override val
 
 
 /**
+ * represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
+ */
+case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long)
+
+
+/**
  * Data Transfer Object representing a Tweet
  * @param timestamp
  * @param content
