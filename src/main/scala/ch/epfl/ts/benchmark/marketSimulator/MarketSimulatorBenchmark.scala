@@ -38,11 +38,7 @@ object MarketSimulatorBenchmark {
     market.addDestination(timeCounter, classOf[FinishedProcessingOrders])
 
     // start the benchmark
-    //    val initTime = System.currentTimeMillis()
     builder.start
-    //    Thread.sleep(2000)
-    //    builder.stop
-    //    println("MS Benchmarking main: STOP SENT")
   }
 
   def generateOrders(count: Int): List[Order] = {
@@ -96,17 +92,17 @@ object MarketSimulatorBenchmark {
             // generate delete order for limit bid order
             case it2 if 0 until 234 contains it2 => {
               if (lbOids.size > 0) {
-                val lbToDelete = r.nextInt(lbOids.size)
-                orders = new DelOrder(lbOids.toVector(lbToDelete), 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0) :: orders
-                lbOids -= lbToDelete
+                val lbIdToDelete = lbOids.toVector(r.nextInt(lbOids.size))
+                orders = new DelOrder(lbIdToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0) :: orders
+                lbOids -= lbIdToDelete
               }
             }
             // generate delete order for limit ask order
             case it2 if 234 until 585 contains it2 => {
               if (laOids.size > 0) {
-                val laToDelete = laOids.toVector(r.nextInt(laOids.size))
-                orders = new DelOrder(laToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0) :: orders
-                laOids -= laToDelete
+                val laIdToDelete = laOids.toVector(r.nextInt(laOids.size))
+                orders = new DelOrder(laIdToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0) :: orders
+                laOids -= laIdToDelete
               }
             }
           }
