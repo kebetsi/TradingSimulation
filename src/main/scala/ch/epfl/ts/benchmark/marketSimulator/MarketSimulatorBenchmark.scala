@@ -15,7 +15,8 @@ object MarketSimulatorBenchmark {
   var r = scala.util.Random
 
   def main(args: Array[String]) {
-    val orders = loadOrdersFromPersistor(100000, "finance")
+//    val orders = loadOrdersFromPersistor(100000, "finance")
+    val orders = generateOrders(100000)
 
     // create factory
     implicit val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
@@ -45,7 +46,7 @@ object MarketSimulatorBenchmark {
     val financePersistor = new OrderPersistor(persistorName) // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
     var orders: List[Order] = Nil
-    orders = financePersistor.loadBatch(25210389, 35160206)
+    orders = financePersistor.loadBatch(25210389, 35137626)
 //    for(i <- 1 to count) {
 //      if (i % 100 == 0) println("loaded " + i + "th order from persistor")
 //      orders = financePersistor.loadSingle(i) :: orders

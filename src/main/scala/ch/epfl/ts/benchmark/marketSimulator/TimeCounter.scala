@@ -13,7 +13,7 @@ class TimeCounter extends Component {
   def receiver = {
     case StartSending(o) => {
       ordersCount = o
-      initSendingTime = System.currentTimeMillis(); println("TimeCounter: received StartSending from " + sender)
+      initSendingTime = System.currentTimeMillis(); println("TimeCounter: feeding " + o + " orders started.")
     }
     case FinishedProcessingOrders(aSize, bSize) => {
       println("TimeCounter: processed " + ordersCount + " orders in " + (System.currentTimeMillis() - initSendingTime) + " ms.")
