@@ -119,14 +119,13 @@ class BtceAPI(from: Currency, to: Currency) {
       val json = Request.Get(path).execute().returnContent().asString()
       val a = parse(json).extract[Map[String, List[List[Double]]]]
 
-      val asks = a.get("asks") match {
-        case Some(l) => l.map { e => LiveLimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head)}
-        case _ => List[LimitOrder]()
-      }
-      val bids = a.get("bids") match {
-        case Some(l) => l.map { e => LiveLimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head)}
-        case _ => List[LimitOrder]()
-      }
+      val asks = a.get("asks").fold(List[LimitOrder]())({ l =>
+        l.map { e => LiveLimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head)}
+      })
+
+      val bids = a.get("bids").fold(List[LimitOrder]())({ l =>
+        l.map { e => LiveLimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head)}
+      })
       t = asks ++ bids
     } catch {
       case _: Throwable => t = List[LimitOrder]()

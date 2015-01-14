@@ -34,27 +34,21 @@ class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
       tradingPrice = rules.matchingFunction(marketId, marketAsk.asInstanceOf[Order], askOrdersBook.asInstanceOf[TreeSet[Order]], bidOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Streamable], (a, b) => true, tradingPrice, (marketAsk, askOrdersBook) => (println("MS: market order discarded")))
     }
 
-    case del: DelOrder => {
+    case del: DelOrder =>
       println("MS: got Delete: " + del)
       send(del)
       // look in bids
-      bidOrdersBook.find { x => x.oid == del.oid } match {
-        case bidToDelete: Some[LimitBidOrder] => {
-          println("MS: order deleted from Bids")
-          bidOrdersBook -= bidToDelete.get
-        }
-        case _ => {
-          // look in asks
-          askOrdersBook.find { x => x.oid == del.oid } match {
-            case askToDelete: Some[LimitAskOrder] => {
-              println("MS: order deleted from Asks")
-              askOrdersBook -= askToDelete.get
-            }
-            case _ =>
-          }
+      bidOrdersBook.find { _.oid == del.oid } map { elem =>
+        println("MS: order deleted from Bids")
+        bidOrdersBook -= elem
+      } getOrElse {
+        // look in asks
+        askOrdersBook.find { _.oid == del.oid } map { elem =>
+          println("MS: order deleted from Asks")
+          askOrdersBook -= elem
         }
       }
-    }
+    
 
     case t: Transaction => tradingPrice = t.price
     

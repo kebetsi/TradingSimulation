@@ -56,21 +56,15 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
 
   def removeOrder(order: Order) = {
     // look in bids
-    bidsOrdersBook.find { x => x.oid == order.oid } match {
-      case bidToDelete: Some[LimitBidOrder] => {
-        bidsOrdersBook -= bidToDelete.get
-      }
-      case _ => {
+    bidsOrdersBook.find { x => x.oid == order.oid } map { bidToDelete =>
+        bidsOrdersBook -= bidToDelete
+      } getOrElse {
         // look in asks
-        asksOrdersBook.find { x => x.oid == order.oid } match {
-          case askToDelete: Some[LimitAskOrder] => {
-            asksOrdersBook -= askToDelete.get
-          }
-          case _ =>
+        asksOrdersBook.find { x => x.oid == order.oid } map { askToDelete =>
+          asksOrdersBook -= askToDelete
         }
       }
     }
-  }
 
   /**
    * compute the volume-weighted average price of the top quartile*25% of the volume of the bids/asks orders book

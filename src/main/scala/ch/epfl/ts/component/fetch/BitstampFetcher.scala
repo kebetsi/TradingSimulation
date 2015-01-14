@@ -43,18 +43,17 @@ class BitstampOrderPullFetcher extends PullFetch[Order] {
 
     // assign oid to new orders & add new orders to currently active orders (which will be old orders in the next iteration)
     // set timestamp of order as current
-    val newOrdersWithId: List[LimitOrder] = newOrders.map { x =>
-      x match {
-        case lb: LiveLimitBidOrder =>
-          oid = oid + 1
-          oldOrders += (x -> oid)
-          LiveLimitBidOrder(oid, x.uid, System.currentTimeMillis(), x.whatC, x.withC, x.volume, x.price)
-        case la: LiveLimitAskOrder =>
-          oid = oid + 1
-          oldOrders += (x -> oid)
-          LiveLimitAskOrder(oid, x.uid, System.currentTimeMillis(), x.whatC, x.withC, x.volume, x.price)
-      }
+    val newOrdersWithId: List[LimitOrder] = newOrders.map  {
+      case lb: LiveLimitBidOrder =>
+        oid = oid + 1
+        oldOrders += (lb -> oid)
+        LiveLimitBidOrder(oid, lb.uid, System.currentTimeMillis(), lb.whatC, lb.withC, lb.volume, lb.price)
+      case la: LiveLimitAskOrder =>
+        oid = oid + 1
+        oldOrders += (la -> oid)
+        LiveLimitAskOrder(oid, la.uid, System.currentTimeMillis(), la.whatC, la.withC, la.volume, la.price)
     }
+
 
     // find which were deleted (or executed) by computing the difference: deletedOrders = oldOrders - currentOrders
     val deletedOrders: List[LimitOrder] = oldOrders.keySet.filterNot(currentOrders.toSet).toList

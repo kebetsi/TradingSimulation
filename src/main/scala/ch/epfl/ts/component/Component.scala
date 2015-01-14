@@ -75,19 +75,8 @@ abstract class Component extends Receiver {
   /* TODO: Dirty hack, componentReceive giving back unmatched to rematch in receiver using a andThen */
   override def receive = componentReceive orElse receiver
 
-  final def send[T: ClassTag](t: T): Unit = {
-    dest.get(t.getClass) match {
-      case Some(l) => l.map(_ ! t)
-      case None =>
-    }
-  }
+  final def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t))
 
-  final def send[T: ClassTag](t: List[T]): Unit = {
-    val clazz = implicitly[ClassTag[T]].runtimeClass
-    dest.get(clazz) match {
-      case Some(l) => l.map(d => t.map(d ! _))
-      case None =>
-    }
-  }
+  final def send[T: ClassTag](t: List[T])= dest.get(t.getClass).map(_.map (d => t.map(d ! _)))
 }
 
