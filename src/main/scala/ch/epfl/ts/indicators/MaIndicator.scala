@@ -28,6 +28,9 @@ abstract class MaIndicator(period: Int) extends Component {
     case _             =>
   }
   
+  /**
+   * compute moving average
+   */
   def computeMa : MA
 
 }

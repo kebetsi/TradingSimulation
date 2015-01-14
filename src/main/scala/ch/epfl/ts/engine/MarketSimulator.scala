@@ -50,23 +50,23 @@ class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
       }
     
 
-    case t: Transaction => tradingPrice = t.price
-    
+    case t: Transaction         => tradingPrice = t.price
+
     // for now we simply add them without trying to match - need to be optimized, first batch loads and simply adds, then smaller batches try matching
-    case lla:LiveLimitAskOrder => askOrdersBook += LimitAskOrder(lla.oid, lla.uid, lla.timestamp, lla.whatC, lla.withC, lla.volume, lla.price)
-    case llb:LiveLimitBidOrder => bidOrdersBook += LimitBidOrder(llb.oid, llb.uid, llb.timestamp, llb.whatC, llb.withC, llb.volume, llb.price)
+    case lla: LiveLimitAskOrder => askOrdersBook += LimitAskOrder(lla.oid, lla.uid, lla.timestamp, lla.whatC, lla.withC, lla.volume, lla.price)
+    case llb: LiveLimitBidOrder => bidOrdersBook += LimitBidOrder(llb.oid, llb.uid, llb.timestamp, llb.whatC, llb.withC, llb.volume, llb.price)
 
     // replaces the order books with the content of the received ones
-//    case books: List[LimitOrder] => {
-//      bidOrdersBook.clear()
-//      askOrdersBook.clear()
-//      books.map { o =>
-//        o match {
-//          case lb: LimitBidOrder => bidOrdersBook += lb
-//          case la: LimitAskOrder => askOrdersBook += la
-//        }
-//      }
-//    }
+    //    case books: List[LimitOrder] => {
+    //      bidOrdersBook.clear()
+    //      askOrdersBook.clear()
+    //      books.map { o =>
+    //        o match {
+    //          case lb: LimitBidOrder => bidOrdersBook += lb
+    //          case la: LimitAskOrder => askOrdersBook += la
+    //        }
+    //      }
+    //    }
 
     case PrintBooks => {
       // print shows heap order (binary tree)

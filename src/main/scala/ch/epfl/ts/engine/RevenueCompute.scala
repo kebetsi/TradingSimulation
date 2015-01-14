@@ -1,4 +1,4 @@
-package ch.epfl.ts.traders
+package ch.epfl.ts.engine
 
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Transaction
