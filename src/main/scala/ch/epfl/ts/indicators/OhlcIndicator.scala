@@ -20,7 +20,7 @@ class OhlcIndicator(marketId: Long, tickSizeMillis: Long) extends Component {
   override def receiver = {
     case t: Transaction => {
       if (whichTick(t.timestamp) > currentTick) {
-        // new tick, send OHLC with values stored until now, and reset accumulators
+        // new tick, send OHLC with values stored until now, and reset accumulators (Transaction volume & prices)
         send(computeOHLC)
         currentTick = whichTick(t.timestamp)
       }
