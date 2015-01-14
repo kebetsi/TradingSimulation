@@ -31,7 +31,7 @@ class BitfinexTransactionPullFetcher extends PullFetch[Transaction] {
 /**
  * Implementation of the Orders Fetch API for Bitfinex
  */
-class BitstampOrderPullFetcher extends PullFetch[Order] {
+class BitfinexOrderPullFetcher extends PullFetch[Order] {
   val bitstampApi = new BitfinexAPI(USD, BTC)
   var count = 2000
   // Contains the OrderId and The fetch timestamp
