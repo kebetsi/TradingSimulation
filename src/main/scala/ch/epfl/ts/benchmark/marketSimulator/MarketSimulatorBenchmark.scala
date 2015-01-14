@@ -6,6 +6,7 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.component.ComponentBuilder
 import akka.actor.Props
 import ch.epfl.ts.engine.{ MarketSimulator, MarketRules }
+
 /**
  * file containing various tests to benchmark the MarketSimulator's performance
  */
@@ -14,28 +15,34 @@ object MarketSimulatorBenchmark {
   var r = scala.util.Random
 
   def main(args: Array[String]) {
-    val orders = generateOrders(100000)
+    val orders = generateOrders(1000000)
 
     // create factory
     implicit val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
 
     // Create Components
     val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders))
-    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new MarketRules()))
-    
+    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()))
+    val timeCounter = builder.createRef(Props(classOf[TimeCounter]))
+
     // Create Connections
     orderFeeder.addDestination(market, classOf[LimitAskOrder])
     orderFeeder.addDestination(market, classOf[LimitBidOrder])
     orderFeeder.addDestination(market, classOf[MarketAskOrder])
     orderFeeder.addDestination(market, classOf[MarketBidOrder])
     orderFeeder.addDestination(market, classOf[DelOrder])
-    
+    orderFeeder.addDestination(market, classOf[LastOrder])
+
+    // start and end signals
+    orderFeeder.addDestination(timeCounter, classOf[StartSending])
+    market.addDestination(timeCounter, classOf[FinishedProcessingOrders])
+
     // start the benchmark
-    val initTime = System.currentTimeMillis()
+    //    val initTime = System.currentTimeMillis()
     builder.start
-    Thread.sleep(2000)
-    builder.stop
-    println("MS Benchmarking main: STOP SENT")
+    //    Thread.sleep(2000)
+    //    builder.stop
+    //    println("MS Benchmarking main: STOP SENT")
   }
 
   def generateOrders(count: Int): List[Order] = {
@@ -57,6 +64,9 @@ object MarketSimulatorBenchmark {
 
     // generate relevant prices
     for (i <- 1 to count) {
+      if (i % 10000 == 0) {
+        println("generating " + i + "th order.")
+      }
       r.nextInt(1000) match {
         // Limit Bid Order
         case it if 0 until 234 contains it => {
