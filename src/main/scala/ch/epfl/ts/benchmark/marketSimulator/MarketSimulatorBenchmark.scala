@@ -27,13 +27,13 @@ object MarketSimulatorBenchmark {
     val timeCounter = builder.createRef(Props(classOf[TimeCounter]))
 
     // Create Connections
+    //orders
     orderFeeder.addDestination(market, classOf[LimitAskOrder])
     orderFeeder.addDestination(market, classOf[LimitBidOrder])
     orderFeeder.addDestination(market, classOf[MarketAskOrder])
     orderFeeder.addDestination(market, classOf[MarketBidOrder])
     orderFeeder.addDestination(market, classOf[DelOrder])
     orderFeeder.addDestination(market, classOf[LastOrder])
-
     // start and end signals
     orderFeeder.addDestination(timeCounter, classOf[StartSending])
     market.addDestination(timeCounter, classOf[FinishedProcessingOrders])
@@ -136,7 +136,7 @@ object MarketSimulatorBenchmark {
     (r.nextInt(rangeTimesTen) + 1) * 10
   }
 
-  // print the 
+  // print the generated orders distribution
   def countOrderTypes(orders: List[Order]) = {
     var laCount = 0
     var lbCount = 0
@@ -157,7 +157,7 @@ object MarketSimulatorBenchmark {
 
   // count the occurences of different types of orders in finance.csv to get an idea of how to generate fake orders for the benchmarking
   // results: LB orders= 26%, LA orders = 39%, DEL orders = 35%
-  def financeOrderTypes = {
+  def countOrderDistributionInFinanceCSV = {
     val financePersistor = new OrderPersistor("finance") // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
     var laOrders: Int = 0
@@ -169,7 +169,7 @@ object MarketSimulatorBenchmark {
         case lb: LimitBidOrder => laOrders = laOrders + 1
         case la: LimitAskOrder => lbOrders = lbOrders + 1
         case del: DelOrder     => delOrders = delOrders + 1
-        case _                 => println("yolo wtf")
+        case _                 =>
       }
     }
     println("LB orders: " + lbOrders + ", LA orders: " + laOrders + ", DEL orders: " + delOrders)
