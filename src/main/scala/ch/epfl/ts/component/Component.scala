@@ -26,6 +26,11 @@ final class ComponentBuilder(name: String) {
     cr.ar ! new StartSignal()
     println("Sending start Signal to " + cr.ar)
   })
+  
+  def stop = instances.map { cr => {
+    cr.ar ! new StopSignal()
+    println("Sending stop Signal to " + cr.ar)
+  } }
 
 
   def createRef(props: ComponentProps) = {
