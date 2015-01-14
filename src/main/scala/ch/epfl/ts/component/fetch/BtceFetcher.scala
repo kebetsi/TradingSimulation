@@ -2,7 +2,7 @@ package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitOrder, LiveLimitAskOrder, LiveLimitBidOrder, Order, Transaction}
-import net.liftweb.json._
+import net.liftweb.json.parse
 import org.apache.http.client.fluent._
 
 /**
@@ -75,9 +75,9 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
   }
 }
 
+private[this] case class BTCeTransaction(date: Long, price: Double, amount: Double, tid: Int, price_currency: String, item: String, trade_type: String)
 
-case class BTCeCaseTransaction(date: Long, price: Double, amount: Double, tid: Int,
-                               price_currency: String, item: String, trade_type: String)
+private[this] case class BTCeDepth(asks: List[List[Double]], bids: List[List[Double]])
 
 class BtceAPI(from: Currency, to: Currency) {
   implicit val formats = net.liftweb.json.DefaultFormats
@@ -91,13 +91,13 @@ class BtceAPI(from: Currency, to: Currency) {
    * @return the fetched transactions
    */
   def getTrade(count: Int): List[Transaction] = {
-    var t = List[BTCeCaseTransaction]()
+    var t = List[BTCeTransaction]()
     try {
       val path = serverBase + pair + "/trades/" + count
       val json = Request.Get(path).execute().returnContent().asString()
-      t = parse(json).extract[List[BTCeCaseTransaction]]
+      t = parse(json).extract[List[BTCeTransaction]]
     } catch {
-      case _: Throwable => t = List[BTCeCaseTransaction]();
+      case _: Throwable => t = List[BTCeTransaction]();
     }
 
     if (t.length != 0) {
@@ -117,15 +117,11 @@ class BtceAPI(from: Currency, to: Currency) {
     try {
       val path = serverBase + pair + "/depth/" + count
       val json = Request.Get(path).execute().returnContent().asString()
-      val a = parse(json).extract[Map[String, List[List[Double]]]]
+      val depth = parse(json).extract[BTCeDepth]
 
-      val asks = a.get("asks").fold(List[LimitOrder]())({ l =>
-        l.map { e => LiveLimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head)}
-      })
+      val asks = depth.asks map { o => LiveLimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, o.last, o.head)}
+      val bids = depth.bids map { o => LiveLimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, o.last, o.head)}
 
-      val bids = a.get("bids").fold(List[LimitOrder]())({ l =>
-        l.map { e => LiveLimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, e.last, e.head)}
-      })
       t = asks ++ bids
     } catch {
       case _: Throwable => t = List[LimitOrder]()

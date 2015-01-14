@@ -1,13 +1,16 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ Transaction, LimitOrder, LimitAskOrder, LimitBidOrder, Order, LiveLimitAskOrder, LiveLimitBidOrder, DelOrder }
-import net.liftweb.json._
+import ch.epfl.ts.data.{DelOrder, LimitOrder, LiveLimitAskOrder, LiveLimitBidOrder, Order, Transaction}
+import net.liftweb.json.parse
 import org.apache.http.client.fluent._
 
+/**
+ * Implementation of the Transaction Fetch API for Bitstamp
+ */
 class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
   val bitstamp = new BitstampAPI(USD, BTC)
-  var count = 100
+  var count = 2000
   var latest = new Transaction(MarketNames.BITSTAMP_ID, 0.0, 0.0, 0, BTC, USD, 0, 0, 0, 0)
 
   override def interval(): Int = 12000
@@ -16,7 +19,7 @@ class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
     val trades = bitstamp.getTrade(count)
 
     val idx = trades.indexOf(latest)
-    count = if (idx < 0) 100 else Math.min(10 * idx, 100)
+    count = if (idx < 0) 2000 else Math.min(10 * idx, 100)
     latest = if (trades.length == 0) latest else trades.head
 
     if (idx > 0)
@@ -26,87 +29,94 @@ class BitstampTransactionPullFetcher extends PullFetch[Transaction] {
   }
 }
 
+/**
+ * Implementation of the Orders Fetch API for Bitstamp
+ */
 class BitstampOrderPullFetcher extends PullFetch[Order] {
   val bitstampApi = new BitstampAPI(USD, BTC)
   var count = 2000
-  override def interval(): Int = 12000
-  var oldOrders = Map[LimitOrder, Long]()
+  // Contains the OrderId and The fetch timestamp
+  var oldOrderBook = Map[Order, (Long, Long)]()
   var oid = 10000000000L
+
+  override def interval(): Int = 12000
+
   override def fetch(): List[Order] = {
-    // acquire currently active orders
-    val currentOrders = bitstampApi.getDepth(count)
-    println("BitstampOrderPullfetcher: current orders size: " + currentOrders.size + ", old orders size: " + oldOrders.size)
+    val fetchTime = System.currentTimeMillis()
+
+    // Fetch the new Orders
+    val curOrderBook = bitstampApi.getDepth(count)
 
     // find which are new by computing the difference: newOrders = currentOrders - oldOrders
-    val newOrders: List[LimitOrder] = currentOrders.filterNot(oldOrders.keySet)
-    println("BitstampOrderPullfetcher: new Orders size: " + newOrders.size + ", should be currentOrders - oldOrders.")
+    val newOrders = curOrderBook diff oldOrderBook.keySet.toList
+    val delOrders = oldOrderBook.keySet.toList diff curOrderBook
 
-    // assign oid to new orders & add new orders to currently active orders (which will be old orders in the next iteration)
-    // set timestamp of order as current
-    val newOrdersWithId: List[LimitOrder] = newOrders.map  {
-      case lb: LiveLimitBidOrder =>
-        oid = oid + 1
-        oldOrders += (lb -> oid)
-        LiveLimitBidOrder(oid, lb.uid, System.currentTimeMillis(), lb.whatC, lb.withC, lb.volume, lb.price)
-      case la: LiveLimitAskOrder =>
-        oid = oid + 1
-        oldOrders += (la -> oid)
-        LiveLimitAskOrder(oid, la.uid, System.currentTimeMillis(), la.whatC, la.withC, la.volume, la.price)
+    // Indexes deleted orders and removes them from the map
+    val indexedDelOrders = delOrders map { k =>
+      val oidts: (Long, Long) = oldOrderBook.get(k).get
+      oldOrderBook -= k
+      k match {
+        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+      }
     }
 
+    // Indexes new orders and add them to the map
+    val indexedNewOrders = newOrders map { k =>
+      oid += 1
+      val order = k match {
+        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => LiveLimitAskOrder(o, u, fetchTime, wac, wic, v, p)
+        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => LiveLimitBidOrder(o, u, fetchTime, wac, wic, v, p)
+      }
+      oldOrderBook += (k ->(oid, fetchTime))
+      order
+    }
 
-    // find which were deleted (or executed) by computing the difference: deletedOrders = oldOrders - currentOrders
-    val deletedOrders: List[LimitOrder] = oldOrders.keySet.filterNot(currentOrders.toSet).toList
-    println("BitstampOrderPullfetcher: deletedOrders size: " + deletedOrders.size + ", should be oldOrders - currentOrders")
-
-    // convert deleted orders into DelOrders
-    val delOrders: List[DelOrder] = deletedOrders.map { x => DelOrder(oldOrders(x), x.uid, x.timestamp, x.whatC, x.withC, x.volume, x.price) }
-
-    // remove deleted orders from currently active orders (which will be old orders in the next iteration)
-    deletedOrders.map { x => oldOrders -= x }
-    println("BitstampOrderPullfetcher: updated old orders size: " + oldOrders.size + ", should be same as currentOrders")
-
-    newOrdersWithId ::: delOrders
+    indexedNewOrders ++ indexedDelOrders
   }
 }
 
-case class BitstampCaseTransaction(date: String, tid: Int, price: String, amount: String)
+private[this] case class BitstampTransaction(date: String, tid: Int, price: String, amount: String)
 
-case class BitstampDepth(timestamp: String, bids: List[List[String]], asks: List[List[String]])
+private[this] case class BitstampDepth(timestamp: String, bids: List[List[String]], asks: List[List[String]])
 
 class BitstampAPI(from: Currency, to: Currency) {
   implicit val formats = net.liftweb.json.DefaultFormats
 
   val serverBase = "https://www.bitstamp.net/api/"
 
-  def getInfo {}
-
-  def getTicker {}
-
+  /**
+   * Fetches count transactions from Bitstamp's HTTP trade API
+   * @param count number of Transactions to fetch
+   * @return the fetched transactions
+   */
   def getTrade(count: Int): List[Transaction] = {
     val path = serverBase + "transactions/"
     val json = Request.Get(path).execute().returnContent().asString()
-    val t = parse(json).extract[List[BitstampCaseTransaction]]
+    val t = parse(json).extract[List[BitstampTransaction]]
 
-    t.map(f => new Transaction(MarketNames.BITSTAMP_ID, f.price.toDouble, f.amount.toDouble, f.date.toLong * 1000, BTC, USD, 0, 0, 0, 0))
+    t.map(f => Transaction(MarketNames.BITSTAMP_ID, f.price.toDouble, f.amount.toDouble, f.date.toLong * 1000, BTC, USD, 0, 0, 0, 0))
   }
 
+  /**
+   * Fetches count orders from Bitstamp's orderbook using the HTTP order API
+   * @param count number of Order to fetch
+   * @return the fetched orders
+   */
   def getDepth(count: Int): List[LimitOrder] = {
     var t = List[LimitOrder]()
     try {
       val path = serverBase + "order_book/"
       val json = Request.Get(path).execute().returnContent().asString()
-      val a = parse(json).extract[BitstampDepth]
-      val asks = a.asks.map { e => LiveLimitAskOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble) }
+      val o = parse(json).extract[BitstampDepth]
 
-      val bids = a.bids.map { e => LiveLimitBidOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble) }
+      val asks = o.asks.map { e => LiveLimitAskOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble)}
+      val bids = o.bids.map { e => LiveLimitBidOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble)}
 
       t = asks ++ bids
     } catch {
-      case e: Throwable => {
-        println("error: " + e)
+      case e: Throwable =>
         t = List[LimitOrder]()
-      }
     }
     t
   }
