@@ -5,7 +5,7 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.persist.{ OrderPersistor, TransactionPersistor }
 import ch.epfl.ts.component.replay.{ Replay, ReplayConfig }
 import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.traders.RevenueCompute
+import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction, OHLC }
 import ch.epfl.ts.engine.{ BackLoop, MarketRules, MarketSimulator }
 import ch.epfl.ts.traders.{ SimpleTrader, SobiTrader, TransactionVwapTrader, DoubleEnvelopeTrader, DoubleCrossoverTrader }
