@@ -11,7 +11,7 @@ class BenchmarkMarketSimulator(marketId: Long, rules: MarketRules) extends Marke
 //  var ordersCount: Int = 0
 
   override def receiver = {
-    case last: LastOrder => send(FinishedProcessingOrders()); 
+    case last: LastOrder => send(FinishedProcessingOrders(askOrdersBook.size, bidOrdersBook.size)); 
 
     case limitBid: LimitBidOrder => {
       tradingPrice = rules.matchingFunction(marketId, limitBid.asInstanceOf[Order], bidOrdersBook.asInstanceOf[TreeSet[Order]], askOrdersBook.asInstanceOf[TreeSet[Order]], this.send[Streamable], (a, b) => a <= b, tradingPrice, (limitBid, bidOrdersBook) => { bidOrdersBook += limitBid; send(limitBid) }) //; println("MS: order enqueued") })

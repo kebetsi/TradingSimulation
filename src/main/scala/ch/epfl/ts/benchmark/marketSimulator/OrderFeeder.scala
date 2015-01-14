@@ -11,7 +11,7 @@ class OrderFeeder(orders: List[Order]) extends Component {
   def receiver = {
     case StartSignal() => {
       val ordersSent = orders :+ LastOrder(0L, 0L, System.currentTimeMillis(), DEF, DEF, 0.0, 0.0)
-      send(StartSending())
+      send(StartSending(orders.size))
       ordersSent.map { o => send(o) }
     }
     case _ => println("OrderFeeder: unknown received")
