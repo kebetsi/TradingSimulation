@@ -9,6 +9,7 @@ import ch.epfl.ts.component.persist.TransactionPersistor
 import ch.epfl.ts.component.ComponentBuilder
 import akka.actor.Props
 import scala.reflect.ClassTag
+import ch.epfl.ts.indicators.OhlcIndicator
 
 object BTCArbitrage {
 
@@ -43,10 +44,12 @@ object BTCArbitrage {
     val btceMarket = builder.createRef(Props(classOf[MarketSimulator], btceMarketId, rules))
     val bitstampMarket = builder.createRef(Props(classOf[MarketSimulator], bitstampMarketId, rules))
     // backloops
-    val btceOhlcIntervalMillis = 10000
-    val btceBackLoop = builder.createRef(Props(classOf[BackLoop], btceMarketId, btceOhlcIntervalMillis, btceXactPersit))
-    val bitstampOhlcIntervalMillis = 10000
-    val bitstampBackLoop = builder.createRef(Props(classOf[BackLoop], bitstampMarketId, bitstampOhlcIntervalMillis, bitstampXactPersist))
+    val btceBackLoop = builder.createRef(Props(classOf[BackLoop], btceMarketId, btceXactPersit))
+    val bitstampBackLoop = builder.createRef(Props(classOf[BackLoop], bitstampMarketId, bitstampXactPersist))
+    // OHLC indicators
+    val ohlcIntervalMillis = 10000L
+    val btceOhlc = builder.createRef(Props(classOf[OhlcIndicator], btceMarketId, ohlcIntervalMillis))
+    val bitstampOhlc = builder.createRef(Props(classOf[OhlcIndicator], bitstampMarketId, ohlcIntervalMillis))
     // printer
     val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
 
@@ -56,26 +59,32 @@ object BTCArbitrage {
     btceOrderFetcher.addDestination(btceMarket, classOf[LiveLimitAskOrder])
     btceOrderFetcher.addDestination(btceMarket, classOf[LiveLimitBidOrder])
     btceOrderFetcher.addDestination(btceMarket, classOf[DelOrder])
-    // market to backloop
-    btceMarket.addDestination(btceBackLoop, classOf[Transaction])
     // fetcher to backloop
     btceTransactionFetcher.addDestination(btceBackLoop, classOf[Transaction])
+    // fetcher to OHLC
+    btceTransactionFetcher.addDestination(btceOhlc, classOf[Transaction])
+    // market to backloop
+    btceMarket.addDestination(btceBackLoop, classOf[Transaction])
     // backloop to arbitrageur
     btceBackLoop.addDestination(arbitrageur, classOf[Transaction])
-    btceBackLoop.addDestination(arbitrageur, classOf[OHLC])
+    // ohlc to arbitrageur
+    btceOhlc.addDestination(arbitrageur, classOf[OHLC])
     // Bitstamp
     // fetcher to market
     bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LiveLimitAskOrder])
     bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LiveLimitBidOrder])
     bitstampOrderFetcher.addDestination(bitstampMarket, classOf[DelOrder])
-    // market to backloop
-    bitstampMarket.addDestination(bitstampBackLoop, classOf[Transaction])
     // fetcher to backloop
     bitstampTransactionFetcher.addDestination(bitstampBackLoop, classOf[Transaction])
+    // fetcher to OHLC
+    bitstampTransactionFetcher.addDestination(bitstampOhlc, classOf[Transaction])
+    // market to backloop
+    bitstampMarket.addDestination(bitstampBackLoop, classOf[Transaction])
     // backloop to arbitrageur
     bitstampBackLoop.addDestination(arbitrageur, classOf[Transaction])
     bitstampBackLoop.addDestination(arbitrageur, classOf[OHLC])
-
+    // ohlc to arbitrageur
+    bitstampOhlc.addDestination(arbitrageur, classOf[OHLC])
     // Start the system
     builder.start
   }
