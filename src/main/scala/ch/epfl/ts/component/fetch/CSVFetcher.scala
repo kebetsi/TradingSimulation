@@ -6,14 +6,14 @@ import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder}
 
 import scala.io.Source
 
-object CSVFetcherImpl {
+object CSVFetcher {
   def main(args: Array[String]) {
-    val fetcher = new CSVFetcherImpl
+    val fetcher = new CSVFetcher
     fetcher.loadInPersistor("finance.csv")
   }
 }
 
-class CSVFetcherImpl {
+class CSVFetcher {
 
   def loadInPersistor(filename: String) {
     // name the db as "[filename without extension].db"
