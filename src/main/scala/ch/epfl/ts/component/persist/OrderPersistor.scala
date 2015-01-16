@@ -80,14 +80,13 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
   def save(os: List[Order]) = {
     db.withDynSession {
       //      order ++= os.toIterable.map { x => (1, x.id, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString) }
-      order ++= os.toIterable.map { x =>
-        x match {
+      order ++= os.toIterable.map {
           case la: LimitAskOrder  => (1, la.oid, la.uid, la.timestamp, la.whatC.toString, la.withC.toString, la.volume, la.price, LIMIT_ASK.toString)
           case lb: LimitBidOrder  => (1, lb.oid, lb.uid, lb.timestamp, lb.whatC.toString, lb.withC.toString, lb.volume, lb.price, LIMIT_BID.toString)
           case mb: MarketBidOrder => (1, mb.oid, mb.uid, mb.timestamp, mb.whatC.toString, mb.withC.toString, mb.volume, 0.0, MARKET_BID.toString)
           case ma: MarketAskOrder => (1, ma.oid, ma.uid, ma.timestamp, ma.whatC.toString, ma.withC.toString, ma.volume, 0.0, MARKET_ASK.toString)
           case del: DelOrder      => (1, del.oid, del.uid, del.timestamp, nullStringValue, nullStringValue, 0.0, 0.0, DEL.toString)
-        }
+
       }
     }
   }
@@ -126,7 +125,7 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
         }
       }
     }
-    return res
+    res
   }
 
   /**

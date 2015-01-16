@@ -1,6 +1,6 @@
 package ch.epfl.ts.benchmark.marketSimulator
 
-import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.engine.{PartialOrderBook, MarketRules}
 import ch.epfl.ts.data.{ Order, Transaction, MarketAskOrder, MarketBidOrder, LimitAskOrder, LimitBidOrder, DelOrder }
 import scala.collection.mutable.TreeSet
 import ch.epfl.ts.data.Streamable
@@ -8,7 +8,7 @@ import ch.epfl.ts.data.Currency._
 
 class BenchmarkMarketRules extends MarketRules {
 
-  override def matchingFunction(marketId: Long, newOrder: Order, newOrdersBook: TreeSet[Order], bestMatchsBook: TreeSet[Order], send: Streamable => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, TreeSet[Order]) => Unit): Double = {
+  override def matchingFunction(marketId: Long, newOrder: Order, newOrdersBook: PartialOrderBook, bestMatchsBook: PartialOrderBook, send: Streamable => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, PartialOrderBook) => Unit): Double = {
     //    println("MS: got new order: " + newOrder)
 
     if (bestMatchsBook.isEmpty) {
@@ -34,7 +34,7 @@ class BenchmarkMarketRules extends MarketRules {
           }
           // remove matched order
           //          println("MS: removing order: " + bestMatch + " from bestMatch orders book.")
-          bestMatchsBook -= bestMatch
+          bestMatchsBook delete bestMatch
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
           // update price
@@ -44,17 +44,17 @@ class BenchmarkMarketRules extends MarketRules {
           //          println("MS: matched with " + bestMatch + ", new order volume inferior - cutting matched order.")
           // remove matched order and reinput it with updated volume
           //          println("MS: removing order: " + bestMatch + " from match orders book. enqueuing same order with " + (bestMatch.volume - newOrder.volume) + " volume.")
-          bestMatchsBook -= bestMatch
+          bestMatchsBook delete bestMatch
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
           if (bestMatch.isInstanceOf[LimitBidOrder]) {
             send(Transaction(marketId, bestMatch.price, newOrder.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
-            bestMatchsBook += LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
+            bestMatchsBook insert LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
             // send diff
             send(LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price))
           } else if (bestMatch.isInstanceOf[LimitAskOrder]) {
             send(Transaction(marketId, bestMatch.price, newOrder.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
-            bestMatchsBook += LimitAskOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
+            bestMatchsBook insert LimitAskOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
             // send diff
             send(LimitAskOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price))
           } else {
@@ -68,26 +68,26 @@ class BenchmarkMarketRules extends MarketRules {
           //          println("MS: matched with " + bestMatch + ", new order volume superior - reiterate")
           // remove matched ask order
           //          println("MS: removing order: " + bestMatch + " from match orders book.")
-          bestMatchsBook -= bestMatch
+          bestMatchsBook delete bestMatch
           // send diff
           send(DelOrder(bestMatch.uid, bestMatch.oid, bestMatch.timestamp, DEF, DEF, 0.0, 0.0))
           // call handleNewOrder on bid with updated volume
           if (newOrder.isInstanceOf[LimitBidOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
-            matchingFunction(marketId, LimitBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, LimitBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[LimitAskOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
-            matchingFunction(marketId, LimitAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, LimitAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[MarketBidOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
-            matchingFunction(marketId, MarketBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, MarketBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[MarketAskOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
-            matchingFunction(marketId, MarketAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, MarketAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else {
             //            println("MarketRules: casting error")
           }
@@ -98,7 +98,7 @@ class BenchmarkMarketRules extends MarketRules {
       } else {
         //        println("MS: no match found")
         // enqueue
-        enqueueOrElse(newOrder, newOrdersBook.asInstanceOf[TreeSet[Order]])
+        enqueueOrElse(newOrder, newOrdersBook)
         return oldTradingPrice
       }
     }
