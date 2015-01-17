@@ -34,7 +34,14 @@ class MarketRules {
 
   def alwaysTrue(a: Double, b: Double) = true
   
-  def matchingFunction(marketId: Long, newOrder: Order, newOrdersBook: PartialOrderBook, bestMatchsBook:PartialOrderBook, send: Streamable => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, PartialOrderBook) => Unit): Double = {
+  def matchingFunction(marketId: Long,
+                       newOrder: Order,
+                       newOrdersBook: PartialOrderBook,
+                       bestMatchsBook: PartialOrderBook,
+                       send: Streamable => Unit,
+                       matchExists: (Double, Double) => Boolean = alwaysTrue,
+                       oldTradingPrice: Double,
+                       enqueueOrElse: (Order, PartialOrderBook) => Unit): Double = {
 
     // newOrderBook asks
     // bestMatchsBook bids
@@ -44,7 +51,7 @@ class MarketRules {
     if (bestMatchsBook.isEmpty) {
       println("MS: matching orders book empty")
       enqueueOrElse(newOrder, newOrdersBook)
-      return oldTradingPrice
+      oldTradingPrice
     } else {
 
       val bestMatch = bestMatchsBook.head
@@ -68,7 +75,7 @@ class MarketRules {
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
           // update price
-          return bestMatch.price
+          bestMatch.price
 
         } else if (bestMatch.volume > newOrder.volume) {
           println("MS: matched with " + bestMatch + ", new order volume inferior - cutting matched order.")
@@ -122,14 +129,14 @@ class MarketRules {
             println("MarketRules: casting error")
           }
           // update price
-          return bestMatch.price
+          bestMatch.price
         }
         // no match found
       } else {
         println("MS: no match found - enqueuing")
         // enqueue
         enqueueOrElse(newOrder, newOrdersBook)
-        return oldTradingPrice
+        oldTradingPrice
       }
     }
   }

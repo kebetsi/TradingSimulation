@@ -28,6 +28,8 @@ class OrderBook(val bids: PartialOrderBook, val asks: PartialOrderBook) {
   def insertAskOrder(o: Order): Unit = asks.insert(o)
 
   def insertBidOrder(o: Order): Unit = bids.insert(o)
+
+  //def getOrderById(oid: Long): Option[Order] = bids.bookMap.get(oid)
 }
 
 object OrderBook {
