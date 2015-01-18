@@ -3,7 +3,7 @@ package ch.epfl.ts.benchmark.marketSimulator
 import ch.epfl.ts.component.Component
 
 case class StartSending(ordersCount: Int)
-case class FinishedProcessingOrders(asksSize: Int, bidsSize: Int, spread: Double)
+case class FinishedProcessingOrders(asksSize: Int, bidsSize: Int)
 
 class TimeCounter extends Component {
 
@@ -15,9 +15,9 @@ class TimeCounter extends Component {
       ordersCount = o
       initSendingTime = System.currentTimeMillis(); println("TimeCounter: feeding " + o + " orders started.")
     }
-    case FinishedProcessingOrders(aSize, bSize, spread) => {
+    case FinishedProcessingOrders(aSize, bSize) => {
       println("TimeCounter: processed " + ordersCount + " orders in " + (System.currentTimeMillis() - initSendingTime) + " ms.")
-      println("TimeCounter: askOrdersBook size = " + aSize + ", bidOrdersBook size = " + bSize + ", bid-ask spread = " + spread)
+      println("TimeCounter: askOrdersBook size = " + aSize + ", bidOrdersBook size = " + bSize)
     }
     case _ =>
   }

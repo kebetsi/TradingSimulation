@@ -3,8 +3,6 @@ package ch.epfl.ts.engine
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Streamable, Transaction}
 
-import scala.collection.mutable.TreeSet
-
 /**
  * represents the cost of placing a bid and market order
  */
@@ -19,16 +17,16 @@ class MarketRules {
   val commission = Commission(0, 0)
 
   // when used on TreeSet, head() and iterator() provide increasing order
-  def asksOrdering = new Ordering[LimitAskOrder] {
-    def compare(first: LimitAskOrder, second: LimitAskOrder): Int =
+  def asksOrdering = new Ordering[Order] {
+    def compare(first: Order, second: Order): Int =
       if (first.price > second.price) 1 else if (first.price < second.price) -1 else {
         if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
       }
   }
 
   // when used on TreeSet, head() and iterator() provide decreasing order
-  def bidsOrdering = new Ordering[LimitBidOrder] {
-    def compare(first: LimitBidOrder, second: LimitBidOrder): Int =
+  def bidsOrdering = new Ordering[Order] {
+    def compare(first: Order, second: Order): Int =
       if (first.price > second.price) -1 else if (first.price < second.price) 1 else {
         if (first.timestamp < second.timestamp) 1 else if (first.timestamp > second.timestamp) -1 else 0
       }
@@ -36,13 +34,24 @@ class MarketRules {
 
   def alwaysTrue(a: Double, b: Double) = true
   
-  def matchingFunction(marketId: Long, newOrder: Order, newOrdersBook: TreeSet[Order], bestMatchsBook: TreeSet[Order], send: Streamable => Unit, matchExists: (Double, Double) => Boolean = alwaysTrue, oldTradingPrice: Double, enqueueOrElse: (Order, TreeSet[Order]) => Unit): Double = {
+  def matchingFunction(marketId: Long,
+                       newOrder: Order,
+                       newOrdersBook: PartialOrderBook,
+                       bestMatchsBook: PartialOrderBook,
+                       send: Streamable => Unit,
+                       matchExists: (Double, Double) => Boolean = alwaysTrue,
+                       oldTradingPrice: Double,
+                       enqueueOrElse: (Order, PartialOrderBook) => Unit): Double = {
+
+    // newOrderBook asks
+    // bestMatchsBook bids
+
     println("MS: got new order: " + newOrder)
 
     if (bestMatchsBook.isEmpty) {
       println("MS: matching orders book empty")
       enqueueOrElse(newOrder, newOrdersBook)
-      return oldTradingPrice
+      oldTradingPrice
     } else {
 
       val bestMatch = bestMatchsBook.head
@@ -62,27 +71,27 @@ class MarketRules {
           }
           // remove matched order
           println("MS: removing order: " + bestMatch + " from bestMatch orders book.")
-          bestMatchsBook -= bestMatch
+          bestMatchsBook delete bestMatch
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
           // update price
-          return bestMatch.price
+          bestMatch.price
 
         } else if (bestMatch.volume > newOrder.volume) {
           println("MS: matched with " + bestMatch + ", new order volume inferior - cutting matched order.")
           // remove matched order and reinput it with updated volume
           println("MS: removing order: " + bestMatch + " from match orders book. enqueuing same order with " + (bestMatch.volume - newOrder.volume) + " volume.")
-          bestMatchsBook -= bestMatch
+          bestMatchsBook delete bestMatch
           // send diff
           send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
           if (bestMatch.isInstanceOf[LimitBidOrder]) {
             send(Transaction(marketId, bestMatch.price, newOrder.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
-            bestMatchsBook += LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
+            bestMatchsBook insert LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
             // send diff
             send(LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price))
           } else if (bestMatch.isInstanceOf[LimitAskOrder]) {
             send(Transaction(marketId, bestMatch.price, newOrder.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
-            bestMatchsBook += LimitAskOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
+            bestMatchsBook insert LimitAskOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
             // send diff
             send(LimitAskOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price))
           } else {
@@ -96,38 +105,38 @@ class MarketRules {
           println("MS: matched with " + bestMatch + ", new order volume superior - reiterate")
           // remove matched ask order
           println("MS: removing order: " + bestMatch + " from match orders book.")
-          bestMatchsBook -= bestMatch
+          bestMatchsBook delete bestMatch
           // send diff
           send(DelOrder(bestMatch.uid, bestMatch.oid, bestMatch.timestamp, DEF, DEF, 0.0, 0.0))
           // call handleNewOrder on bid with updated volume
           if (newOrder.isInstanceOf[LimitBidOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
-            matchingFunction(marketId, LimitBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, LimitBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[LimitAskOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
-            matchingFunction(marketId, LimitAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, LimitAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, bestMatch.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[MarketBidOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
-            matchingFunction(marketId, MarketBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, MarketBidOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else if (newOrder.isInstanceOf[MarketAskOrder]) {
             // create transaction
             send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
-            matchingFunction(marketId, MarketAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook.asInstanceOf[TreeSet[Order]], bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
+            matchingFunction(marketId, MarketAskOrder(newOrder.oid, newOrder.uid, newOrder.timestamp, newOrder.whatC, newOrder.withC, newOrder.volume - bestMatch.volume, newOrder.price), newOrdersBook, bestMatchsBook, send, matchExists, oldTradingPrice, enqueueOrElse)
           } else {
             println("MarketRules: casting error")
           }
           // update price
-          return bestMatch.price
+          bestMatch.price
         }
         // no match found
       } else {
         println("MS: no match found - enqueuing")
         // enqueue
-        enqueueOrElse(newOrder, newOrdersBook.asInstanceOf[TreeSet[Order]])
-        return oldTradingPrice
+        enqueueOrElse(newOrder, newOrdersBook)
+        oldTradingPrice
       }
     }
   }

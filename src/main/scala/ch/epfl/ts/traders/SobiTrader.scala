@@ -3,7 +3,7 @@ package ch.epfl.ts.traders
 import ch.epfl.ts.component.{ Component, StartSignal }
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, Order, Transaction }
-import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.engine.{OrderBook, MarketRules}
 
 import scala.collection.mutable.TreeSet
 import scala.concurrent.duration.DurationInt
@@ -14,8 +14,7 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
 
   case class PossibleOrder()
 
-  val bidsOrdersBook = new TreeSet[LimitBidOrder]()(rules.bidsOrdering)
-  val asksOrdersBook = new TreeSet[LimitAskOrder]()(rules.asksOrdering)
+  val book = OrderBook(rules.bidsOrdering, rules.asksOrdering)
   var tradingPrice = 188700.0 // for finance.csv
 
   var bi: Double = 0.0
@@ -25,14 +24,14 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
   override def receiver = {
     case StartSignal()            => start
 
-    case limitAsk: LimitAskOrder  => asksOrdersBook += limitAsk
-    case limitBid: LimitBidOrder  => bidsOrdersBook += limitBid
+    case limitAsk: LimitAskOrder  => book insertAskOrder limitAsk
+    case limitBid: LimitBidOrder  => book insertBidOrder limitBid
     case delete: DelOrder         => removeOrder(delete)
     case transaction: Transaction => tradingPrice = transaction.price
 
     case b: PossibleOrder => {
-      bi = computeBiOrSi(bidsOrdersBook)
-      si = computeBiOrSi(asksOrdersBook)
+      bi = computeBiOrSi(book.bids.book)
+      si = computeBiOrSi(book.asks.book)
       if ((si - bi) > theta) {
         currentOrderId = currentOrderId + 1
         //"place an order to buy x shares at (lastPrice-p)"
@@ -54,17 +53,7 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
     system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder())
   }
 
-  def removeOrder(order: Order) = {
-    // look in bids
-    bidsOrdersBook.find { x => x.oid == order.oid } map { bidToDelete =>
-        bidsOrdersBook -= bidToDelete
-      } getOrElse {
-        // look in asks
-        asksOrdersBook.find { x => x.oid == order.oid } map { askToDelete =>
-          asksOrdersBook -= askToDelete
-        }
-      }
-    }
+  def removeOrder(order: Order): Unit = book delete order
 
   /**
    * compute the volume-weighted average price of the top quartile*25% of the volume of the bids/asks orders book
