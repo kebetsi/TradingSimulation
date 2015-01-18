@@ -5,9 +5,6 @@ import ch.epfl.ts.data._
 
 import scala.collection.mutable.TreeSet
 
-/**
- *  message used to print the books contents (since we use PriotityQueues, it's the heap order)
- */
 case class PrintBooks()
 
 class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {

@@ -17,8 +17,8 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
 
   def receiver = {
     case StartSignal()  => startScheduler
-    case Tick()         => display
-    case t: Transaction => process(t)
+    case this.Tick()    => display
+    case t: Transaction => process(t);
     case _              =>
   }
 
