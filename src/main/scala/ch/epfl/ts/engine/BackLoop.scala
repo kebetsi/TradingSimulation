@@ -12,13 +12,12 @@ class BackLoop(marketId: Long, p: Persistance[Transaction]) extends Component {
 
   override def receiver = {
     case t: Transaction => {
-      p.save(t)
       send(t)
+      p.save(t)
     }
     case la: LimitAskOrder => send(la)
     case lb: LimitBidOrder => send(lb)
     case d: DelOrder       => send(d)
-    case _                 => println("Looper: received unknown")
+    case _                 => println("BackLoop: received unknown")
   }
-
 }
