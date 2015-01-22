@@ -44,9 +44,9 @@ object ReplaySetup {
     financePersistor.init()
 
     // Replay
-    val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
+    val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]), "replayer")
     // Printer
-    val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
+    val printer = builder.createRef(Props(classOf[Printer]), "ReplayLoopPrinter")
 
     // Create connections
     // replay
