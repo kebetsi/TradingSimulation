@@ -1,7 +1,7 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{DelOrder, LimitOrder, LiveLimitAskOrder, LiveLimitBidOrder, Order, Transaction}
+import ch.epfl.ts.data.{DelOrder, LimitOrder, LimitAskOrder, LimitBidOrder, Order, Transaction}
 import net.liftweb.json.parse
 import org.apache.http.client.fluent._
 
@@ -56,8 +56,8 @@ class BitstampOrderPullFetcher extends PullFetch[Order] {
       val oidts: (Long, Long) = oldOrderBook.get(k).get
       oldOrderBook -= k
       k match {
-        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
-        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
       }
     }
 
@@ -65,8 +65,8 @@ class BitstampOrderPullFetcher extends PullFetch[Order] {
     val indexedNewOrders = newOrders map { k =>
       oid += 1
       val order = k match {
-        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => LiveLimitAskOrder(o, u, fetchTime, wac, wic, v, p)
-        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => LiveLimitBidOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => LimitAskOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => LimitBidOrder(o, u, fetchTime, wac, wic, v, p)
       }
       oldOrderBook += (k ->(oid, fetchTime))
       order
@@ -110,8 +110,8 @@ class BitstampAPI(from: Currency, to: Currency) {
       val json = Request.Get(path).execute().returnContent().asString()
       val o = parse(json).extract[BitstampDepth]
 
-      val asks = o.asks.map { e => LiveLimitAskOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble)}
-      val bids = o.bids.map { e => LiveLimitBidOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble)}
+      val asks = o.asks.map { e => LimitAskOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble)}
+      val bids = o.bids.map { e => LimitBidOrder(0, 0, 0L, USD, BTC, e.last.toDouble, e.head.toDouble)}
 
       t = asks ++ bids
     } catch {

@@ -36,11 +36,6 @@ class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
       book delete del
     case t: Transaction =>
       tradingPrice = t.price
-    // for now we simply add them without trying to match - need to be optimized, first batch loads and simply adds, then smaller batches try matching
-    case lla: LiveLimitAskOrder =>
-      book insertAskOrder LimitAskOrder(lla.oid, lla.uid, lla.timestamp, lla.whatC, lla.withC, lla.volume, lla.price)
-    case llb: LiveLimitBidOrder =>
-      book insertBidOrder LimitBidOrder(llb.oid, llb.uid, llb.timestamp, llb.whatC, llb.withC, llb.volume, llb.price)
     case PrintBooks =>
       // print shows heap order (binary tree)
       println("Ask Orders Book: " + book.bids)

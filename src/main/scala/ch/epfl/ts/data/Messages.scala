@@ -22,12 +22,6 @@ import ch.epfl.ts.data.Currency._
 trait Streamable
 
 /**
- * Orders of order books fetched from live API
- */
-case class LiveLimitBidOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends LimitOrder(oid, uid, timestamp, whatC, withC, volume, price)
-case class LiveLimitAskOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends LimitOrder(oid, uid, timestamp, whatC, withC, volume, price)
-
-/**
  * Data Transfer Object representing a Transaction
  * @param mid market id
  * @param price 

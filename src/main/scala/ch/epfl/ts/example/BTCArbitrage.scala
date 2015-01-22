@@ -5,7 +5,7 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.fetch.{BitstampOrderPullFetcher, BitstampTransactionPullFetcher, BtceOrderPullFetcher, BtceTransactionPullFetcher, MarketNames, PullFetchComponent}
 import ch.epfl.ts.component.persist.TransactionPersistor
 import ch.epfl.ts.component.utils.{BackLoop, Printer}
-import ch.epfl.ts.data.{DelOrder, LiveLimitAskOrder, LiveLimitBidOrder, OHLC, Order, Transaction}
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, OHLC, Order, Transaction}
 import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
 import ch.epfl.ts.indicators.OhlcIndicator
 import ch.epfl.ts.traders.Arbitrageur
@@ -57,8 +57,8 @@ object BTCArbitrage {
     // Create the connections
     // BTC-e
     // fetcher to market
-    btceOrderFetcher.addDestination(btceMarket, classOf[LiveLimitAskOrder])
-    btceOrderFetcher.addDestination(btceMarket, classOf[LiveLimitBidOrder])
+    btceOrderFetcher.addDestination(btceMarket, classOf[LimitAskOrder])
+    btceOrderFetcher.addDestination(btceMarket, classOf[LimitBidOrder])
     btceOrderFetcher.addDestination(btceMarket, classOf[DelOrder])
     // fetcher to backloop
     btceTransactionFetcher.addDestination(btceBackLoop, classOf[Transaction])
@@ -72,8 +72,8 @@ object BTCArbitrage {
     btceOhlc.addDestination(arbitrageur, classOf[OHLC])
     // Bitstamp
     // fetcher to market
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LiveLimitAskOrder])
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LiveLimitBidOrder])
+    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitAskOrder])
+    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitBidOrder])
     bitstampOrderFetcher.addDestination(bitstampMarket, classOf[DelOrder])
     // fetcher to backloop
     bitstampTransactionFetcher.addDestination(bitstampBackLoop, classOf[Transaction])

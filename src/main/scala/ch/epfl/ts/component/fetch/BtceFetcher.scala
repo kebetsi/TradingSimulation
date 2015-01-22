@@ -1,7 +1,7 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{DelOrder, LimitOrder, LiveLimitAskOrder, LiveLimitBidOrder, Order, Transaction}
+import ch.epfl.ts.data.{DelOrder, LimitOrder, LimitAskOrder, LimitBidOrder, Order, Transaction}
 import net.liftweb.json.parse
 import org.apache.http.client.fluent._
 
@@ -46,7 +46,8 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
     // Fetch the new Orders
     val curOrderBook = btceApi.getDepth(count)
 
-    // find which are new by computing the difference: newOrders = currentOrders - oldOrders
+    // new orders: newOrders = currentOrders - oldOrders
+    // deleted orders: delOrders = oldOrders - currentOrders
     val newOrders = curOrderBook diff oldOrderBook.keySet.toList
     val delOrders = oldOrderBook.keySet.toList diff curOrderBook
 
@@ -55,8 +56,8 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
       val oidts: (Long, Long) = oldOrderBook.get(k).get
       oldOrderBook -= k
       k match {
-        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
-        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
       }
     }
 
@@ -64,8 +65,8 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
     val indexedNewOrders = newOrders map { k =>
       oid += 1
       val order = k match {
-        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => LiveLimitAskOrder(o, u, fetchTime, wac, wic, v, p)
-        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => LiveLimitBidOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => LimitAskOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => LimitBidOrder(o, u, fetchTime, wac, wic, v, p)
       }
       oldOrderBook += (k ->(oid, fetchTime))
       order
@@ -119,8 +120,8 @@ class BtceAPI(from: Currency, to: Currency) {
       val json = Request.Get(path).execute().returnContent().asString()
       val depth = parse(json).extract[BTCeDepth]
 
-      val asks = depth.asks map { o => LiveLimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, o.last, o.head)}
-      val bids = depth.bids map { o => LiveLimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, o.last, o.head)}
+      val asks = depth.asks map { o => LimitAskOrder(0, MarketNames.BTCE_ID, 0L, from, to, o.last, o.head)}
+      val bids = depth.bids map { o => LimitBidOrder(0, MarketNames.BTCE_ID, 0L, from, to, o.last, o.head)}
 
       t = asks ++ bids
     } catch {

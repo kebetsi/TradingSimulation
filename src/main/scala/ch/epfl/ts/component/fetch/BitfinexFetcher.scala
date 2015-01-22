@@ -1,7 +1,7 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{DelOrder, LimitOrder, LiveLimitAskOrder, LiveLimitBidOrder, Order, Transaction}
+import ch.epfl.ts.data.{DelOrder, LimitOrder, LimitAskOrder, LimitBidOrder, Order, Transaction}
 import net.liftweb.json.parse
 import org.apache.http.client.fluent._
 
@@ -36,7 +36,7 @@ class BitfinexOrderPullFetcher extends PullFetch[Order] {
   var count = 2000
   // Contains the OrderId and The fetch timestamp
   var oldOrderBook = Map[Order, (Long, Long)]()
-  var oid = 10000000000L
+  var oid = 15000000000L
 
   override def interval(): Int = 12000
 
@@ -55,8 +55,8 @@ class BitfinexOrderPullFetcher extends PullFetch[Order] {
       val oidts: (Long, Long) = oldOrderBook.get(k).get
       oldOrderBook -= k
       k match {
-        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
-        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => DelOrder(oidts._1, oidts._1, oidts._2, wac, wic, v, p)
       }
     }
 
@@ -64,8 +64,8 @@ class BitfinexOrderPullFetcher extends PullFetch[Order] {
     val indexedNewOrders = newOrders map { k =>
       oid += 1
       val order = k match {
-        case LiveLimitAskOrder(o, u, ft, wac, wic, v, p) => LiveLimitAskOrder(o, u, fetchTime, wac, wic, v, p)
-        case LiveLimitBidOrder(o, u, ft, wac, wic, v, p) => LiveLimitBidOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => LimitAskOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => LimitBidOrder(o, u, fetchTime, wac, wic, v, p)
       }
       oldOrderBook += (k ->(oid, fetchTime))
       order
@@ -115,8 +115,8 @@ class BitfinexAPI(from: Currency, to: Currency) {
       val json = Request.Get(path).execute().returnContent().asString()
       val depth: BitfinexDepth = parse(json).extract[BitfinexDepth]
 
-      val asks = depth.asks map { o => LiveLimitAskOrder(0, MarketNames.BITFINEX_ID, o.timestamp.toLong, from, to, o.amount.toDouble, o.price.toDouble)}
-      val bids = depth.bids map { o => LiveLimitBidOrder(0, MarketNames.BITFINEX_ID, o.timestamp.toLong, from, to, o.amount.toDouble, o.price.toDouble)}
+      val asks = depth.asks map { o => LimitAskOrder(0, MarketNames.BITFINEX_ID, o.timestamp.toLong, from, to, o.amount.toDouble, o.price.toDouble)}
+      val bids = depth.bids map { o => LimitBidOrder(0, MarketNames.BITFINEX_ID, o.timestamp.toLong, from, to, o.amount.toDouble, o.price.toDouble)}
 
       t = asks ++ bids
     } catch {
