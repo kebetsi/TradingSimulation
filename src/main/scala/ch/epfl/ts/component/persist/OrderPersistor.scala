@@ -2,12 +2,12 @@ package ch.epfl.ts.component.persist
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{Currency, DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order}
-
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
+import scala.collection.mutable.ListBuffer
 
 object OrderType extends Enumeration {
   type OrderType = Value
@@ -112,20 +112,20 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
    * load entries with timestamp value between startTime and endTime
    */
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
-    var res: List[Order] = List()
+    var res: ListBuffer[Order] = new ListBuffer[Order]()
     db.withDynSession {
       val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r =>
         OrderType.withName(r._9) match {
-          case LIMIT_BID  => res = LimitBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8) :: res
-          case LIMIT_ASK  => res = LimitAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8) :: res
-          case MARKET_BID => res = MarketBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0) :: res
-          case MARKET_ASK => res = MarketAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0) :: res
-          case DEL        => res = DelOrder(r._2, r._3, r._4, DEF, DEF, 0.0, 0.0) :: res
+          case LIMIT_BID  => res.append(LimitBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8))
+          case LIMIT_ASK  => res.append(LimitAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8))
+          case MARKET_BID => res.append(MarketBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0))
+          case MARKET_ASK => res.append(MarketAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0))
+          case DEL        => res.append(DelOrder(r._2, r._3, r._4, DEF, DEF, 0.0, 0.0))
           case _          => println(dbFilename + " Persistor: loadBatch error")
         }
       }
     }
-    res
+    res.toList
   }
 
   /**

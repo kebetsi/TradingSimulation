@@ -1,12 +1,12 @@
 package ch.epfl.ts.component.persist
 
 import ch.epfl.ts.data.Tweet
-
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
+import scala.collection.mutable.ListBuffer
 
 /**
  * Implementation of the Persistance trait for Tweet
@@ -70,11 +70,11 @@ class TweetPersistor(dbFilename: String) extends Persistance[Tweet] {
    * load entries with timestamp value between startTime and endTime
    */
   def loadBatch(startTime: Long, endTime: Long): List[Tweet] = {
-    var res: List[Tweet] = List()
+    var res: ListBuffer[Tweet] = ListBuffer[Tweet]()
     db.withDynSession {
-      val r = tweet.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = new Tweet(r._2, r._3, r._4, r._5, r._6) :: res}
+      val r = tweet.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res.append(Tweet(r._2, r._3, r._4, r._5, r._6)) }
     }
-    res
+    res.toList
   }
 
   /**

@@ -1,12 +1,12 @@
 package ch.epfl.ts.component.persist
 
 import ch.epfl.ts.data.{Currency, Transaction}
-
 import scala.slick.driver.SQLiteDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
 import scala.slick.jdbc.JdbcBackend.Database.dynamicSession
 import scala.slick.jdbc.meta.MTable
 import scala.slick.lifted.{Column, TableQuery, Tag}
+import scala.collection.mutable.ListBuffer
 
 /**
  * Implementation of the Persistance trait for Transaction
@@ -75,11 +75,11 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
    * load entries with timestamp value between startTime and endTime
    */
   def loadBatch(startTime: Long, endTime: Long): List[Transaction] = {
-    var res: List[Transaction] = List()
+    var res: ListBuffer[Transaction] = ListBuffer[Transaction]()
     db.withDynSession {
-      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res = Transaction(r._2, r._3, r._4, r._5, Currency.withName(r._6), Currency.withName(r._7), r._8, r._9, r._10, r._11) :: res }
+      val r = transaction.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r => res.append(Transaction(r._2, r._3, r._4, r._5, Currency.withName(r._6), Currency.withName(r._7), r._8, r._9, r._10, r._11)) }
     }
-    res
+    res.toList
   }
 
   /**
