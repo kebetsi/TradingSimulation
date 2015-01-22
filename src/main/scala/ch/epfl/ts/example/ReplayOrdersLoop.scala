@@ -34,7 +34,7 @@ object ReplayOrdersLoop {
 
     // Create components
     // market
-    val market = builder.createRef(Props(classOf[MarketSimulator], 1L, rules))
+    val market = builder.createRef(Props(classOf[MarketSimulator], marketId, rules))
     // Replay
     val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
     // Printer
@@ -63,12 +63,9 @@ object ReplayOrdersLoop {
     // Create connections
     // replay
     replayer.addDestination(market, classOf[Order])
-    // simpleTrader
-    simpleTrader.addDestination(market, classOf[MarketAskOrder])
-    simpleTrader.addDestination(market, classOf[MarketBidOrder])
-    // SobiTrader
-    sobiTrader.addDestination(market, classOf[LimitBidOrder])
-    sobiTrader.addDestination(market, classOf[LimitAskOrder])
+    replayer.addDestination(market, classOf[LimitAskOrder])
+    replayer.addDestination(market, classOf[LimitBidOrder])
+    replayer.addDestination(market, classOf[DelOrder])
     // market
     market.addDestination(backloop, classOf[Transaction])
     market.addDestination(backloop, classOf[LimitBidOrder])
@@ -90,8 +87,19 @@ object ReplayOrdersLoop {
     smaShort.addDestination(dcTrader, classOf[SMA])
     smaLong.addDestination(dcTrader, classOf[SMA])
     // traders
+    // simpleTrader
+    simpleTrader.addDestination(market, classOf[MarketAskOrder])
+    simpleTrader.addDestination(market, classOf[MarketBidOrder])
+    // SobiTrader
+    sobiTrader.addDestination(market, classOf[LimitBidOrder])
+    sobiTrader.addDestination(market, classOf[LimitAskOrder])
+    // Double Crossover Trader
     dcTrader.addDestination(market, classOf[MarketAskOrder])
-    dcTrader.addDestination(dcTrader, classOf[MarketBidOrder])
+    dcTrader.addDestination(market, classOf[MarketBidOrder])
+    // Double Envelope Trader
+    deTrader.addDestination(market, classOf[MarketBidOrder])
+    deTrader.addDestination(market, classOf[MarketAskOrder])
+    // VWAP trader
     transactionVwap.addDestination(market, classOf[MarketAskOrder])
     transactionVwap.addDestination(market, classOf[MarketBidOrder])
 

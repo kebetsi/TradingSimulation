@@ -5,6 +5,7 @@ import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
 
 class BenchmarkMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator(marketId, rules) {
 
+
   override def receiver = {
     case last: LastOrder =>
       send(FinishedProcessingOrders(book.asks.size, book.bids.size));

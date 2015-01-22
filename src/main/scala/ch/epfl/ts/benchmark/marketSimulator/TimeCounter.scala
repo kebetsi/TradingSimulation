@@ -17,7 +17,7 @@ class TimeCounter extends Component {
     }
     case FinishedProcessingOrders(aSize, bSize) => {
       println("TimeCounter: processed " + ordersCount + " orders in " + (System.currentTimeMillis() - initSendingTime) + " ms.")
-      println("TimeCounter: askOrdersBook Size = " + aSize + ", bidOrdersBook size = " + bSize)
+      println("TimeCounter: askOrdersBook size = " + aSize + ", bidOrdersBook size = " + bSize)
     }
     case _ =>
   }

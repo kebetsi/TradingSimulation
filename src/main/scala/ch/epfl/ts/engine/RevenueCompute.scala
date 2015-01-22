@@ -9,6 +9,9 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
 
   import context._
 
+  case class Tick()
+  case class Wallet(var shares: Double = 0.0, var money: Double = 0.0)
+
   var wallets = Map[Long, Wallet]()
   var oldTradingPrice: Double = 0.0
   var currentTradingPrice: Double = 0.0
@@ -48,8 +51,6 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
     (currentTradingPrice - oldTradingPrice) / oldTradingPrice
   }
 
-  case class Tick()
-
-  case class Wallet(var shares: Double = 0.0, var money: Double = 0.0)
+  def startScheduler = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())
 
 }

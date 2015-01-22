@@ -14,12 +14,10 @@ object MarketSimulatorBenchmark {
   var r = scala.util.Random
 
   def main(args: Array[String]) {
-    //val orders = loadOrdersFromPersistor(50000, "finance")
-    val orders = generateOrders(10000000)
+    val orders = loadOrdersFromPersistor(50000, "finance")
+    //val orders = generateOrders(500000)
     println(orders.length)
-
-
-
+    
     // create factory
     implicit val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
 
@@ -46,7 +44,6 @@ object MarketSimulatorBenchmark {
     readLine("Press ENTER to Exit... ")
     builder.system.shutdown()
     builder.system.awaitTermination()
-
   }
 
   def generateOrders(count: Int): List[Order] = {
@@ -117,6 +114,7 @@ object MarketSimulatorBenchmark {
       }
     }
     println("generated " + orders.size + " orders in " + (System.currentTimeMillis() - initTime) + " ms.")
+    countOrderTypes(orders)
     orders
   }
 
