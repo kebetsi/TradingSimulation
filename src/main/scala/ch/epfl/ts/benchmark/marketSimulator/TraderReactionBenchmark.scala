@@ -5,6 +5,7 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.persist.TransactionPersistor
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction}
+import ch.epfl.ts.component.utils.BackLoop
 
 object TraderReactionBenchmark {
 

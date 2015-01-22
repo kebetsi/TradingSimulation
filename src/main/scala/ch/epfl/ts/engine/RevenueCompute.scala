@@ -17,7 +17,7 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   var currentTradingPrice: Double = 0.0
 
   def receiver = {
-    case StartSignal() => startScheduler
+    case StartSignal() => startScheduler()
     case Tick() => display
     case t: Transaction => process(t)
     case _ =>
@@ -45,12 +45,10 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
     oldTradingPrice = currentTradingPrice
   }
 
-  def startScheduler = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())
+  def startScheduler() = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())
 
   def computePriceEvolution: Double = {
     (currentTradingPrice - oldTradingPrice) / oldTradingPrice
   }
-
-  def startScheduler = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())
 
 }
