@@ -82,6 +82,6 @@ abstract class Component extends Receiver {
 
   final def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t))
 
-  final def send[T: ClassTag](t: List[T])= dest.get(t.getClass).map(_.map (d => t.map(d ! _)))
+  final def send[T: ClassTag](t: List[T]) = t.map( elem => dest.get(elem.getClass).map(_.map(_ ! elem)))
 }
 

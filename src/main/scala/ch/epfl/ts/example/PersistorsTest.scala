@@ -1,4 +1,4 @@
-package ch.epfl.main
+package ch.epfl.ts.example
 
 import ch.epfl.ts.component.persist.{OrderPersistor, TransactionPersistor, TweetPersistor}
 import ch.epfl.ts.data.Currency._
@@ -7,14 +7,14 @@ import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, 
 object PersistorsTest {
 
   def main(args: Array[String]) {
-    basicTest
-//        financeOrdersTest
+//    basicTest
+        financeOrdersTest
   }
 
   def financeOrdersTest = {
     val persistor = new OrderPersistor("finance")
     persistor.init()
-    persistor.loadBatch(25210389, 25211389).map { x => println(x) }
+    persistor.loadBatch(25210389, 25243295).map { x => println(x) }
   }
 
   def basicTest = {
