@@ -1,9 +1,9 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{ Component, StartSignal }
+import ch.epfl.ts.component.{Component, StartSignal}
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, Order, Transaction }
-import ch.epfl.ts.engine.{OrderBook, MarketRules}
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, Order, Transaction}
+import ch.epfl.ts.engine.{MarketRules, OrderBook}
 
 import scala.collection.mutable.TreeSet
 import scala.concurrent.duration.DurationInt

@@ -1,8 +1,9 @@
 package ch.epfl.ts.indicators
 
 import ch.epfl.ts.component.Component
+import ch.epfl.ts.data.{OHLC, Transaction}
+
 import scala.collection.mutable.MutableList
-import ch.epfl.ts.data.{ Transaction, OHLC }
 
 /**
  * computes OHLC tick for a tick frame of the provided size, the OHLCs are identified with the provided marketId

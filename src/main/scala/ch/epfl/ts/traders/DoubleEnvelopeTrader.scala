@@ -1,9 +1,9 @@
 package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.indicators.MA
-import ch.epfl.ts.data.{ OHLC, MarketAskOrder, MarketBidOrder }
 import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, OHLC}
+import ch.epfl.ts.indicators.MA
 
 class DoubleEnvelopeTrader(uid: Long, alpha: Double, volume: Double) extends Component {
 

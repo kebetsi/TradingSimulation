@@ -1,8 +1,8 @@
 package ch.epfl.main
 
 import akka.actor.Props
-import ch.epfl.ts.component.{Component, ComponentBuilder, StartSignal}
 import ch.epfl.ts.component.utils.Printer
+import ch.epfl.ts.component.{Component, ComponentBuilder, StartSignal}
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Transaction}
 import ch.epfl.ts.engine.{MarketRules, MarketSimulator}

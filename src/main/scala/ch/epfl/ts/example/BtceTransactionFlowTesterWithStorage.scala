@@ -2,12 +2,12 @@ package ch.epfl.ts.example
 
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.fetch.{ BtceTransactionPullFetcher, PullFetchComponent, BitstampTransactionPullFetcher }
-import ch.epfl.ts.component.persist.{ Persistor, TransactionPersistor }
+import ch.epfl.ts.component.fetch.{BitstampTransactionPullFetcher, BtceTransactionPullFetcher, MarketNames, PullFetchComponent}
+import ch.epfl.ts.component.persist.{Persistor, TransactionPersistor}
 import ch.epfl.ts.component.utils.Printer
 import ch.epfl.ts.data.Transaction
+
 import scala.reflect.ClassTag
-import ch.epfl.ts.component.fetch.MarketNames
 
 /**
  * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,

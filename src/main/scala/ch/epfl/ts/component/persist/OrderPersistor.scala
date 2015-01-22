@@ -17,7 +17,7 @@ object OrderType extends Enumeration {
   val MARKET_ASK = Value("MA")
   val DEL = Value("D")
 }
-import OrderType._
+import ch.epfl.ts.component.persist.OrderType._
 
 
 case class PersistorOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double, val orderType: OrderType) extends Order(oid, uid, timestamp, whatC, withC, volume, price)

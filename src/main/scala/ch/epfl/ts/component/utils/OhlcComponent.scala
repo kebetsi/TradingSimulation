@@ -1,5 +1,6 @@
-package ch.epfl.ts.component
+package ch.epfl.ts.component.utils
 
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Transaction
 
 

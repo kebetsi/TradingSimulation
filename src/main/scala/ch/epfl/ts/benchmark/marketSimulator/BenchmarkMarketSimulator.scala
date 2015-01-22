@@ -1,7 +1,7 @@
 package ch.epfl.ts.benchmark.marketSimulator
 
-import ch.epfl.ts.engine.{ MarketSimulator, MarketRules }
 import ch.epfl.ts.data._
+import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
 
 class BenchmarkMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator(marketId, rules) {
 

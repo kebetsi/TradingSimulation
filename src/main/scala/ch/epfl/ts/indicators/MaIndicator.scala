@@ -2,10 +2,7 @@ package ch.epfl.ts.indicators
 
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.OHLC
-import akka.actor.Cancellable
-import scala.concurrent.duration.DurationLong
-import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.component.StopSignal
+
 import scala.collection.mutable.MutableList
 
 abstract class MA(val value: Double, val period: Int)

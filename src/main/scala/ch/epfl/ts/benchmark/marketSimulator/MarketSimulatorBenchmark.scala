@@ -14,8 +14,8 @@ object MarketSimulatorBenchmark {
   var r = scala.util.Random
 
   def main(args: Array[String]) {
-    val orders = loadOrdersFromPersistor(50000, "finance")
-    //val orders = generateOrders(500000)
+    //val orders = loadOrdersFromPersistor(50000, "finance")
+    val orders = generateOrders(10000000)
     println(orders.length)
 
 

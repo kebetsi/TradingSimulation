@@ -1,25 +1,23 @@
 package ch.epfl.ts.engine
 
-import ch.epfl.ts.component.Component
+import ch.epfl.ts.component.{Component, StartSignal}
 import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.component.StartSignal
+
 import scala.concurrent.duration.DurationInt
 
 class RevenueCompute(pingIntervalMillis: Int) extends Component {
-  import context._
 
-  case class Tick()
-  case class Wallet(var shares: Double = 0.0, var money: Double = 0.0)
+  import context._
 
   var wallets = Map[Long, Wallet]()
   var oldTradingPrice: Double = 0.0
   var currentTradingPrice: Double = 0.0
 
   def receiver = {
-    case StartSignal()  => startScheduler
-    case Tick()         => display
+    case StartSignal() => startScheduler
+    case Tick() => display
     case t: Transaction => process(t)
-    case _              =>
+    case _ =>
   }
 
   def process(t: Transaction) = {
@@ -40,14 +38,18 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   def display = {
     val changeInPrice: Double = (currentTradingPrice - oldTradingPrice) / oldTradingPrice
     println(f"Stats: trading price=$currentTradingPrice%s, change=$changeInPrice%.2f %%")
-    wallets.keys.map { x => println("Stats: uid: " + x + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice)) }
+    wallets.keys.map { x => println("Stats: uid: " + x + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice))}
     oldTradingPrice = currentTradingPrice
   }
+
+  def startScheduler = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())
 
   def computePriceEvolution: Double = {
     (currentTradingPrice - oldTradingPrice) / oldTradingPrice
   }
 
-  def startScheduler = system.scheduler.schedule(0 milliseconds, pingIntervalMillis milliseconds, self, Tick())
+  case class Tick()
+
+  case class Wallet(var shares: Double = 0.0, var money: Double = 0.0)
 
 }

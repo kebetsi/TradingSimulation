@@ -1,10 +1,9 @@
 package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.indicators.{ MA, EMA, SMA }
-import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder}
+import ch.epfl.ts.indicators.MA
 
 /**
  * Double Crossover Trader: receives moving average values of 2 different sizes (one must be a multiple of the other).

@@ -1,9 +1,8 @@
 package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.data.OHLC
 import ch.epfl.ts.component.fetch.MarketNames
+import ch.epfl.ts.data.{OHLC, Transaction}
 
 class Arbitrageur(uid: Long) extends Component {
 

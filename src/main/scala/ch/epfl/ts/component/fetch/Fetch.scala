@@ -1,9 +1,9 @@
 package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.component.Component
+
 import scala.concurrent.duration.DurationInt
 import scala.reflect.ClassTag
-import sun.awt.image.FetcherInfo
 
 trait Fetch[T]
 

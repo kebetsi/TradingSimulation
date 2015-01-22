@@ -1,15 +1,16 @@
 package ch.epfl.ts.example
 
-import ch.epfl.ts.component.utils.Printer
-import ch.epfl.ts.data.{ Order, DelOrder, LiveLimitAskOrder, LiveLimitBidOrder, Transaction, OHLC }
-import ch.epfl.ts.engine.{ BackLoop, MarketSimulator, MarketRules }
-import ch.epfl.ts.traders.Arbitrageur
-import ch.epfl.ts.component.fetch.{ PullFetchComponent, BitstampTransactionPullFetcher, BitstampOrderPullFetcher, BtceTransactionPullFetcher, BtceOrderPullFetcher, MarketNames }
-import ch.epfl.ts.component.persist.TransactionPersistor
-import ch.epfl.ts.component.ComponentBuilder
 import akka.actor.Props
-import scala.reflect.ClassTag
+import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.component.fetch.{BitstampOrderPullFetcher, BitstampTransactionPullFetcher, BtceOrderPullFetcher, BtceTransactionPullFetcher, MarketNames, PullFetchComponent}
+import ch.epfl.ts.component.persist.TransactionPersistor
+import ch.epfl.ts.component.utils.{BackLoop, Printer}
+import ch.epfl.ts.data.{DelOrder, LiveLimitAskOrder, LiveLimitBidOrder, OHLC, Order, Transaction}
+import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
 import ch.epfl.ts.indicators.OhlcIndicator
+import ch.epfl.ts.traders.Arbitrageur
+
+import scala.reflect.ClassTag
 
 object BTCArbitrage {
 

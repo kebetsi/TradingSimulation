@@ -1,10 +1,8 @@
 package ch.epfl.ts.benchmark.marketSimulator
 
-import ch.epfl.ts.engine.{PartialOrderBook, MarketRules}
-import ch.epfl.ts.data.{ Order, Transaction, MarketAskOrder, MarketBidOrder, LimitAskOrder, LimitBidOrder, DelOrder }
-import scala.collection.mutable.TreeSet
-import ch.epfl.ts.data.Streamable
 import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Streamable, Transaction}
+import ch.epfl.ts.engine.{MarketRules, PartialOrderBook}
 
 class BenchmarkMarketRules extends MarketRules {
 
@@ -17,7 +15,6 @@ class BenchmarkMarketRules extends MarketRules {
                                 oldTradingPrice:  Double,
                                 enqueueOrElse:    (Order, PartialOrderBook) => Unit): Double = {
     if (bestMatchsBook.isEmpty) {
-      println("empty")
       enqueueOrElse(newOrder, newOrdersBook)
       oldTradingPrice
     } else {
@@ -30,7 +27,6 @@ class BenchmarkMarketRules extends MarketRules {
         send(DelOrder(bestMatch.oid, bestMatch.uid, newOrder.timestamp, DEF, DEF, 0.0, 0.0))
 
         if (bestMatch.volume == newOrder.volume) {
-          println("matched, =")
           bestMatch match {
             case lbo: LimitBidOrder =>
               send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.uid, bestMatch.oid, newOrder.uid, newOrder.oid))
@@ -39,7 +35,6 @@ class BenchmarkMarketRules extends MarketRules {
             case _ =>
           }
         } else if (bestMatch.volume > newOrder.volume) {
-          println("matched, >")
           bestMatch match {
             case lbo: LimitBidOrder =>
               bestMatchsBook insert LimitBidOrder(bestMatch.oid, bestMatch.uid, bestMatch.timestamp, bestMatch.whatC, bestMatch.withC, bestMatch.volume - newOrder.volume, bestMatch.price)
@@ -52,7 +47,6 @@ class BenchmarkMarketRules extends MarketRules {
             case _ =>
           }
         } else {
-          println("matched, <")
           bestMatch match {
             case lbo: LimitBidOrder =>
               send(Transaction(marketId, bestMatch.price, bestMatch.volume, newOrder.timestamp, bestMatch.whatC, bestMatch.withC, newOrder.uid, newOrder.oid, bestMatch.uid, bestMatch.oid))
@@ -71,7 +65,6 @@ class BenchmarkMarketRules extends MarketRules {
         }
         bestMatch.price
       } else {
-        println("unmatched")
         enqueueOrElse(newOrder, newOrdersBook)
         oldTradingPrice
       }

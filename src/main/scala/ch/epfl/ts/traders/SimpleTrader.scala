@@ -1,8 +1,8 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{ Component, StartSignal }
+import ch.epfl.ts.component.{Component, StartSignal}
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Order }
+import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Order}
 
 import scala.concurrent.duration.DurationInt
 
