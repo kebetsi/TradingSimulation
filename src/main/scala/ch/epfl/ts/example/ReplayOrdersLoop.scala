@@ -52,13 +52,14 @@ object ReplayOrdersLoop {
     val smaShort = builder.createRef(Props(classOf[SmaIndicator], shortPeriod))
     val smaLong = builder.createRef(Props(classOf[SmaIndicator], longPeriod))
     // Traders
+    val traderNames: Map[Long, String] = Map(0L -> "Finance", 123L -> "SobiTrader", 132L -> "SimpleTrader", 333L -> "VwapTrader", 444L -> "DcTrader", 555L -> "DeTrader")
     val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules))
     val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0))
     val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, longTickSizeMillis.toInt))
     val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0))
     val deTrader = builder.createRef(Props(classOf[DoubleEnvelopeTrader], 555L, 0.025, 50.0))
     // Display
-    val display = builder.createRef(Props(classOf[RevenueCompute], 5000))
+    val display = builder.createRef(Props(classOf[RevenueCompute], 5000, traderNames))
 
     // Create connections
     // replay

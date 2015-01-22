@@ -1,11 +1,11 @@
 package ch.epfl.ts.engine
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.{ Component, StartSignal }
 import ch.epfl.ts.data.Transaction
 
 import scala.concurrent.duration.DurationInt
 
-class RevenueCompute(pingIntervalMillis: Int) extends Component {
+class RevenueCompute(pingIntervalMillis: Int, traderNames: Map[Long, String]) extends Component {
 
   import context._
 
@@ -17,10 +17,10 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
   var currentTradingPrice: Double = 0.0
 
   def receiver = {
-    case StartSignal() => startScheduler()
-    case Tick() => display
+    case StartSignal()  => startScheduler()
+    case Tick()         => displayStats
     case t: Transaction => process(t)
-    case _ =>
+    case _              =>
   }
 
   def process(t: Transaction) = {
@@ -38,10 +38,14 @@ class RevenueCompute(pingIntervalMillis: Int) extends Component {
     wallets += (t.sellerId -> sellerWallet)
   }
 
-  def display = {
-    val changeInPrice: Double = (currentTradingPrice - oldTradingPrice) / oldTradingPrice
-    println(f"Stats: trading price=$currentTradingPrice%s, change=$changeInPrice%.2f %%")
-    wallets.keys.map { x => println("Stats: uid: " + x + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice))}
+  def displayStats = {
+    val changeInPrice: Double = computePriceEvolution
+    var disp = new StringBuffer()
+    //    println(f"Stats: trading price=$currentTradingPrice%s, change=$changeInPrice%.2f %%")
+    disp.append(f"Stats: trading price=$currentTradingPrice%s, change=$changeInPrice%.4f %% \n")
+    //    wallets.keys.map { x => println("Stats: trader: " + traderNames(x) + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice))}
+    wallets.keys.map { x => disp.append("Stats: trader: " + traderNames(x) + ", cash=" + wallets(x).money + ", shares=" + wallets(x).shares + " Revenue=" + (wallets(x).money + wallets(x).shares * currentTradingPrice) + "\n") }
+    print(disp)
     oldTradingPrice = currentTradingPrice
   }
 

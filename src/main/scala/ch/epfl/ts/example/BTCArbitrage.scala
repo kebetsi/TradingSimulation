@@ -51,8 +51,6 @@ object BTCArbitrage {
     val ohlcIntervalMillis = 10000L
     val btceOhlc = builder.createRef(Props(classOf[OhlcIndicator], btceMarketId, ohlcIntervalMillis))
     val bitstampOhlc = builder.createRef(Props(classOf[OhlcIndicator], bitstampMarketId, ohlcIntervalMillis))
-    // printer
-    val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
 
     // Create the connections
     // BTC-e
