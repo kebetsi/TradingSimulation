@@ -34,32 +34,32 @@ object ReplayOrdersLoop {
 
     // Create components
     // market
-    val market = builder.createRef(Props(classOf[MarketSimulator], marketId, rules))
+    val market = builder.createRef(Props(classOf[MarketSimulator], marketId, rules), "market")
     // Replay
-    val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]))
+    val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]), "replayer")
     // Printer
-    val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"))
+    val printer = builder.createRef(Props(classOf[Printer], "ReplayLoopPrinter"), "printer")
     // backloop
-    val backloop = builder.createRef(Props(classOf[BackLoop], marketId, transactionsPersistor))
+    val backloop = builder.createRef(Props(classOf[BackLoop], marketId, transactionsPersistor), "backloop")
     // ohlc computation
     val shortTickSizeMillis = 5000L
-    val ohlcShort = builder.createRef(Props(classOf[OhlcIndicator], marketId, shortTickSizeMillis))
+    val ohlcShort = builder.createRef(Props(classOf[OhlcIndicator], marketId, shortTickSizeMillis), "ohlcShort")
     val longTickSizeMillis = 10000L
-    val ohlclong = builder.createRef(Props(classOf[OhlcIndicator], marketId, longTickSizeMillis))
+    val ohlclong = builder.createRef(Props(classOf[OhlcIndicator], marketId, longTickSizeMillis), "ohlcLong")
     // Indicators
     val shortPeriod = 5
     val longPeriod = 10
-    val smaShort = builder.createRef(Props(classOf[SmaIndicator], shortPeriod))
-    val smaLong = builder.createRef(Props(classOf[SmaIndicator], longPeriod))
+    val smaShort = builder.createRef(Props(classOf[SmaIndicator], shortPeriod), "smaShort")
+    val smaLong = builder.createRef(Props(classOf[SmaIndicator], longPeriod), "smaLong")
     // Traders
     val traderNames: Map[Long, String] = Map(0L -> "Finance", 123L -> "SobiTrader", 132L -> "SimpleTrader", 333L -> "VwapTrader", 444L -> "DcTrader", 555L -> "DeTrader")
-    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules))
-    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0))
-    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, longTickSizeMillis.toInt))
-    val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0))
-    val deTrader = builder.createRef(Props(classOf[DoubleEnvelopeTrader], 555L, 0.025, 50.0))
+    val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules), "sobiTrader")
+    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0), "simpleTrader")
+    val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, longTickSizeMillis.toInt), "transactionVwapTrader")
+    val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0), "dcTrader")
+    val deTrader = builder.createRef(Props(classOf[DoubleEnvelopeTrader], 555L, 0.025, 50.0), "deTrader")
     // Display
-    val display = builder.createRef(Props(classOf[RevenueCompute], 5000, traderNames))
+    val display = builder.createRef(Props(classOf[RevenueCompute], 5000, traderNames), "display")
 
     // Create connections
     // replay

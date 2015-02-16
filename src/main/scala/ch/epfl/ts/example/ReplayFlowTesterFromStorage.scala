@@ -25,8 +25,8 @@ object ReplayFlowTesterFromStorage {
     val replayConf = new ReplayConfig(1418737788400L, 0.01)
 
     // Create Components
-    val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
-    val replayer = builder.createRef(Props(classOf[Replay[Transaction]], btceXactPersit, replayConf, implicitly[ClassTag[Transaction]]))
+    val printer = builder.createRef(Props(classOf[Printer], "my-printer"), "printer")
+    val replayer = builder.createRef(Props(classOf[Replay[Transaction]], btceXactPersit, replayConf, implicitly[ClassTag[Transaction]]), "replayer")
 
     // Create the connections
     replayer.addDestination(printer, classOf[Transaction])

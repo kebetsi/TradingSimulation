@@ -22,9 +22,9 @@ object MarketSimulatorBenchmark {
     implicit val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
 
     // Create Components
-    val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders))
-    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()))
-    val timeCounter = builder.createRef(Props(classOf[TimeCounter]))
+    val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders), "feeder")
+    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()), "marketSim")
+    val timeCounter = builder.createRef(Props(classOf[TimeCounter]), "timeCounter")
 
     // Create Connections
     //orders

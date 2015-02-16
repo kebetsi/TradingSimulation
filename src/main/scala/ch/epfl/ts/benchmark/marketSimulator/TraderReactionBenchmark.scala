@@ -22,11 +22,11 @@ object TraderReactionBenchmark {
     persistor.init()
 
     // Create Components
-    val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders))
-    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()))
-    val backloop = builder.createRef(Props(classOf[BackLoop], 1L, persistor))
-    val trader = builder.createRef(Props(classOf[BenchmarkTrader]))
-    val timeCounter = builder.createRef(Props(classOf[TimeCounter]))
+    val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders), "orderFeeder")
+    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()), "market")
+    val backloop = builder.createRef(Props(classOf[BackLoop], 1L, persistor), "backloop")
+    val trader = builder.createRef(Props(classOf[BenchmarkTrader]), "trader")
+    val timeCounter = builder.createRef(Props(classOf[TimeCounter]), "timeCounter")
 
     // Create Connections
     //orders

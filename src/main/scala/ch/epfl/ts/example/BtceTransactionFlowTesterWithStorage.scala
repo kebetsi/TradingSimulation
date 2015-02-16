@@ -30,11 +30,11 @@ object BtceTransactionFlowTesterWithStorage {
     val bitstampPullFetcher = new BitstampTransactionPullFetcher
 
     // Create Components
-    val printer = builder.createRef(Props(classOf[Printer], "my-printer"))
-    val btcePersistor = builder.createRef(Props(classOf[Persistor[Transaction]], btceXactPersit, implicitly[ClassTag[Transaction]]))
-    val btceFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btcePullFetcher, implicitly[ClassTag[Transaction]]))
-    val bitstampPersistor = builder.createRef(Props(classOf[Persistor[Transaction]], bitstampXactPersit, implicitly[ClassTag[Transaction]]))
-    val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampPullFetcher, implicitly[ClassTag[Transaction]]))
+    val printer = builder.createRef(Props(classOf[Printer], "my-printer"), "printer")
+    val btcePersistor = builder.createRef(Props(classOf[Persistor[Transaction]], btceXactPersit, implicitly[ClassTag[Transaction]]), "btcePersistor")
+    val btceFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btcePullFetcher, implicitly[ClassTag[Transaction]]), "btceFetcher")
+    val bitstampPersistor = builder.createRef(Props(classOf[Persistor[Transaction]], bitstampXactPersit, implicitly[ClassTag[Transaction]]), "bitstampPeristor")
+    val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampPullFetcher, implicitly[ClassTag[Transaction]]), "bitstampFetcher")
 
     // Create the connections
     btceFetcher.addDestination(printer, classOf[Transaction])

@@ -34,23 +34,23 @@ object BTCArbitrage {
     // Create Components
 
     // fetchers
-    val btceTransactionFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btceTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
-    val bitstampTransactionFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampTransactionPullFetcher, implicitly[ClassTag[Transaction]]))
-    val btceOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], btceOrderPullFetcher, implicitly[ClassTag[Order]]))
-    val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], bitstampOrderPullFetcher, implicitly[ClassTag[Order]]))
+    val btceTransactionFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], btceTransactionPullFetcher, implicitly[ClassTag[Transaction]]), "btceTransactionsFetcher")
+    val bitstampTransactionFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampTransactionPullFetcher, implicitly[ClassTag[Transaction]]), "bitstampTransactionFetcher")
+    val btceOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], btceOrderPullFetcher, implicitly[ClassTag[Order]]), "btceOrderFetcher")
+    val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], bitstampOrderPullFetcher, implicitly[ClassTag[Order]]), "bitstampOrderFetcher")
     // trading agents
-    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L))
+    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L), "arbitrageur")
     // markets
     val rules = new MarketRules()
-    val btceMarket = builder.createRef(Props(classOf[MarketSimulator], btceMarketId, rules))
-    val bitstampMarket = builder.createRef(Props(classOf[MarketSimulator], bitstampMarketId, rules))
+    val btceMarket = builder.createRef(Props(classOf[MarketSimulator], btceMarketId, rules), "btceMarket")
+    val bitstampMarket = builder.createRef(Props(classOf[MarketSimulator], bitstampMarketId, rules), "bitstampMarket")
     // backloops
-    val btceBackLoop = builder.createRef(Props(classOf[BackLoop], btceMarketId, btceXactPersit))
-    val bitstampBackLoop = builder.createRef(Props(classOf[BackLoop], bitstampMarketId, bitstampXactPersist))
+    val btceBackLoop = builder.createRef(Props(classOf[BackLoop], btceMarketId, btceXactPersit), "btceBackLoop")
+    val bitstampBackLoop = builder.createRef(Props(classOf[BackLoop], bitstampMarketId, bitstampXactPersist), "bitstampBackLoop")
     // OHLC indicators
     val ohlcIntervalMillis = 10000L
-    val btceOhlc = builder.createRef(Props(classOf[OhlcIndicator], btceMarketId, ohlcIntervalMillis))
-    val bitstampOhlc = builder.createRef(Props(classOf[OhlcIndicator], bitstampMarketId, ohlcIntervalMillis))
+    val btceOhlc = builder.createRef(Props(classOf[OhlcIndicator], btceMarketId, ohlcIntervalMillis), "btceOhlc")
+    val bitstampOhlc = builder.createRef(Props(classOf[OhlcIndicator], bitstampMarketId, ohlcIntervalMillis), "bitstampOhlc")
 
     // Create the connections
     // BTC-e

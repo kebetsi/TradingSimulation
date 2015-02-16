@@ -22,9 +22,9 @@ object MarketSimulatorTest {
     implicit val builder = new ComponentBuilder("MarketSimTestSystem")
     
     // create components
-    val market = builder.createRef(Props(classOf[MarketSimulator], 0L, new MarketRules()))
-    val tester = builder.createRef(Props(classOf[testOrdersSender]))
-    val printer = builder.createRef(Props(classOf[Printer], "MSprinter"))
+    val market = builder.createRef(Props(classOf[MarketSimulator], 0L, new MarketRules()), "market")
+    val tester = builder.createRef(Props(classOf[testOrdersSender]), "tester")
+    val printer = builder.createRef(Props(classOf[Printer], "MSprinter"), "printer")
     
     // create edges
     market.addDestination(printer, classOf[Transaction])
