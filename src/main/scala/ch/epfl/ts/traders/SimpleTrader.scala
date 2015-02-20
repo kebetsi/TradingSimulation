@@ -8,6 +8,9 @@ import scala.concurrent.duration.DurationInt
 
 case class SendMarketOrder()
 
+/**
+ * Simple trader that periodically sends market ask and bid orders alternatively.
+ */
 class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends Component {
   import context._
 

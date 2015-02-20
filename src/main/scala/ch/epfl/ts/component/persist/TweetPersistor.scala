@@ -9,7 +9,7 @@ import scala.slick.lifted.{Column, TableQuery, Tag}
 import scala.collection.mutable.ListBuffer
 
 /**
- * Implementation of the Persistance trait for Tweet
+ * Implementation of the Persistance for Tweets storage
  */
 class TweetPersistor(dbFilename: String) extends Persistance[Tweet] {
 
@@ -67,7 +67,7 @@ class TweetPersistor(dbFilename: String) extends Persistance[Tweet] {
   }
 
   /**
-   * load entries with timestamp value between startTime and endTime
+   * load entries with timestamp value between startTime and endTime (inclusive)
    */
   def loadBatch(startTime: Long, endTime: Long): List[Tweet] = {
     var res: ListBuffer[Tweet] = ListBuffer[Tweet]()
@@ -87,7 +87,7 @@ class TweetPersistor(dbFilename: String) extends Persistance[Tweet] {
   }
 
   /**
-   * delete entries with timestamp values between startTime and endTime
+   * delete entries with timestamp values between startTime and endTime (inclusive)
    */
   def deleteBatch(startTime: Long, endTime: Long) = {
     db.withDynSession {

@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
 
 /**
  * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,
- * saving it to a SQLite Database and printing it on the other side.
+ * saving it to a SQLite Database and printing it.
  */
 object BtceTransactionFlowTesterWithStorage {
   def main(args: Array[String]): Unit = {

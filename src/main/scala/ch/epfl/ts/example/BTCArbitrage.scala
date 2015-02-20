@@ -12,6 +12,14 @@ import ch.epfl.ts.traders.Arbitrageur
 
 import scala.reflect.ClassTag
 
+/**
+ * in this system, two fetchers gather orders and transaction
+ * and orders data from BTC-e and Bitstamp exchanges and feed them
+ * to the MarketSimulator.
+ * An arbitrageur trader receives the data from the Backloop,
+ * monitors the price difference and submits orders in order to
+ * make revenue.
+ */
 object BTCArbitrage {
 
   def main(args: Array[String]) {

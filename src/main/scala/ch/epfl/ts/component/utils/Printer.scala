@@ -4,8 +4,8 @@ import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, LimitOrder, OHLC, Transaction, Tweet}
 
 /**
- * Simple printer component for Transactions.
- * @param name The name of the component.
+ * Simple printer component. Prints what it receives
+ * @param name The name of the printer.
  */
 class Printer(val name: String) extends Component {
   override def receiver = {

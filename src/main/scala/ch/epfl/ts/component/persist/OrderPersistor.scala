@@ -27,7 +27,6 @@ case class PersistorOrder(override val oid: Long, override val uid: Long, overri
  */
 class OrderPersistor(dbFilename: String) extends Persistance[Order] {
 
-
   val nullStringValue = "NULL"
 
   class Orders(tag: Tag) extends Table[(Int, Long, Long, Long, String, String, Double, Double, String)](tag, "ORDERS") {
@@ -79,7 +78,6 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
    */
   def save(os: List[Order]) = {
     db.withDynSession {
-      //      order ++= os.toIterable.map { x => (1, x.id, x.price, x.quantity, x.timestamp, x.currency.toString, x.orderType.toString) }
       order ++= os.toIterable.map {
           case la: LimitAskOrder  => (1, la.oid, la.uid, la.timestamp, la.whatC.toString, la.withC.toString, la.volume, la.price, LIMIT_ASK.toString)
           case lb: LimitBidOrder  => (1, lb.oid, lb.uid, lb.timestamp, lb.whatC.toString, lb.withC.toString, lb.volume, lb.price, LIMIT_BID.toString)
@@ -109,7 +107,7 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
   }
 
   /**
-   * load entries with timestamp value between startTime and endTime
+   * load entries with timestamp value between startTime and endTime (inclusive)
    */
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
     var res: ListBuffer[Order] = new ListBuffer[Order]()
@@ -138,7 +136,7 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
   }
 
   /**
-   * delete entries with timestamp values between startTime and endTime
+   * delete entries with timestamp values between startTime and endTime (inclusive)
    */
   def deleteBatch(startTime: Long, endTime: Long) = {
     db.withDynSession {

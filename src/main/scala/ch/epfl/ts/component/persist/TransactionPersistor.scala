@@ -72,7 +72,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
   }
 
   /**
-   * load entries with timestamp value between startTime and endTime
+   * load entries with timestamp value between startTime and endTime (inclusive)
    */
   def loadBatch(startTime: Long, endTime: Long): List[Transaction] = {
     var res: ListBuffer[Transaction] = ListBuffer[Transaction]()
@@ -92,7 +92,7 @@ class TransactionPersistor(dbFilename: String) extends Persistance[Transaction] 
   }
 
   /**
-   * delete entries with timestamp values between startTime and endTime
+   * delete entries with timestamp values between startTime and endTime (inclusive)
    */
   def deleteBatch(startTime: Long, endTime: Long) = {
     db.withDynSession {

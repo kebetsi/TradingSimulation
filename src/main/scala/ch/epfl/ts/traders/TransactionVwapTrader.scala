@@ -6,6 +6,9 @@ import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Transaction}
 
 import scala.concurrent.duration.DurationInt
 
+/**
+ * Transaction VWAP trader.
+ */
 class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
   import context._
 

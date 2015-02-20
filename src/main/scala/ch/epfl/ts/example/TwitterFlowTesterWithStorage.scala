@@ -11,13 +11,13 @@ import scala.reflect.ClassTag
 
 object TwitterFlowTesterWithStorage {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("DataSourceSystem")
+    implicit val builder = new ComponentBuilder("TwitterPrintSystem")
 
     // Initialize the Interface to DB
     val tweetPersistor = new TweetPersistor("twitter-db")
 
     // Create Components
-    val printer = builder.createRef(Props(classOf[Printer]), "my-printer")
+    val printer = builder.createRef(Props(classOf[Printer]), "printer")
     val persistor = builder.createRef(Props(classOf[Persistor[Tweet]], tweetPersistor, implicitly[ClassTag[Tweet]]), "tweet-persistor")
     val fetcher = builder.createRef(Props(classOf[TwitterFetchComponent]), "twitter-fetcher")
 

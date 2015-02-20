@@ -10,12 +10,12 @@ import ch.epfl.ts.data.Transaction
 import scala.reflect.ClassTag
 
 /**
- * Demonstration of fetching Live Bitcoin/USD trading data from BTC-e,
- * saving it to a SQLite Database and printing it on the other side.
+ * Demonstration of loading Bitcoin/USD transactions data from a transactions
+ * persistor and printing it.
  */
 object ReplayFlowTesterFromStorage {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("DataSourceSystem")
+    implicit val builder = new ComponentBuilder("ReplayFlowTesterSystem")
 
     // Initialize the Interface to DB
     val btceXactPersit = new TransactionPersistor("btce-transaction-db")
@@ -25,7 +25,7 @@ object ReplayFlowTesterFromStorage {
     val replayConf = new ReplayConfig(1418737788400L, 0.01)
 
     // Create Components
-    val printer = builder.createRef(Props(classOf[Printer], "my-printer"), "printer")
+    val printer = builder.createRef(Props(classOf[Printer], "printer"), "printer")
     val replayer = builder.createRef(Props(classOf[Replay[Transaction]], btceXactPersit, replayConf, implicitly[ClassTag[Transaction]]), "replayer")
 
     // Create the connections

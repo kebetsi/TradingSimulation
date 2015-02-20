@@ -6,6 +6,9 @@ import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, Order}
 
 import scala.io.Source
 
+/**
+ * load finance.csv (provided by Milos Nikolic) in OrderPersistor
+ */
 object CSVFetcher {
   def main(args: Array[String]) {
     val fetcher = new CSVFetcher

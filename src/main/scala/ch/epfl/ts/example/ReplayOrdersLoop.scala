@@ -12,6 +12,17 @@ import ch.epfl.ts.traders.{DoubleCrossoverTrader, DoubleEnvelopeTrader, SimpleTr
 
 import scala.reflect.ClassTag
 
+/**
+ * Use case where orders are loaded from a persistor (previously filled with orders from
+ * finance.csv) and fed into the MarketSimulator.
+ * The transactions executed by the MS are saved in a TransactionsPersistor.
+ * A Simple Trader, SOBI trader, VWAP trader, Double Envelope
+ * trader and a Double Crossover trader are plugged in the system
+ * and submit orders according to their defined strategies.
+ * A RevenueCompute component periodically displays the revenue
+ * of each trader.
+ * 
+ */
 object ReplayOrdersLoop {
 
   def main(args: Array[String]) {

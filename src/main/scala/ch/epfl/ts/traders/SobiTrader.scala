@@ -8,6 +8,9 @@ import ch.epfl.ts.engine.{MarketRules, OrderBook}
 import scala.collection.mutable.TreeSet
 import scala.concurrent.duration.DurationInt
 
+/**
+ * SOBI trader
+ */
 class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, orderVolume: Int, priceDelta: Double, rules: MarketRules)
   extends Component {
   import context._

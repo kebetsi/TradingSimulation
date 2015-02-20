@@ -5,8 +5,15 @@ import ch.epfl.ts.data.OHLC
 
 import scala.collection.mutable.MutableList
 
+/**
+ * Moving Average value data
+ */
 abstract class MA(val value: Double, val period: Int)
 
+/**
+ * Moving average superclass. To implement a moving average indicator,
+ * extend this class and implement the computeMa() method.
+ */
 abstract class MaIndicator(period: Int) extends Component {
 
   var values: MutableList[OHLC] = MutableList[OHLC]()

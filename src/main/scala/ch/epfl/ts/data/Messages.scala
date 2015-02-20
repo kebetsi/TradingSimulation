@@ -36,6 +36,10 @@ trait Streamable
  */
 case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
 
+
+trait AskOrder
+trait BidOrder
+
 /**
  * Data Transfer Object representing a Order
  * @param oid
@@ -46,9 +50,6 @@ case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long
  * @param volume
  * @param price
  */
-trait AskOrder
-trait BidOrder
-
 abstract class Order(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double) extends Streamable
 
 abstract class LimitOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
@@ -76,7 +77,7 @@ case class DelOrder(override val oid: Long, override val uid: Long, override val
 /**
  * represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
  */
-case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long)
+case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long) extends Streamable
 
 
 /**
