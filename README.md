@@ -14,3 +14,7 @@ Detailed documentation can be found on the dedicated [wiki](https://github.com/k
 - `sbt compile` to compile the source files
 
 - `sbt run` displays a list of examples that can be run
+
+### License
+
+Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
