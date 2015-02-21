@@ -55,10 +55,6 @@ object BTCArbitrage {
     // backloops
     val btceBackLoop = builder.createRef(Props(classOf[BackLoop], btceMarketId, btceXactPersit), "btceBackLoop")
     val bitstampBackLoop = builder.createRef(Props(classOf[BackLoop], bitstampMarketId, bitstampXactPersist), "bitstampBackLoop")
-    // OHLC indicators
-    val ohlcIntervalMillis = 10000L
-    val btceOhlc = builder.createRef(Props(classOf[OhlcIndicator], btceMarketId, ohlcIntervalMillis), "btceOhlc")
-    val bitstampOhlc = builder.createRef(Props(classOf[OhlcIndicator], bitstampMarketId, ohlcIntervalMillis), "bitstampOhlc")
 
     // Create the connections
     // BTC-e
@@ -68,14 +64,10 @@ object BTCArbitrage {
     btceOrderFetcher.addDestination(btceMarket, classOf[DelOrder])
     // fetcher to backloop
     btceTransactionFetcher.addDestination(btceBackLoop, classOf[Transaction])
-    // fetcher to OHLC
-    btceTransactionFetcher.addDestination(btceOhlc, classOf[Transaction])
     // market to backloop
     btceMarket.addDestination(btceBackLoop, classOf[Transaction])
     // backloop to arbitrageur
     btceBackLoop.addDestination(arbitrageur, classOf[Transaction])
-    // ohlc to arbitrageur
-    btceOhlc.addDestination(arbitrageur, classOf[OHLC])
     // Bitstamp
     // fetcher to market
     bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitAskOrder])
@@ -83,15 +75,11 @@ object BTCArbitrage {
     bitstampOrderFetcher.addDestination(bitstampMarket, classOf[DelOrder])
     // fetcher to backloop
     bitstampTransactionFetcher.addDestination(bitstampBackLoop, classOf[Transaction])
-    // fetcher to OHLC
-    bitstampTransactionFetcher.addDestination(bitstampOhlc, classOf[Transaction])
     // market to backloop
     bitstampMarket.addDestination(bitstampBackLoop, classOf[Transaction])
     // backloop to arbitrageur
     bitstampBackLoop.addDestination(arbitrageur, classOf[Transaction])
     bitstampBackLoop.addDestination(arbitrageur, classOf[OHLC])
-    // ohlc to arbitrageur
-    bitstampOhlc.addDestination(arbitrageur, classOf[OHLC])
     // Start the system
     builder.start
   }
