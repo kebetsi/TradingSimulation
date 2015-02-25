@@ -25,6 +25,3 @@ project/plugins/project/
 TradingSimulation.iml
 .idea/
 project/
-
-#testing-ilia
-src/test/scala/ch/epfl/ts/test/
