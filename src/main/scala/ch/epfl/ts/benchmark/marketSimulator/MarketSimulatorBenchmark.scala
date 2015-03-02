@@ -7,7 +7,13 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order}
 
 /**
- * file containing various tests to benchmark the MarketSimulator's performance
+ * This performance test calculates the time it takes for the MarketSimulator 
+ * to process a certain amount of orders.
+ * It is possible to use a Persistor as source or to generate orders for
+ * input data.
+ * To use data stored in a Persistor, use the loadOrdersFromPersistor()
+ * function to fill the orders variable.
+ * To use generated orders, use the generateOrders() method.
  */
 object MarketSimulatorBenchmark {
 
@@ -16,6 +22,7 @@ object MarketSimulatorBenchmark {
   def main(args: Array[String]) {
     val orders = loadOrdersFromPersistor(50000, "finance")
     //val orders = generateOrders(500000)
+    
     println(orders.length)
     
     // create factory
@@ -56,7 +63,7 @@ object MarketSimulatorBenchmark {
     // implementation: LB=0-233, LA=234-584, MB=585-626, MA=627-683, DEL=684-999
     var orders: List[Order] = Nil
     var oid: Int = 0
-    // store used oids
+    // store used order ids
     var lbOids: Set[Int] = Set[Int]()
     var laOids: Set[Int] = Set[Int]()
     // set trading price params
@@ -138,7 +145,6 @@ object MarketSimulatorBenchmark {
 //      if (i % 100 == 0) println("loaded " + i + "th order from persistor")
 //      orders = financePersistor.loadSingle(i) :: orders
 //    }
-
     orders
   }
 
