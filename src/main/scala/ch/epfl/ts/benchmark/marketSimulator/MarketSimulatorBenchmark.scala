@@ -5,6 +5,7 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order}
+import scala.collection.mutable.ListBuffer
 
 /**
  * This performance test calculates the time it takes for the MarketSimulator 
@@ -20,8 +21,8 @@ object MarketSimulatorBenchmark {
   var r = scala.util.Random
 
   def main(args: Array[String]) {
-    val orders = loadOrdersFromPersistor(50000, "finance")
-    //val orders = generateOrders(500000)
+//    val orders = loadOrdersFromPersistor(500000, "finance")
+    val orders = generateOrders(250000)
     
     println(orders.length)
     
@@ -61,7 +62,7 @@ object MarketSimulatorBenchmark {
     // to MA and MB orders
     // so: LB = 23.4%, LA = 35.1%, MB = 4.2%, MA = 5.7%, DEL = 31.6%
     // implementation: LB=0-233, LA=234-584, MB=585-626, MA=627-683, DEL=684-999
-    var orders: List[Order] = Nil
+    var orders: ListBuffer[Order] = ListBuffer[Order]()
     var oid: Int = 0
     // store used order ids
     var lbOids: Set[Int] = Set[Int]()
@@ -69,11 +70,11 @@ object MarketSimulatorBenchmark {
     // set trading price params
     val tradingPrice = 100
     val spread = 20
-
+    
     // generate relevant prices
-    for (i <- 1 to count) {
-      if (i % 10000 == 0) {
-        println("generating " + i + "th order.")
+    while (orders.length <= count) {
+      if (orders.length % 10000 == 0) {
+        println("generating " + orders.length + "th order.")
       }
 
       val it = r.nextInt(1000)
@@ -81,23 +82,23 @@ object MarketSimulatorBenchmark {
       if ((it >= 0) && (it < 234)) {
         oid = oid + 1
         lbOids += oid
-        orders = LimitBidOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), generatePrice(tradingPrice, spread)) :: orders
+        orders.append(LimitBidOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), generatePrice(tradingPrice, spread)))
       }
       // Limit Ask Order
       else if ((it >= 243) && (it < 585)) {
         oid = oid + 1
         laOids += oid
-        orders = LimitAskOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), generatePrice(tradingPrice, spread)) :: orders
+        orders.append(LimitAskOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), generatePrice(tradingPrice, spread)))
       }
       // Market Bid Order
       else if ((it >= 585) && (it < 627)) {
         oid = oid + 1
-        orders = MarketBidOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), 0.0) :: orders
+        orders.append(MarketBidOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), 0.0))
       }
       // Market Ask Order
       else if ((it >= 627) && (it < 684)) {
         oid = oid + 1
-        orders = MarketAskOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), 0.0) :: orders
+        orders.append(MarketAskOrder(oid, 0L, System.currentTimeMillis(), BTC, USD, generateOrderVolume(10), 0.0))
       }
       // Del Order
       else if ((it >= 684) && (it <= 1000)) {
@@ -106,7 +107,7 @@ object MarketSimulatorBenchmark {
         if ((it2 >= 0) && (it2 < 234)) {
           if (lbOids.size > 0) {
             val lbIdToDelete = lbOids.toVector(r.nextInt(lbOids.size))
-            orders = DelOrder(lbIdToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0) :: orders
+            orders.append(DelOrder(lbIdToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0))
             lbOids -= lbIdToDelete
           }
         }
@@ -114,15 +115,15 @@ object MarketSimulatorBenchmark {
         else if ((it2 >= 234) && (it2 <= 585)) {
           if (laOids.size > 0) {
             val laIdToDelete = laOids.toVector(r.nextInt(laOids.size))
-            orders = DelOrder(laIdToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0) :: orders
+            orders.append(DelOrder(laIdToDelete, 0L, System.currentTimeMillis(), BTC, USD, 0.0, 0.0))
             laOids -= laIdToDelete
           }
         }
       }
     }
     println("generated " + orders.size + " orders in " + (System.currentTimeMillis() - initTime) + " ms.")
-    countOrderTypes(orders)
-    orders
+    countOrderTypes(orders.toList)
+    orders.toList
   }
 
   // generates a price value in the range: [tradingPrice - spread/2; tradingPrice + spread/2]
@@ -139,7 +140,7 @@ object MarketSimulatorBenchmark {
     val financePersistor = new OrderPersistor(persistorName) // requires to have run CSVFetcher on finance.csv (obtained by mail from Milos)
     financePersistor.init()
     var orders: List[Order] = Nil
-    orders = financePersistor.loadBatch(25210389, 38137626)
+    orders = financePersistor.loadBatch(count)
 
 //    for(i <- 1 to count) {
 //      if (i % 100 == 0) println("loaded " + i + "th order from persistor")
