@@ -1,4 +1,4 @@
-package ch.epfl.ts.benchmark
+package ch.epfl.ts.benchmark.scala
 
 import java.io.{BufferedInputStream, BufferedOutputStream, ObjectInputStream, ObjectOutputStream}
 import java.net.{ServerSocket, Socket}

@@ -1,4 +1,4 @@
-package ch.epfl.ts.benchmark
+package ch.epfl.ts.benchmark.scala
 
 import akka.actor.ActorRef
 import ch.epfl.ts.component.Component
