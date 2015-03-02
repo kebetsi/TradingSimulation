@@ -2,15 +2,16 @@ package ch.epfl.ts.example
 
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.fetch.{BitstampOrderPullFetcher, BitstampTransactionPullFetcher, BtceOrderPullFetcher, BtceTransactionPullFetcher, MarketNames, PullFetchComponent}
+import ch.epfl.ts.component.fetch.{ BitstampOrderPullFetcher, BitstampTransactionPullFetcher, BtceOrderPullFetcher, BtceTransactionPullFetcher, MarketNames, PullFetchComponent }
 import ch.epfl.ts.component.persist.TransactionPersistor
-import ch.epfl.ts.component.utils.{BackLoop, Printer}
-import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, OHLC, Order, Transaction}
-import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
+import ch.epfl.ts.component.utils.{ BackLoop, Printer }
+import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, OHLC, Order, Transaction, MarketAskOrder, MarketBidOrder }
+import ch.epfl.ts.engine.{ MarketRules, MarketSimulator }
 import ch.epfl.ts.indicators.OhlcIndicator
 import ch.epfl.ts.traders.Arbitrageur
-
 import scala.reflect.ClassTag
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.MarketBidOrder
 
 /**
  * in this system, two fetchers gather orders and transaction
@@ -47,11 +48,14 @@ object BTCArbitrage {
     val btceOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], btceOrderPullFetcher, implicitly[ClassTag[Order]]), "btceOrderFetcher")
     val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], bitstampOrderPullFetcher, implicitly[ClassTag[Order]]), "bitstampOrderFetcher")
     // trading agents
-    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L), "arbitrageur")
+    val arbitrageurId = 111L
+    val tradingPriceDelta = 1.0
+    val volume = 50.0
+    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, tradingPriceDelta, volume), "arbitrageur")
     // markets
     val rules = new MarketRules()
-    val btceMarket = builder.createRef(Props(classOf[MarketSimulator], btceMarketId, rules), "btceMarket")
-    val bitstampMarket = builder.createRef(Props(classOf[MarketSimulator], bitstampMarketId, rules), "bitstampMarket")
+    val btceMarket = builder.createRef(Props(classOf[MarketSimulator], btceMarketId, rules), MarketNames.BTCE_NAME)
+    val bitstampMarket = builder.createRef(Props(classOf[MarketSimulator], bitstampMarketId, rules), MarketNames.BITSTAMP_NAME)
     // backloops
     val btceBackLoop = builder.createRef(Props(classOf[BackLoop], btceMarketId, btceXactPersit), "btceBackLoop")
     val bitstampBackLoop = builder.createRef(Props(classOf[BackLoop], bitstampMarketId, bitstampXactPersist), "bitstampBackLoop")
@@ -80,6 +84,11 @@ object BTCArbitrage {
     // backloop to arbitrageur
     bitstampBackLoop.addDestination(arbitrageur, classOf[Transaction])
     bitstampBackLoop.addDestination(arbitrageur, classOf[OHLC])
+    // Arbitrageur to markets
+    arbitrageur.addDestination(btceMarket, classOf[MarketBidOrder])
+    arbitrageur.addDestination(btceMarket, classOf[MarketAskOrder])
+    arbitrageur.addDestination(bitstampMarket, classOf[MarketAskOrder])
+    arbitrageur.addDestination(bitstampMarket, classOf[MarketBidOrder])
     // Start the system
     builder.start
   }
