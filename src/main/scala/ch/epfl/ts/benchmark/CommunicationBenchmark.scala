@@ -123,6 +123,8 @@ object CommunicationBenchmark {
         //      println("Java server: received: " + newObject)
       }
       println("javaTime: " + (System.currentTimeMillis() - startTime) + "ms")
+      
+      // TODO: could we replace this deprecated method by a simple `return`?
       this.stop()
     }
   }
@@ -183,7 +185,7 @@ object CommunicationBenchmark {
   class middleActor2(dest: ActorRef) extends Actor {
     var source: ActorRef = null
     def receive = {
-      case t: Tuple2[Int, Int] => {
+      case t: Tuple2[Int, Int] @unchecked => {
         dest ! t
       }
       case "Stop"        => dest ! "Stop"
@@ -258,6 +260,8 @@ object CommunicationBenchmark {
         //      println("Java server: received: " + newObject)
       }
       println("javaTime: " + (System.currentTimeMillis() - startTime) + "ms")
+      
+      // TODO: could we replace this deprecated method by a simple `return`?
       this.stop()
     }
   }
@@ -331,7 +335,7 @@ object CommunicationBenchmark {
   class middleActor3(dest: ActorRef) extends Actor {
     var source: ActorRef = null
     def receive = {
-      case t: Tuple3[Int, Int, Int] => {
+      case t: Tuple3[Int, Int, Int] @unchecked => {
         dest ! t
       }
       case "Stop"        => dest ! "Stop"
