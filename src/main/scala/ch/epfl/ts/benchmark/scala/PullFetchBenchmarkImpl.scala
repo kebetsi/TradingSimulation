@@ -1,4 +1,4 @@
-package ch.epfl.ts.benchmark
+package ch.epfl.ts.benchmark.scala
 
 import ch.epfl.ts.component.fetch.PullFetch
 import ch.epfl.ts.data.Currency._

@@ -3,6 +3,11 @@ package ch.epfl.ts.benchmark.marketSimulator
 import ch.epfl.ts.data._
 import ch.epfl.ts.engine.{MarketRules, MarketSimulator}
 
+/**
+ * Slightly modified MarketSimulator used for the benchmarks.
+ * It manages the case when it receives a LastOrder to notify
+ * the end of the benchmark.
+ */
 class BenchmarkMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator(marketId, rules) {
 
 

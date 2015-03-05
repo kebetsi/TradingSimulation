@@ -7,6 +7,11 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Transaction}
 import ch.epfl.ts.component.utils.BackLoop
 
+/**
+ * The goal of this test is to measure the time it takes for a trader's order to be executed 
+ * since the moment when the order that will trigger the trader's action is sent directly to 
+ * the MarketSimulator.
+ */
 object TraderReactionBenchmark {
 
   def main(args: Array[String]) {
@@ -36,6 +41,7 @@ object TraderReactionBenchmark {
     orderFeeder.addDestination(market, classOf[MarketBidOrder])
     orderFeeder.addDestination(market, classOf[DelOrder])
     orderFeeder.addDestination(market, classOf[LastOrder])
+    // used to test without the backloop
 //    market.addDestination(trader, classOf[Transaction])
     market.addDestination(backloop, classOf[Transaction])
     backloop.addDestination(trader, classOf[Transaction])

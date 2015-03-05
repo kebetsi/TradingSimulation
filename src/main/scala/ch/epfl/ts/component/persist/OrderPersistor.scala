@@ -112,7 +112,28 @@ class OrderPersistor(dbFilename: String) extends Persistance[Order] {
   def loadBatch(startTime: Long, endTime: Long): List[Order] = {
     var res: ListBuffer[Order] = new ListBuffer[Order]()
     db.withDynSession {
-      val r = order.filter(e => e.timestamp >= startTime && e.timestamp <= endTime).invoker.foreach { r =>
+      val r = order.filter(e => (e.timestamp >= startTime) && (e.timestamp <= endTime)).invoker.foreach { r =>
+        OrderType.withName(r._9) match {
+          case LIMIT_BID  => res.append(LimitBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8))
+          case LIMIT_ASK  => res.append(LimitAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8))
+          case MARKET_BID => res.append(MarketBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0))
+          case MARKET_ASK => res.append(MarketAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, 0.0))
+          case DEL        => res.append(DelOrder(r._2, r._3, r._4, DEF, DEF, 0.0, 0.0))
+          case _          => println(dbFilename + " Persistor: loadBatch error")
+        }
+      }
+    }
+    res.toList
+  }
+  
+  /**
+   * loads the amount of entries provided in the function
+   * argument at most.
+   */
+  def loadBatch(count: Int): List[Order] = {
+    var res: ListBuffer[Order] = new ListBuffer[Order]()
+    db.withDynSession {
+      val r = order.filter(e => e.id <= count).invoker.foreach { r =>
         OrderType.withName(r._9) match {
           case LIMIT_BID  => res.append(LimitBidOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8))
           case LIMIT_ASK  => res.append(LimitAskOrder(r._2, r._3, r._4, Currency.withName(r._5), Currency.withName(r._6), r._7, r._8))

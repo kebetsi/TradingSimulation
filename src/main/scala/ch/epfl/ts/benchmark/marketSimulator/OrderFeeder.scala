@@ -6,6 +6,11 @@ import ch.epfl.ts.data.Order
 
 case class LastOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
 
+/**
+ * Component used to send orders to the MarketSimulator for the MarketSimulatorBenchmark.
+ * It appends a LastOrder to the list of orders to send to notify the MarketSimulator
+ * that there are no more orders to process.
+ */
 class OrderFeeder(orders: List[Order]) extends Component {
 
   def receiver = {
