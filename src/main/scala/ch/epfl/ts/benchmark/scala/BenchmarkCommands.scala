@@ -1,4 +1,4 @@
-package ch.epfl.ts.benchmark
+package ch.epfl.ts.benchmark.scala
 
 import akka.actor.Actor
 import ch.epfl.ts.data.{Order, Transaction}

@@ -65,8 +65,8 @@ class BtceOrderPullFetcher extends PullFetch[Order] {
     val indexedNewOrders = newOrders map { k =>
       oid += 1
       val order = k match {
-        case LimitAskOrder(o, u, ft, wac, wic, v, p) => LimitAskOrder(o, u, fetchTime, wac, wic, v, p)
-        case LimitBidOrder(o, u, ft, wac, wic, v, p) => LimitBidOrder(o, u, fetchTime, wac, wic, v, p)
+        case LimitAskOrder(o, u, ft, wac, wic, v, p) => LimitAskOrder(oid, u, fetchTime, wac, wic, v, p)
+        case LimitBidOrder(o, u, ft, wac, wic, v, p) => LimitBidOrder(oid, u, fetchTime, wac, wic, v, p)
       }
       oldOrderBook += (k ->(oid, fetchTime))
       order
