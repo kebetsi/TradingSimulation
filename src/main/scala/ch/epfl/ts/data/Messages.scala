@@ -5,12 +5,21 @@ package ch.epfl.ts.data
  */
 object Currency extends Enumeration {
   type Currency = Value
+  // Cryptocurrencies
   val BTC = Value("btc")
   val LTC = Value("ltc")
+  
+  // Real-life currencies
   val USD = Value("usd")
   val CHF = Value("chf")
   val RUR = Value("rur")
-  val DEF = Value("def") // default
+  val EUR = Value("eur")
+  val JPY = Value("jpy")
+  val GBP = Value("gbp")
+  val AUD = Value("aud")
+  
+  // Fallback ("default")
+  val DEF = Value("def")
 }
 
 import ch.epfl.ts.data.Currency._
@@ -35,7 +44,6 @@ trait Streamable
  * @param sellOrderId seller order id
  */
 case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
-
 
 trait AskOrder
 trait BidOrder
