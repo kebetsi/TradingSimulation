@@ -5,6 +5,11 @@ import ch.epfl.ts.component.Component
 case class StartSending(ordersCount: Int)
 case class FinishedProcessingOrders(asksSize: Int, bidsSize: Int)
 
+/**
+ * Simple component used to compute the time it takes for the MarketSimulatorBenchmark
+ * to process the orders. It receives a start and stop signal, computes the time
+ * difference and prints the result.
+ */
 class TimeCounter extends Component {
 
   var initSendingTime: Long = 0L
