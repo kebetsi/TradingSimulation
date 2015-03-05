@@ -1,27 +1,5 @@
 package ch.epfl.ts.data
 
-/**
- * Enum for Currencies
- */
-object Currency extends Enumeration {
-  type Currency = Value
-  // Cryptocurrencies
-  val BTC = Value("btc")
-  val LTC = Value("ltc")
-  
-  // Real-life currencies
-  val USD = Value("usd")
-  val CHF = Value("chf")
-  val RUR = Value("rur")
-  val EUR = Value("eur")
-  val JPY = Value("jpy")
-  val GBP = Value("gbp")
-  val AUD = Value("aud")
-  
-  // Fallback ("default")
-  val DEF = Value("def")
-}
-
 import ch.epfl.ts.data.Currency._
 
 
@@ -83,7 +61,7 @@ case class DelOrder(override val oid: Long, override val uid: Long, override val
 
 
 /**
- * represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
+ * Represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
  */
 case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long) extends Streamable
 
