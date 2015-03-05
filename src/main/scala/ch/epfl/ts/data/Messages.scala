@@ -65,6 +65,12 @@ case class DelOrder(override val oid: Long, override val uid: Long, override val
  */
 case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long) extends Streamable
 
+/**
+ * Forex-style data
+ * @TODO: we also have access to 'bid points' and 'offer points'. Do we need those?
+ */
+case class Quote(whatC: Currency, withC: Currency, bid: Double, ask: Double, ohlc: OHLC)
+
 
 /**
  * Data Transfer Object representing a Tweet
