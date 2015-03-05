@@ -12,6 +12,7 @@ trait Fetch[T]
 abstract class PullFetch[T] extends Fetch[T] {
   def fetch(): List[T]
 
+  // TODO: which unit is that?
   def interval(): Int
 }
 
