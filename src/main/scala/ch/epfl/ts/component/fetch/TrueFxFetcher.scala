@@ -28,10 +28,9 @@ class TrueFxFetcher extends PullFetch[Quote]{
 		  val values = fields.drop(1).map(s => s.toDouble)
 		  
     	Quote(
+         marketId, timestamp,
          currencies(0), currencies(1),
-         values(1), values(3),
-         // TODO: possible to get meaningful values for `close` and `volume`?
-         OHLC(marketId, values(7), values(5), values(6), -1, -1, timestamp, interval())
+         values(1), values(3)
       )
     }
   }

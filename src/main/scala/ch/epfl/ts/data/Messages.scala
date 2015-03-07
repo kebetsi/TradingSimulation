@@ -69,7 +69,7 @@ case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: 
  * Forex-style data
  * @TODO: we also have access to 'bid points' and 'offer points'. Do we need those?
  */
-case class Quote(whatC: Currency, withC: Currency, bid: Double, ask: Double, ohlc: OHLC)
+case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Currency, bid: Double, ask: Double)
 
 
 /**
