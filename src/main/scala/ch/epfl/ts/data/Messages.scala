@@ -1,18 +1,5 @@
 package ch.epfl.ts.data
 
-/**
- * Enum for Currencies
- */
-object Currency extends Enumeration {
-  type Currency = Value
-  val BTC = Value("btc")
-  val LTC = Value("ltc")
-  val USD = Value("usd")
-  val CHF = Value("chf")
-  val RUR = Value("rur")
-  val DEF = Value("def") // default
-}
-
 import ch.epfl.ts.data.Currency._
 
 
@@ -35,7 +22,6 @@ trait Streamable
  * @param sellOrderId seller order id
  */
 case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
-
 
 trait AskOrder
 trait BidOrder
@@ -75,9 +61,15 @@ case class DelOrder(override val oid: Long, override val uid: Long, override val
 
 
 /**
- * represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
+ * Represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
  */
 case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long) extends Streamable
+
+/**
+ * Forex-style data
+ * @TODO: we also have access to 'bid points' and 'offer points'. Do we need those?
+ */
+case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Currency, bid: Double, ask: Double)
 
 
 /**
