@@ -5,6 +5,7 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Order}
 
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 case class SendMarketOrder()
 
@@ -36,7 +37,6 @@ class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends 
   }
 
   def start = {
-
     system.scheduler.schedule(initDelayMillis milliseconds, intervalMillis milliseconds, self, SendMarketOrder)
   }
 
