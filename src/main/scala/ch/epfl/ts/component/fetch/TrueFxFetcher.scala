@@ -26,7 +26,6 @@ class TrueFxFetcher extends PullFetch[Quote]{
 		  val currencies = fields(0).split('/').map(s => Currency.fromString(s.toLowerCase))
 		  val timestamp = fields(1).toLong
 		  val values = fields.drop(1).map(s => s.toDouble)
-		  
     	Quote(
          marketId, timestamp,
          currencies(0), currencies(1),

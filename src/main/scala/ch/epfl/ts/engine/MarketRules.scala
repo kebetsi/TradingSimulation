@@ -2,6 +2,7 @@ package ch.epfl.ts.engine
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order, Streamable, Transaction}
+import ch.epfl.ts.component.fetch.MarketNames
 
 /**
  * represents the cost of placing a bid and market order
