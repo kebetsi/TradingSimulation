@@ -5,6 +5,7 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Transaction}
 
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 /**
  * Transaction VWAP trader.

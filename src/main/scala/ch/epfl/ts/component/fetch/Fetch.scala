@@ -1,9 +1,10 @@
 package ch.epfl.ts.component.fetch
 
-import ch.epfl.ts.component.Component
-
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 import scala.reflect.ClassTag
+
+import ch.epfl.ts.component.Component
 
 trait Fetch[T]
 
@@ -11,6 +12,7 @@ trait Fetch[T]
 abstract class PullFetch[T] extends Fetch[T] {
   def fetch(): List[T]
 
+  // TODO: which unit is that?
   def interval(): Int
 }
 

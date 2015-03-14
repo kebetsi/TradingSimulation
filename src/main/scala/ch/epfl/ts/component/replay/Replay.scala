@@ -5,6 +5,7 @@ import ch.epfl.ts.component.persist.Persistance
 import ch.epfl.ts.component.{Component, StartSignal, StopSignal}
 
 import scala.concurrent.duration.DurationLong
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 case class ReplayConfig(initTimeMs: Long, compression: Double)
