@@ -36,6 +36,11 @@ class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
       book delete del
     case t: Transaction =>
       tradingPrice = t.price
+    case q : Quote =>
+      if(q.whatC.equals(Currency.EUR)&&q.withC.equals("usd")){
+        tradingPrice=q.bid;
+        println(tradingPrice);
+      }
     case PrintBooks =>
       // print shows heap order (binary tree)
       println("Ask Orders Book: " + book.bids)
