@@ -13,22 +13,22 @@ import ch.epfl.ts.data.Order
  */
 
 /* Answer */
-case class AcceptedOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+case class AcceptedOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends Order
 
 object AcceptedOrder {
   def apply(o: Order): AcceptedOrder = AcceptedOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, o.price)
 }
 
-case class RejectedOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+case class RejectedOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends Order
 
 object RejectedOrder {
   def apply(o: Order): RejectedOrder = RejectedOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, o.price)
 }
 
-case class ExecutedOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+case class ExecutedOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends Order
 
 object ExecutedOrder {
   def apply(o: Order): ExecutedOrder = ExecutedOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, o.price)
