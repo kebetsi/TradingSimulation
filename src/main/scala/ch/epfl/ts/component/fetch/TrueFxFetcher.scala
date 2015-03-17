@@ -26,9 +26,13 @@ class TrueFxFetcher extends PullFetch[Quote]{
 		  val currencies = fields(0).split('/').map(s => Currency.fromString(s.toLowerCase))
 		  val timestamp = fields(1).toLong
 		  val values = fields.drop(1).map(s => s.toDouble)
-      /** Prices are separated in "big figure" and "points" */
-      val bid = values(1) + (values(2) * 1e-5)
-      val ask = values(3) + (values(4) * 1e-5)
+      
+      /**
+       * Prices are separated in "big figure" and "points".
+       * We can simply concatenate them to obtain the full price.
+       */
+      val bid = (fields(2) + fields(3)).toDouble
+      val ask = (fields(4) + fields(5)).toDouble
       
     	Quote(
          marketId, timestamp,
