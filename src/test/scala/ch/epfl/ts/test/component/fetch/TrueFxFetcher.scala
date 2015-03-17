@@ -29,11 +29,10 @@ class TrueFxFetcherTestSuite extends FunSuite {
  
   test("Should give out all significant digits") {
     val fetched = fetcher.fetch()
-    val significantDigits = 5
-    
-    def getDigit(x:Double, digits: Int): Int = ( (x * Math.pow(10, digits)) % 10 ).toInt
-    def extractDigits(digits: Int) = fetched.flatMap(q => q match {
-      case Quote(_, _, _, _, bid, ask) => List(getDigit(bid, digits), getDigit(ask, digits))
+    val significantDigits = 6
+
+    def extractStrings(quotes: List[Quote]): List[String] = fetched.flatMap(q => q match {
+      case Quote(_, _, _, _, bid, ask) => List(bid.toString(), ask.toString())
     })
     
     /**
@@ -42,11 +41,13 @@ class TrueFxFetcherTestSuite extends FunSuite {
      * Although it may report a false negative with extremely low
      * probability, it will always fail if less significant digits
      * are given.
+     * Warning Prices are on different scales, we should take care that:
+     *   e.g. JPY 128.634  has as many significant digits as CHF 1.06034
      */
-    val lastDigits = extractDigits(significantDigits)
-    val tooManyDigits = extractDigits(significantDigits + 1)
+    val strings = extractStrings(fetched)
     
-    assert(lastDigits.exists { x => x != 0 })
-    assert(tooManyDigits.forall { x => x == 0 })
+    // +1 takes into account the '.' separator, +2 is too much
+    assert(strings.exists { s => s.length() == significantDigits + 1 })
+    assert(strings.forall { s => s.length() < significantDigits + 2 })
   }
 }
