@@ -7,6 +7,7 @@ import ch.epfl.ts.engine.{MarketRules, OrderBook}
 
 import scala.collection.mutable.TreeSet
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 /**
  * SOBI trader

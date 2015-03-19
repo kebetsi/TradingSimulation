@@ -5,6 +5,7 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Order}
 
 import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 case class SendMarketOrder()
 

@@ -20,7 +20,7 @@ object OrderType extends Enumeration {
 import ch.epfl.ts.component.persist.OrderType._
 
 
-case class PersistorOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double, val orderType: OrderType) extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+case class PersistorOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double, val orderType: OrderType) extends Order
 
 /**
  * Implementation of the Persistance trait for Order

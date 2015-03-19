@@ -8,8 +8,8 @@ import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, 
 import ch.epfl.ts.component.utils.BackLoop
 
 /**
- * The goal of this test is to measure the time it takes for a trader’s order to be executed 
- * since the moment when the order that will trigger the trader’s action is sent directly to 
+ * The goal of this test is to measure the time it takes for a trader's order to be executed 
+ * since the moment when the order that will trigger the trader's action is sent directly to 
  * the MarketSimulator.
  */
 object TraderReactionBenchmark {

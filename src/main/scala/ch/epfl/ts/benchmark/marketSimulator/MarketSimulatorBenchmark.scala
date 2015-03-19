@@ -5,6 +5,7 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.persist.OrderPersistor
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order}
+import scala.io.StdIn
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -21,7 +22,8 @@ object MarketSimulatorBenchmark {
   var r = scala.util.Random
 
   def main(args: Array[String]) {
-//    val orders = loadOrdersFromPersistor(500000, "finance")
+
+    //val orders = loadOrdersFromPersistor(500000, "finance")
     val orders = generateOrders(250000)
     
     println(orders.length)
@@ -48,8 +50,7 @@ object MarketSimulatorBenchmark {
 
     // start the benchmark
     builder.start
-
-    readLine("Press ENTER to Exit... ")
+    StdIn.readLine("Press ENTER to exit...")
     builder.system.shutdown()
     builder.system.awaitTermination()
   }
