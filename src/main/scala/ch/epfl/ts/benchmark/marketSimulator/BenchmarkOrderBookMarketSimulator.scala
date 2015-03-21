@@ -16,48 +16,52 @@ class BenchmarkOrderBookMarketSimulator(marketId: Long, rules: MarketRules) exte
       
     case limitBid: LimitBidOrder =>
       val currentPrice = tradingPrices((limitBid.withC, limitBid.whatC))
-      tradingPrices((limitBid.withC, limitBid.whatC)) = rules.matchingFunction(
+      val newBidPrice = rules.matchingFunction(
           marketId, limitBid, book.bids, book.asks,
           this.send[Streamable],
           (a, b) => a <= b,
-          currentPrice,
+          currentPrice._1,
           (limitBid, bidOrdersBook) => { bidOrdersBook insert limitBid; send(limitBid) })
-    
+    tradingPrices((limitBid.withC, limitBid.whatC)) = (newBidPrice, currentPrice._2)
+          
     case limitAsk: LimitAskOrder =>
       // TODO: check that the currencies have not been swapped by mistake
       val currentPrice = tradingPrices((limitAsk.withC, limitAsk.whatC))
-      tradingPrices((limitAsk.withC, limitAsk.whatC)) = rules.matchingFunction(
+      val newAskPrice = rules.matchingFunction(
           marketId, limitAsk, book.asks, book.bids,
           this.send[Streamable],
           (a, b) => a >= b,
-          currentPrice,
+          currentPrice._2,
           (limitAsk, askOrdersBook) => { askOrdersBook insert limitAsk; send(limitAsk) })
+     tradingPrices((limitAsk.withC, limitAsk.whatC)) = (currentPrice._1, newAskPrice)
     
     case marketBid: MarketBidOrder =>
       val currentPrice = tradingPrices((marketBid.withC, marketBid.whatC))
-      tradingPrices((marketBid.withC, marketBid.whatC)) = rules.matchingFunction(
+      val newBidPrice = rules.matchingFunction(
           marketId, marketBid, book.bids, book.asks,
           this.send[Streamable],
           (a, b) => true,
-          currentPrice, 
+          currentPrice._1, 
           (marketBid, bidOrdersBook) => ())
+      tradingPrices((marketBid.withC, marketBid.whatC)) = (newBidPrice, currentPrice._2)
     
     case marketAsk: MarketAskOrder =>
-      // TODO: check that the currencies have not been swapped by mistake
       val currentPrice = tradingPrices((marketAsk.withC, marketAsk.whatC))
-      tradingPrices((marketAsk.withC, marketAsk.whatC)) = rules.matchingFunction(
+      val newAskPrice = rules.matchingFunction(
           marketId, marketAsk, book.asks, book.bids,
           this.send[Streamable],
           (a, b) => true,
-          currentPrice,
+          currentPrice._2,
           (marketAsk, askOrdersBook) => ())
+      tradingPrices((marketAsk.withC, marketAsk.whatC)) = (currentPrice._1, newAskPrice)
     
     case del: DelOrder =>
       send(del)
       book delete del
     
     case t: Transaction =>
-      tradingPrices((t.withC, t.whatC)) = t.price
+      // TODO: how to know which currency of the two was bought? (Which to update, bid or ask price?)
+      tradingPrices((t.withC, t.whatC)) = (???, ???)
     
     case _              =>
       println("MS: got unknown")

@@ -11,58 +11,59 @@ import ch.epfl.ts.data._
 case class PrintBooks()
 
 
-class OrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator {
+class OrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator(marketId, rules) {
   
   // TODO: need to set initial trading price?
   //var tradingPrice: Double = 185000.0 // set for SobiTrader when using with finance.csv
   
-  val book = OrderBook(rules.bidsOrdering, rules.asksOrdering)
   
   override def receiver = {
     case limitBid: LimitBidOrder =>
       val currentPrice = tradingPrices((limitBid.withC, limitBid.whatC))
-      tradingPrices((limitBid.withC, limitBid.whatC)) =
-          rules.matchingFunction(
+      val newBidPrice = rules.matchingFunction(
               marketId, limitBid, book.bids, book.asks,
               this.send[Streamable],
-              (a, b) => a <= b, currentPrice,
+              (a, b) => a <= b, currentPrice._1,
               (limitBid, bidOrdersBook) => {
                 bidOrdersBook insert limitBid;
                 send(limitBid);
                 println("MS: order enqueued")
               })
-              
+      tradingPrices((limitBid.withC, limitBid.whatC)) = (newBidPrice, currentPrice._2)
+      
     case limitAsk: LimitAskOrder =>
-      // TODO: check currencies are not being swapped by mistake
       val currentPrice = tradingPrices((limitAsk.withC, limitAsk.whatC))
-      tradingPrices((limitAsk.withC, limitAsk.whatC)) = rules.matchingFunction(
+      val newAskPrice = rules.matchingFunction(
           marketId, limitAsk, book.asks, book.bids,
           this.send[Streamable],
-          (a, b) => a >= b, currentPrice,
+          (a, b) => a >= b, currentPrice._2,
           (limitAsk, askOrdersBook) => {
             askOrdersBook insert limitAsk;
             send(limitAsk);
             println("MS: order enqueued")
           })
+      tradingPrices((limitAsk.withC, limitAsk.whatC)) = (currentPrice._1, newAskPrice)
       
     case marketBid: MarketBidOrder =>
       val currentPrice = tradingPrices((marketBid.withC, marketBid.whatC))
-      tradingPrices((marketBid.withC, marketBid.whatC)) = rules.matchingFunction(
+      val newBidPrice = rules.matchingFunction(
           marketId, marketBid, book.bids, book.asks,
           this.send[Streamable],
           (a, b) => true,
-          currentPrice,
+          currentPrice._1,
           (marketBid, bidOrdersBook) => println("MS: market order discarded"))
+      tradingPrices((marketBid.withC, marketBid.whatC)) = (newBidPrice, currentPrice._2)
     
     case marketAsk: MarketAskOrder =>
       // TODO: check currencies haven't been swapped here by mistake
       val currentPrice = tradingPrices((marketAsk.withC, marketAsk.whatC))
-      tradingPrices((marketAsk.withC, marketAsk.whatC)) = rules.matchingFunction(
+      val newAskPrice = rules.matchingFunction(
           marketId, marketAsk, book.asks, book.bids,
           this.send[Streamable],
           (a, b) => true,
-          currentPrice,
+          currentPrice._2,
           (marketAsk, askOrdersBook) => println("MS: market order discarded"))
+      tradingPrices((marketAsk.withC, marketAsk.whatC)) = (currentPrice._1, newAskPrice)
     
     case del: DelOrder =>
       println("MS: got Delete: " + del)
@@ -70,7 +71,8 @@ class OrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends Marke
       book delete del
    
     case t: Transaction =>
-      tradingPrices((t.withC, t.whatC)) = t.price
+      // TODO: how to know which currency of the two was bought? (Which to update, bid or ask price?)
+      tradingPrices((t.withC, t.whatC)) = (???, ???)
    
     case PrintBooks =>
       // print shows heap order (binary tree)
