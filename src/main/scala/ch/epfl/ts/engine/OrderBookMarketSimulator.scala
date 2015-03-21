@@ -5,11 +5,11 @@ import ch.epfl.ts.data._
 
 
 /**
- * message used to print the books contents (since we use PriotityQueues, it's the heap order)
+ * Message used to print the books contents (since we use PriotityQueues, it's the heap order)
  */
 case class PrintBooks()
 
-class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
+class OrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends Component {
 
   val book = OrderBook(rules.bidsOrdering, rules.asksOrdering)
   /**
