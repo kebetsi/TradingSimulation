@@ -5,15 +5,12 @@ import ch.epfl.ts.data._
 
 class MarketFXSimulator(marketId: Long, rules: MarketFXRules) extends MarketSimulator(marketId, rules) {
 
-  val book = OrderBook(rules.bidsOrdering, rules.asksOrdering)
-  /**
-   * the current Market Price
-   */
-
   override def receiver = {
     case limitBid: LimitBidOrder =>
-
+      // TODO
+      
     case limitAsk: LimitAskOrder =>
+      // TODO
 
     case marketBid: MarketBidOrder =>
       tradingPrices.get((marketBid.whatC, marketBid.withC)) match {

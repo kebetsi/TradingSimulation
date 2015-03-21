@@ -19,9 +19,8 @@ abstract class MarketSimulator(marketId: Long, rules: MarketRules) extends Compo
   /**
    * Last price at which a transaction was executed for each currency.
    */
+  // TODO: need to set initial trading price?
   var tradingPrices: Prices = MHashMap[(Currency, Currency), (Double, Double)]()
   
-  
   val book = OrderBook(rules.bidsOrdering, rules.asksOrdering)
-  
 }

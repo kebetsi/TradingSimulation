@@ -13,10 +13,6 @@ case class PrintBooks()
 
 class OrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator(marketId, rules) {
   
-  // TODO: need to set initial trading price?
-  //var tradingPrice: Double = 185000.0 // set for SobiTrader when using with finance.csv
-  
-  
   override def receiver = {
     case limitBid: LimitBidOrder =>
       val currentPrice = tradingPrices((limitBid.withC, limitBid.whatC))
