@@ -10,23 +10,55 @@ import ch.epfl.ts.engine.{MarketRules, OrderBookMarketSimulator}
  */
 class BenchmarkMarketSimulator(marketId: Long, rules: MarketRules) extends OrderBookMarketSimulator(marketId, rules) {
 
-
   override def receiver = {
     case last: LastOrder =>
       send(FinishedProcessingOrders(book.asks.size, book.bids.size));
+      
     case limitBid: LimitBidOrder =>
-      tradingPrice = rules.matchingFunction(marketId, limitBid, book.bids, book.asks, this.send[Streamable], (a, b) => a <= b, tradingPrice, (limitBid, bidOrdersBook) => { bidOrdersBook insert limitBid; send(limitBid) })
+      val currentPrice = tradingPrices((limitBid.withC, limitBid.whatC))
+      tradingPrices((limitBid.withC, limitBid.whatC)) = rules.matchingFunction(
+          marketId, limitBid, book.bids, book.asks,
+          this.send[Streamable],
+          (a, b) => a <= b,
+          currentPrice,
+          (limitBid, bidOrdersBook) => { bidOrdersBook insert limitBid; send(limitBid) })
+    
     case limitAsk: LimitAskOrder =>
-      tradingPrice = rules.matchingFunction(marketId, limitAsk, book.asks, book.bids, this.send[Streamable], (a, b) => a >= b, tradingPrice, (limitAsk, askOrdersBook) => { askOrdersBook insert limitAsk; send(limitAsk) })
+      // TODO: check that the currencies have not been swapped by mistake
+      val currentPrice = tradingPrices((limitAsk.withC, limitAsk.whatC))
+      tradingPrices((limitAsk.withC, limitAsk.whatC)) = rules.matchingFunction(
+          marketId, limitAsk, book.asks, book.bids,
+          this.send[Streamable],
+          (a, b) => a >= b,
+          currentPrice,
+          (limitAsk, askOrdersBook) => { askOrdersBook insert limitAsk; send(limitAsk) })
+    
     case marketBid: MarketBidOrder =>
-      tradingPrice = rules.matchingFunction(marketId, marketBid, book.bids, book.asks, this.send[Streamable], (a, b) => true, tradingPrice, (marketBid, bidOrdersBook) => ())
+      val currentPrice = tradingPrices((marketBid.withC, marketBid.whatC))
+      tradingPrices((marketBid.withC, marketBid.whatC)) = rules.matchingFunction(
+          marketId, marketBid, book.bids, book.asks,
+          this.send[Streamable],
+          (a, b) => true,
+          currentPrice, 
+          (marketBid, bidOrdersBook) => ())
+    
     case marketAsk: MarketAskOrder =>
-      tradingPrice = rules.matchingFunction(marketId, marketAsk, book.asks, book.bids, this.send[Streamable], (a, b) => true, tradingPrice, (marketAsk, askOrdersBook) => ())
+      // TODO: check that the currencies have not been swapped by mistake
+      val currentPrice = tradingPrices((marketAsk.withC, marketAsk.whatC))
+      tradingPrices((marketAsk.withC, marketAsk.whatC)) = rules.matchingFunction(
+          marketId, marketAsk, book.asks, book.bids,
+          this.send[Streamable],
+          (a, b) => true,
+          currentPrice,
+          (marketAsk, askOrdersBook) => ())
+    
     case del: DelOrder =>
       send(del)
       book delete del
+    
     case t: Transaction =>
-      tradingPrice = t.price
+      tradingPrices((t.withC, t.whatC)) = t.price
+    
     case _              =>
       println("MS: got unknown")
   }
