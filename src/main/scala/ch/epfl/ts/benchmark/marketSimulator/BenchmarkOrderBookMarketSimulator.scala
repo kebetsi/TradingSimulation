@@ -8,7 +8,7 @@ import ch.epfl.ts.engine.{MarketRules, OrderBookMarketSimulator}
  * It manages the case when it receives a LastOrder to notify
  * the end of the benchmark.
  */
-class BenchmarkMarketSimulator(marketId: Long, rules: MarketRules) extends OrderBookMarketSimulator(marketId, rules) {
+class BenchmarkOrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends OrderBookMarketSimulator(marketId, rules) {
 
   override def receiver = {
     case last: LastOrder =>
