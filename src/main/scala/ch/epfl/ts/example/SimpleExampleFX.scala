@@ -16,10 +16,10 @@ import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.data.LimitBidOrder
-import ch.epfl.ts.engine.MarketFXRules
 import ch.epfl.ts.engine.MarketFXSimulator
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.engine.RevenueComputeFX
+import ch.epfl.ts.engine.ForexMarketRules
 
 
 object SimpleExampleFX {
@@ -28,7 +28,7 @@ object SimpleExampleFX {
     val marketForexId = MarketNames.FOREX_ID
     val fetcherFx: TrueFxFetcher = new TrueFxFetcher
     val fxQuoteFetcher = builder.createRef(Props(classOf[PullFetchComponent[Quote]], fetcherFx, implicitly[ClassTag[Quote]]), "trueFxFetcher")
-    val rules = new MarketFXRules()
+    val rules = new ForexMarketRules()
     val forexMarket = builder.createRef(Props(classOf[MarketFXSimulator], marketForexId, rules), MarketNames.FOREX_NAME)
     fxQuoteFetcher.addDestination(forexMarket, classOf[Quote])
 

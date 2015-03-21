@@ -1,9 +1,13 @@
 package ch.epfl.ts.engine
 
-import ch.epfl.ts.component.Component
-import ch.epfl.ts.data._
+import ch.epfl.ts.data.LimitAskOrder
+import ch.epfl.ts.data.LimitBidOrder
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.Streamable
 
-class MarketFXSimulator(marketId: Long, rules: MarketFXRules) extends MarketSimulator(marketId, rules) {
+class MarketFXSimulator(marketId: Long, rules: ForexMarketRules) extends MarketSimulator(marketId, rules) {
 
   override def receiver = {
     case limitBid: LimitBidOrder =>
