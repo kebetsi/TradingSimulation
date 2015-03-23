@@ -2,13 +2,13 @@ package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.data.Currency
-import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.data.Order
-import ch.epfl.ts.data.LimitAskOrder
-import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data._
 import scala.language.postfixOps
 import scala.concurrent.duration.DurationInt
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.traders.SendMarketOrder
+import ch.epfl.ts.component.StartSignal
+import ch.epfl.ts.data.MarketAskOrder
 
 class SimpleFXTrader(uid: Long) extends Component {
   import context._
@@ -26,6 +26,11 @@ class SimpleFXTrader(uid: Long) extends Component {
         send[Order](MarketAskOrder(orderId, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, 30, 0))
       }
       alternate=alternate+1
+    case t: Transaction =>
+      println("SimpleFXT: got %s -> %s for %f transaction info".format(t.whatC, t.withC, t.price))
+    case q: Quote =>
+    case _ =>
+      println("SimpleFXT: unknown signal")
   }
 
   def start = {
