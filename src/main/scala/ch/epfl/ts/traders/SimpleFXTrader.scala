@@ -1,39 +1,61 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.Component
-import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.data._
-import scala.language.postfixOps
-import scala.concurrent.duration.DurationInt
-import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.traders.SendMarketOrder
-import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.component.Component 
+import ch.epfl.ts.indicators.MA
+import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder}
 
-class SimpleFXTrader(uid: Long) extends Component {
-  import context._
-  var orderId = 5500
-  val initDelayMillis = 10000
-  val intervalMillis = 5000;
-  var alternate = 0
-
+/* This simple trader will use two moving average and send order when this two average cross each other.
+ * @ Param the length of the two moving average period.
+ */
+class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, val volume : Double) extends Component{
+  
+  var shortMaCount : Int = 0
+  var longMaCount : Int = 0
+  
+  var previousShort : Double = 0.0
+  var previousLong : Double = 0.0
+  var currentShort : Double = 0.0
+  var currentLong : Double = 0.0
+  
+  var oid = 12345
+  
+  
   override def receiver = {
-    case StartSignal() => start
-    case SendMarketOrder =>
-      if (alternate % 2 == 0) {
-        send[Order](MarketBidOrder(orderId, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, 30, 0))
-      } else {
-        send[Order](MarketAskOrder(orderId, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, 30, 0))
+   
+    case ma : MA => {
+      println("SimpleFXTrader receided a moving average : " + ma)
+      ma.period match {
+        case shortPeriod => {
+          println("received a short period")
+          previousShort = currentShort
+          currentShort = ma.value
+          shortMaCount += 1
+        }
+        case longPeriod => {
+          println("received a long period")
+          previousLong = currentLong
+          currentLong = ma.value
+          longMaCount += 1 
+        }
+        case _ => 
       }
-      alternate=alternate+1
-    case t: Transaction =>
-      println("SimpleFXT: got %s -> %s for %f transaction info".format(t.whatC, t.withC, t.price))
-    case q: Quote =>
-    case _ =>
-      println("SimpleFXT: unknown signal")
-  }
-
-  def start = {
-    system.scheduler.schedule(initDelayMillis milliseconds, intervalMillis milliseconds, self, SendMarketOrder)
+        if(shortMaCount == longMaCount) {
+            if (previousShort < previousLong && currentShort >= currentLong) {
+              //last argument being price ... 
+              send(MarketBidOrder(oid, uid,System.currentTimeMillis(), USD, CHF, volume, 0))
+              println("simple trader : buying")
+              oid += 1
+            }
+            
+            else if(previousShort > previousLong && currentShort <= currentLong) {
+              send(MarketAskOrder(oid, uid, System.currentTimeMillis(), USD, CHF, volume, 0))
+              println("simple trader : selling")
+              oid += 1
+            }
+          }   
+    }
+    case _ => println("SimpleTrader: received unknown")
+    
   }
 }
