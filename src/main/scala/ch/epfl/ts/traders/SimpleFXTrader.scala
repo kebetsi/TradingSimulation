@@ -1,9 +1,11 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.Component 
+import ch.epfl.ts.component.Component
+import ch.epfl.ts.data.Currency.CHF
+import ch.epfl.ts.data.Currency.USD
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.indicators.MA
-import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder}
 
 /* This simple trader will use two moving average and send order when this two average cross each other.
  * @ Param the length of the two moving average period.
