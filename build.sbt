@@ -15,7 +15,8 @@ lazy val frontend = (project in file("frontend"))
     .enablePlugins(PlayScala)
     .settings(
         name := "frontend",
-        libraryDependencies ++= (Dependencies.frontend  ++ Seq(filters, cache))
+        libraryDependencies ++= (Dependencies.frontend  ++ Seq(filters, cache)),
+        pipelineStages := Seq(rjs, digest, gzip)
     ).dependsOn(ts).aggregate(ts)
 
 lazy val ts = (project in file("ts"))
