@@ -21,6 +21,7 @@ project/plugins/project/
 .classpath
 .project
 .settings
+.metadata
 
 TradingSimulation.iml
 .idea/

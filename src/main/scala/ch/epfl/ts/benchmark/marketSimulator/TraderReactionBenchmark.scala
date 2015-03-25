@@ -28,7 +28,7 @@ object TraderReactionBenchmark {
 
     // Create Components
     val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders), "orderFeeder")
-    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()), "market")
+    val market = builder.createRef(Props(classOf[BenchmarkOrderBookMarketSimulator], 1L, new BenchmarkMarketRules()), "market")
     val backloop = builder.createRef(Props(classOf[BackLoop], 1L, persistor), "backloop")
     val trader = builder.createRef(Props(classOf[BenchmarkTrader]), "trader")
     val timeCounter = builder.createRef(Props(classOf[TimeCounter]), "timeCounter")
