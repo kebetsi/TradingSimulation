@@ -28,13 +28,13 @@ class MovingAverageFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod 
     case ma : MA => {
       println("SimpleFXTrader receided a moving average : " + ma)
       ma.period match {
-        case shortPeriod => {
+        case `shortPeriod` => {
           println("received a short period")
           previousShort = currentShort
           currentShort = ma.value
           shortMaCount += 1
         }
-        case longPeriod => {
+        case `longPeriod` => {
           println("received a long period")
           previousLong = currentLong
           currentLong = ma.value
