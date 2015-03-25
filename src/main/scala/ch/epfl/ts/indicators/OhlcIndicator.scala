@@ -1,7 +1,7 @@
 package ch.epfl.ts.indicators
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.{OHLC, Transaction}
+import ch.epfl.ts.data.{OHLC, Transaction, Quote}
 
 import scala.collection.mutable.MutableList
 
@@ -27,6 +27,10 @@ class OhlcIndicator(marketId: Long, tickSizeMillis: Long) extends Component {
       }
       values += t.price
       volume = volume + t.volume
+    }
+    //TODO 
+    case q: Quote => {
+      
     }
     case _ => println("OhlcIndicator: received unknown")
   }

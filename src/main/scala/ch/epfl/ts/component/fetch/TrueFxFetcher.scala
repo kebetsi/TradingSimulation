@@ -12,7 +12,7 @@ import ch.epfl.ts.data.OHLC
 class TrueFxFetcher extends PullFetch[Quote]{
   val serverBase = "http://webrates.truefx.com/rates/connect.html" + "?f=csv"
   // TODO: what should this marketId be?
-  val marketId = -1
+  val marketId : Long = -1
   
   def fetch(): List[Quote] = {
     val csv = Request.Get(serverBase).execute().returnContent().asString()

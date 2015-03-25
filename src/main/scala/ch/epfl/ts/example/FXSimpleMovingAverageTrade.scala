@@ -9,6 +9,9 @@ import ch.epfl.ts.component.fetch.{ BitstampOrderPullFetcher, BitstampTransactio
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.engine.{ MarketRules, MarketSimulator }
 import ch.epfl.ts.indicators.SmaIndicator
+import ch.epfl.ts.data.{ MarketBidOrder, MarketAskOrder }
+import ch.epfl.ts.indicators.MaIndicator
+
 
 
 object FXSimpleMovingAverageTrade {
@@ -42,13 +45,19 @@ object FXSimpleMovingAverageTrade {
     val forexMarket = builder.createRef(Props(classOf[MarketSimulator], forexQuotePullFetcher.marketId, rules), "trueFX")
 
     //Create the connection
-   // forexQuoteFetcher.addDestination() 
+    // forexQuoteFetcher.addDestination() 
     
+    //allow fetcher to send data to the marketSimulator & indicators... 
+    forexQuoteFetcher.addDestination(forexMarket, classOf[Quote])
     
+    //allow trader to send information to the market
+    trader.addDestination(forexMarket, classOf[MarketBidOrder])
+    trader.addDestination(forexMarket, classOf[MarketAskOrder])
     
-    
+    //allow indicators to send information to the trader
+    smaShort.addDestination(trader, classOf[MaIndicator])
+    smaLong.addDestination(trader, classOf[MaIndicator])
     
     builder.start
-    
   }
 }
