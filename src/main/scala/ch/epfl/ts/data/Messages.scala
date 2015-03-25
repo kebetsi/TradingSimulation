@@ -1,18 +1,5 @@
 package ch.epfl.ts.data
 
-/**
- * Enum for Currencies
- */
-object Currency extends Enumeration {
-  type Currency = Value
-  val BTC = Value("btc")
-  val LTC = Value("ltc")
-  val USD = Value("usd")
-  val CHF = Value("chf")
-  val RUR = Value("rur")
-  val DEF = Value("def") // default
-}
-
 import ch.epfl.ts.data.Currency._
 
 
@@ -37,9 +24,6 @@ trait Streamable
 case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
 
 
-trait AskOrder
-trait BidOrder
-
 /**
  * Data Transfer Object representing a Order
  * @param oid
@@ -50,34 +34,46 @@ trait BidOrder
  * @param volume
  * @param price
  */
-abstract class Order(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double) extends Streamable
+abstract class Order() extends Streamable {
+  def oid: Long
+  def uid: Long
+  def timestamp: Long
+  def whatC: Currency
+  def withC: Currency
+  def volume: Double
+  def price: Double
+}
 
-abstract class LimitOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+abstract class LimitOrder extends Order
 
-case class LimitBidOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends LimitOrder(oid, uid, timestamp, whatC, withC, volume, price) with BidOrder
+case class LimitBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends LimitOrder
 
-case class LimitAskOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends LimitOrder(oid, uid, timestamp, whatC, withC, volume, price) with AskOrder
+case class LimitAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends LimitOrder
 
-abstract class MarketOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+abstract class MarketOrder extends Order
 
-case class MarketBidOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends MarketOrder(oid, uid, timestamp, whatC, withC, volume, price) with BidOrder
+case class MarketBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends MarketOrder
 
-case class MarketAskOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends MarketOrder(oid, uid, timestamp, whatC, withC, volume, price) with AskOrder
+case class MarketAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends MarketOrder
 
-case class DelOrder(override val oid: Long, override val uid: Long, override val timestamp: Long, override val whatC: Currency, override val withC: Currency, override val volume: Double, override val price: Double)
-  extends Order(oid, uid, timestamp, whatC, withC, volume, price)
+case class DelOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends Order
 
 
 /**
- * represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
+ * Represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
  */
 case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long) extends Streamable
+
+/**
+ * Forex-style data
+ * @TODO: we also have access to 'bid points' and 'offer points'. Do we need those?
+ */
+case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Currency, bid: Double, ask: Double)
 
 
 /**

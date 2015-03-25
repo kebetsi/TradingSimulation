@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem}
 
 import scala.reflect.ClassTag
 
+import scala.language.existentials
 import scala.collection.mutable.{HashMap => MHashMap}
 
 case class StartSignal()
