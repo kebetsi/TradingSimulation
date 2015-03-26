@@ -17,7 +17,7 @@ abstract class TimedReporterActor(master: ActorRef, dest: List[ActorRef], source
     case RunItNow => readAndSend
   }
 
-  case class RunItNow()
+  case object RunItNow
 
   def readAndSend: Unit = {
     val startTime = System.currentTimeMillis

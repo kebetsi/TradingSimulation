@@ -22,28 +22,30 @@ class RevenueComputeSim(traderNames: Map[Long, String],pingIntervalMillis: Int) 
 
   def process(t: Transaction) = {
     currentTradingPrice = t.price
-    // buyer has more shares but less money
-     val buyerWallet = wallets.getOrElse(t.buyerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
-      buyerWallet.funds.get(t.withC) match {
+    
+    // Buyer has more shares but less money
+    val buyerWallet = wallets.getOrElse(t.buyerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
+    
+    buyerWallet.funds.get(t.withC) match {
         case Some(v) =>
           val newFund = v - t.volume * t.price
           buyerWallet.funds += (t.withC -> newFund)
         case None =>
           println("You can't trade those currencies")
+     }
+     buyerWallet.funds.get(t.whatC) match {
+       case Some(v) =>
+         val newFund = v + t.volume
+         buyerWallet.funds += (t.whatC -> newFund)
+       case None =>
+         println("You can't trade those currencies")
       }
-      buyerWallet.funds.get(t.whatC) match {
-        case Some(v) =>
-          val newFund = v + t.volume
-          buyerWallet.funds += (t.whatC -> newFund)
-        case None =>
-          println("You can't trade those currencies")
-
-      }
+     
       wallets += (t.buyerId -> buyerWallet)
 
-    // seller has more money but less shares
-       val sellerWallet = wallets.getOrElse(t.sellerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
-      sellerWallet.funds.get(t.withC) match {
+     // Seller has more money but less shares
+     val sellerWallet = wallets.getOrElse(t.sellerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
+     sellerWallet.funds.get(t.withC) match {
         case Some(v) =>
           val newFund = v + t.volume * t.price
           sellerWallet.funds += (t.withC -> newFund)

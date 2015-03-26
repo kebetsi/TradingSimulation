@@ -5,7 +5,7 @@ import ch.epfl.ts.data.{Order, Transaction}
 
 case class Start(offset: Long)
 
-case class Stop()
+case object Stop
 
 case class Report(source: String, startTime: Long, endTime: Long)
 

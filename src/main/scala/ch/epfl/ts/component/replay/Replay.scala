@@ -12,16 +12,17 @@ case class ReplayConfig(initTimeMs: Long, compression: Double)
 
 class Replay[T: ClassTag](p: Persistance[T], conf: ReplayConfig) extends Component {
   import context._
-  case class Tick()
+  case object Tick
+
   var schedule: Cancellable = null
   var currentTime = conf.initTimeMs
 
   override def receiver = {
-    case StopSignal() =>
+    case StopSignal   =>
       schedule.cancel()
-    case StartSignal() =>
+    case StartSignal  =>
       schedule = start(conf.compression)
-    case Tick() if sender == self =>
+    case Tick if sender == self =>
       process()
       currentTime += 1000
     case r: ReplayConfig =>
@@ -32,7 +33,7 @@ class Replay[T: ClassTag](p: Persistance[T], conf: ReplayConfig) extends Compone
     case _ =>
   }
   private def start(compression: Double) = {
-    context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, new Tick)
+    context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, Tick)
   }
   private def process() = send[T](p.loadBatch(currentTime, currentTime + 999))
 }

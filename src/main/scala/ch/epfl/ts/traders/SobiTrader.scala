@@ -16,7 +16,7 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
   extends Component {
   import context._
 
-  case class PossibleOrder()
+  case object PossibleOrder
 
   val book = OrderBook(rules.bidsOrdering, rules.asksOrdering)
   var tradingPrice = 188700.0 // for finance.csv
@@ -26,14 +26,14 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
   var currentOrderId: Long = 456789
 
   override def receiver = {
-    case StartSignal()            => start
+    case StartSignal              => start
 
     case limitAsk: LimitAskOrder  => book insertAskOrder limitAsk
     case limitBid: LimitBidOrder  => book insertBidOrder limitBid
     case delete: DelOrder         => removeOrder(delete)
     case transaction: Transaction => tradingPrice = transaction.price
 
-    case b: PossibleOrder => {
+    case PossibleOrder => {
       bi = computeBiOrSi(book.bids.book)
       si = computeBiOrSi(book.asks.book)
       if ((si - bi) > theta) {
@@ -54,7 +54,7 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
   }
 
   def start = {
-    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder())
+    system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder)
   }
 
   def removeOrder(order: Order): Unit = book delete order
