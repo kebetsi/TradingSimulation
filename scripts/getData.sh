@@ -7,7 +7,10 @@
 # it unzips the data and deletes the used zip files.
 # Requires `curl`.
 
-# Usage: ./getData.sh <server>
+if [ $# -ne "1" ]; then
+	echo "Usage: ./getData.sh <server>"
+	exit
+fi
 
 SERVER=$1 # set server here to a constant if you use the script often
 
