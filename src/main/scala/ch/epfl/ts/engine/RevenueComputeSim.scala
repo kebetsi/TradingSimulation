@@ -1,23 +1,19 @@
 package ch.epfl.ts.engine
 
-import ch.epfl.ts.component.{ Component, StartSignal }
 import ch.epfl.ts.data.Transaction
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.data.Currency
 
-class RevenueComputeFX(traderNames: Map[Long, String]) extends RevenueCompute(traderNames) {
-  /*
-   * The revenue Compute for FX backtesting.
-   * 
-   */
-  
-  //Simple , just to have a functional output
-  /*TODO : Change the architecture to use Wallet inside Trader component for strategies 
-involving current wallet state. ( example : buy order with 10% of total available fund)*/
-
-  
+class RevenueComputeSim(traderNames: Map[Long, String],pingIntervalMillis: Int) extends RevenueCompute(traderNames) {
   import context._
+
+/*
+ * The revenue compute component for simulation purpose.
+ * Display Stats : Display stats of the buyer trader and the seller trader
+ * 
+ */
 
   def receiver = {
     case t: Transaction => process(t)
@@ -26,9 +22,8 @@ involving current wallet state. ( example : buy order with 10% of total availabl
 
   def process(t: Transaction) = {
     currentTradingPrice = t.price
-    if (traderNames.contains(t.buyerId)) {
-      val traderId = t.buyerId
-      val buyerWallet = wallets.getOrElse(t.buyerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
+    // buyer has more shares but less money
+     val buyerWallet = wallets.getOrElse(t.buyerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
       buyerWallet.funds.get(t.withC) match {
         case Some(v) =>
           val newFund = v - t.volume * t.price
@@ -45,11 +40,9 @@ involving current wallet state. ( example : buy order with 10% of total availabl
 
       }
       wallets += (t.buyerId -> buyerWallet)
-      displayStats(t.buyerId)
 
-    } else {
-      val traderId = t.sellerId
-      val sellerWallet = wallets.getOrElse(t.sellerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
+    // seller has more money but less shares
+       val sellerWallet = wallets.getOrElse(t.sellerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
       sellerWallet.funds.get(t.withC) match {
         case Some(v) =>
           val newFund = v + t.volume * t.price
@@ -66,9 +59,13 @@ involving current wallet state. ( example : buy order with 10% of total availabl
 
       }
       wallets += (t.sellerId -> sellerWallet)
-      displayStats(t.sellerId)
-
-    }
+    
+    displayStats(t.buyerId)
+    displayStats(t.sellerId)
   }
+  
+  
+
+
 
 }
