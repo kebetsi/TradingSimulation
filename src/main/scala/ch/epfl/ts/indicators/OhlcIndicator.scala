@@ -1,7 +1,7 @@
 package ch.epfl.ts.indicators
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.{OHLC, Transaction}
+import ch.epfl.ts.data.{OHLC, Transaction, Quote}
 
 import scala.collection.mutable.MutableList
 
@@ -28,6 +28,14 @@ class OhlcIndicator(marketId: Long, tickSizeMillis: Long) extends Component {
       values += t.price
       volume = volume + t.volume
     }
+    case q: Quote => {
+      println("OhlcIndicator : recieved quote" + q.timestamp)
+      if (whichTick(q.timestamp) > currentTick) {
+        send(computeOHLC)
+        currentTick = whichTick(q.timestamp)
+      }
+      values += q.bid //we consider the price as the bid price
+    }
     case _ => println("OhlcIndicator: received unknown")
   }
 
@@ -48,7 +56,7 @@ class OhlcIndicator(marketId: Long, tickSizeMillis: Long) extends Component {
     if (!values.isEmpty) {
       close = values.head
       val ohlc = OHLC(marketId, values.last, values.max(Ordering.Double), values.min(Ordering.Double), values.head, volume, tickTimeStamp, tickSizeMillis)
-      // clean ancient vals
+      // clean ancient values
       volume = 0
       values.clear()
       println("OhlcIndicator: sending OHLC : " + ohlc)

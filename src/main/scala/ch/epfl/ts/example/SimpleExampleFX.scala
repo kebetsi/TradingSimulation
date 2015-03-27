@@ -7,16 +7,17 @@ import ch.epfl.ts.component.persist.DummyPersistor
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.engine.MarketFXSimulator
 import akka.actor.Props
-import ch.epfl.ts.traders.MovingAverageFXTrader
+import ch.epfl.ts.traders.SimpleFXTrader
 import ch.epfl.ts.component.utils.BackLoop
 import ch.epfl.ts.indicators.SmaIndicator
 import scala.reflect.ClassTag
 import ch.epfl.ts.component.fetch.PullFetchComponent
 import ch.epfl.ts.engine.RevenueComputeFX
-import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.{ Quote, OHLC }
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MA }
 
 
 object SimpleExampleFX {
@@ -41,14 +42,17 @@ object SimpleExampleFX {
     
     // Trader: cross moving average
     val traderId : Long = 123L
-    val volume = 50.0
-    val shortPeriod = 50
-    val longPeriod = 200
-    val trader = builder.createRef(Props(classOf[MovingAverageFXTrader], traderId, shortPeriod, longPeriod, volume), "simpleTrader")
+    val volume = 10.0
+    val shortPeriod = 5
+    val longPeriod = 20
+    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId, shortPeriod, longPeriod, volume), "simpleTrader")
    
-    // Indicators
+    // Indicator
+    // specify period over which we build the OHLC (from quotes)
+    val period : Long = 5
     val smaShort = builder.createRef(Props(classOf[SmaIndicator], shortPeriod), "smaShort")
     val smaLong = builder.createRef(Props(classOf[SmaIndicator], longPeriod), "smaLong")
+    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId, period), "ohlcIndicator")
     
     // Display
     val traderNames = Map(traderId -> "MovingAverageFXTrader")
@@ -57,12 +61,18 @@ object SimpleExampleFX {
     // ----- Connecting actors
     fxQuoteFetcher.addDestination(forexMarket, classOf[Quote])
     fxQuoteFetcher.addDestination(trader, classOf[Quote])
+    fxQuoteFetcher.addDestination(ohlcIndicator, classOf[Quote])
 
     trader.addDestination(forexMarket, classOf[MarketAskOrder])
     trader.addDestination(forexMarket, classOf[MarketBidOrder])
 
     forexMarket.addDestination(backloop, classOf[Transaction])
     forexMarket.addDestination(display, classOf[Transaction])
+    
+    smaShort.addDestination(trader, classOf[MA])
+    smaLong.addDestination(trader, classOf[MA])
+    ohlcIndicator.addDestination(smaShort, classOf[OHLC])
+    ohlcIndicator.addDestination(smaLong, classOf[OHLC])
 
     backloop.addDestination(trader, classOf[Transaction])
 
