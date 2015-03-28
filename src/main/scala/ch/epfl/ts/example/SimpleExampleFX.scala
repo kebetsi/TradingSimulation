@@ -17,7 +17,7 @@ import ch.epfl.ts.data.{ Quote, OHLC }
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MA }
+import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MA, SMA }
 
 
 object SimpleExampleFX {
@@ -69,8 +69,8 @@ object SimpleExampleFX {
     forexMarket.addDestination(backloop, classOf[Transaction])
     forexMarket.addDestination(display, classOf[Transaction])
     
-    smaShort.addDestination(trader, classOf[MA])
-    smaLong.addDestination(trader, classOf[MA])
+    smaShort.addDestination(trader, classOf[SMA])
+    smaLong.addDestination(trader, classOf[SMA])
     ohlcIndicator.addDestination(smaShort, classOf[OHLC])
     ohlcIndicator.addDestination(smaLong, classOf[OHLC])
 

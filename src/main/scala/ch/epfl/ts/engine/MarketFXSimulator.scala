@@ -17,12 +17,14 @@ class MarketFXSimulator(marketId: Long, rules: ForexMarketRules) extends MarketS
       // TODO
 
     case marketBid: MarketBidOrder =>
+      println("MarkekFXSimulator : received a bidOrder")
       tradingPrices.get((marketBid.whatC, marketBid.withC)) match {
         // We buy at current ask price
         case Some(t) => rules.matchingFunction(marketId, marketBid, book.bids, book.asks, this.send[Streamable], t._2)
         case None    => // TODO: throw an error of some kind
       }
     case marketAsk: MarketAskOrder =>
+      println("MarkekFXSimulator : received an askOrder")
       tradingPrices.get((marketAsk.whatC, marketAsk.withC)) match {
         // We sell at current bid price
         case Some(t) => rules.matchingFunction(marketId, marketAsk, book.bids, book.asks, this.send[Streamable], t._1)
