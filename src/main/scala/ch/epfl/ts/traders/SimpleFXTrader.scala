@@ -49,7 +49,9 @@ class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, 
           currentLong = ma.value
           longMaCount += 1 
         }
+
         case _ => println( "SimpleFXTrader : received unknown" )
+
       }
         if(shortMaCount == longMaCount && priceReady) { //we make sure that we are comparing MA from the same period
             if (previousShort < previousLong && currentShort >= currentLong) {  //if short goes above long buy
@@ -66,7 +68,9 @@ class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, 
           }   
     }
     case q : Quote => {
+
       println("SimpleFXTrader receided a quote : " + q.bid)
+
       if(!priceReady) {
         priceReady =true
       }

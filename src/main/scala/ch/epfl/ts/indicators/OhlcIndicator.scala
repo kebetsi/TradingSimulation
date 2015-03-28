@@ -28,6 +28,7 @@ class OhlcIndicator(marketId: Long, tickSizeMillis: Long) extends Component {
       values += t.price
       volume = volume + t.volume
     }
+
     case q: Quote => {
       println("OhlcIndicator : recieved quote" + q.timestamp)
       if (whichTick(q.timestamp) > currentTick) {
@@ -35,6 +36,7 @@ class OhlcIndicator(marketId: Long, tickSizeMillis: Long) extends Component {
         currentTick = whichTick(q.timestamp)
       }
       values += q.bid //we consider the price as the bid price
+
     }
     case _ => println("OhlcIndicator: received unknown")
   }
