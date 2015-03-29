@@ -25,4 +25,11 @@ project/plugins/project/
 
 TradingSimulation.iml
 .idea/
-project/
+
+project/target
+target/
+
+# OS specific
+.DS_Store
+
+
