@@ -35,7 +35,7 @@ class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, 
   override def receiver = {
    
     case ma : MA => {
-      println("SimpleFXTrader receided a moving average : " + ma)
+      println("SimpleFXTrader receided a moving average: " + ma)
       ma.period match {
         case `shortPeriod` => {
           println("received a short period")
@@ -50,7 +50,7 @@ class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, 
           longMaCount += 1 
         }
 
-        case _ => println( "SimpleFXTrader : received unknown" )
+        case _ => println( "SimpleFXTrader: received unknown message" )
 
       }
         if(shortMaCount == longMaCount && priceReady) { //we make sure that we are comparing MA from the same period
@@ -69,7 +69,7 @@ class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, 
     }
     case q : Quote => {
 
-      println("SimpleFXTrader receided a quote : " + q.bid)
+      println("SimpleFXTrader receided a quote: " + q)
 
       if(!priceReady) {
         priceReady =true
