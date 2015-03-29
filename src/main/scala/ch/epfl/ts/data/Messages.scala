@@ -73,7 +73,9 @@ case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: 
  * Forex-style data
  * @TODO: we also have access to 'bid points' and 'offer points'. Do we need those?
  */
-case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Currency, bid: Double, ask: Double)
+case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Currency, bid: Double, ask: Double) {
+  override def toString() = "(" + whatC.toString().toUpperCase() + "/" + withC.toString().toUpperCase() + ") = (" + bid + ", " + ask + ")";
+}
 
 
 /**

@@ -11,7 +11,9 @@ import ch.epfl.ts.data.OHLC
  */
 class TrueFxFetcher extends PullFetch[Quote]{
   val serverBase = "http://webrates.truefx.com/rates/connect.html" + "?f=csv"
+
   val marketId = MarketNames.FOREX_ID
+
   
   def fetch(): List[Quote] = {
     val csv = Request.Get(serverBase).execute().returnContent().asString()
