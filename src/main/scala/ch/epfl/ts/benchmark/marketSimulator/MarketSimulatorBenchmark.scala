@@ -1,12 +1,19 @@
 package ch.epfl.ts.benchmark.marketSimulator
 
+import scala.collection.mutable.ListBuffer
+import scala.io.StdIn
+
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.persist.OrderPersistor
-import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, Order}
-import scala.io.StdIn
-import scala.collection.mutable.ListBuffer
+import ch.epfl.ts.data.Currency.BTC
+import ch.epfl.ts.data.Currency.USD
+import ch.epfl.ts.data.DelOrder
+import ch.epfl.ts.data.LimitAskOrder
+import ch.epfl.ts.data.LimitBidOrder
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.Order
 
 /**
  * This performance test calculates the time it takes for the MarketSimulator 
@@ -33,7 +40,7 @@ object MarketSimulatorBenchmark {
 
     // Create Components
     val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders), "feeder")
-    val market = builder.createRef(Props(classOf[BenchmarkMarketSimulator], 1L, new BenchmarkMarketRules()), "marketSim")
+    val market = builder.createRef(Props(classOf[BenchmarkOrderBookMarketSimulator], 1L, new BenchmarkMarketRules()), "marketSim")
     val timeCounter = builder.createRef(Props(classOf[TimeCounter]), "timeCounter")
 
     // Create Connections

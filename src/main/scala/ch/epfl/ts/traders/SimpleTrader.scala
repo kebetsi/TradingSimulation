@@ -37,7 +37,6 @@ class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends 
   }
 
   def start = {
-
     system.scheduler.schedule(initDelayMillis milliseconds, intervalMillis milliseconds, self, SendMarketOrder)
   }
 

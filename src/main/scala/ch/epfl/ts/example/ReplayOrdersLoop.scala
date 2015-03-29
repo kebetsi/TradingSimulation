@@ -6,7 +6,7 @@ import ch.epfl.ts.component.persist.{OrderPersistor, TransactionPersistor}
 import ch.epfl.ts.component.replay.{Replay, ReplayConfig}
 import ch.epfl.ts.component.utils.{BackLoop, Printer}
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, OHLC, Order, Transaction}
-import ch.epfl.ts.engine.{MarketRules, MarketSimulator, RevenueCompute}
+import ch.epfl.ts.engine.{MarketRules, OrderBookMarketSimulator, RevenueCompute}
 import ch.epfl.ts.indicators.{OhlcIndicator, SMA, SmaIndicator}
 import ch.epfl.ts.traders.{DoubleCrossoverTrader, DoubleEnvelopeTrader, SimpleTrader, SobiTrader, TransactionVwapTrader}
 
@@ -45,7 +45,7 @@ object ReplayOrdersLoop {
 
     // Create components
     // market
-    val market = builder.createRef(Props(classOf[MarketSimulator], marketId, rules), "market")
+    val market = builder.createRef(Props(classOf[OrderBookMarketSimulator], marketId, rules), "market")
     // Replay
     val replayer = builder.createRef(Props(classOf[Replay[Order]], financePersistor, ReplayConfig(initTime, compression), implicitly[ClassTag[Order]]), "replayer")
     // Printer
