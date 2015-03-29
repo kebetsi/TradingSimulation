@@ -14,7 +14,7 @@ class IntegrationSpec extends Specification {
 
   "Application" should {
 
-    "work from within a browser" in new WithBrowser {
+    "work from within a browser" in new WithBrowser(webDriver = WebDriverFactory(FIREFOX)) {
 
       browser.goTo("http://localhost:" + port)
 
