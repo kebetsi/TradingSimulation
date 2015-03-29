@@ -8,7 +8,7 @@ import ch.epfl.ts.data._
 /**
  * Message used to print the books contents (since we use PriotityQueues, it's the heap order)
  */
-case class PrintBooks()
+case object PrintBooks
 
 
 class OrderBookMarketSimulator(marketId: Long, rules: MarketRules) extends MarketSimulator(marketId, rules) {

@@ -13,7 +13,7 @@ import scala.language.postfixOps
 class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
   import context._
 
-  case class Tick()
+  case object Tick
 
   def priceOrdering = new Ordering[Transaction] {
     def compare(first: Transaction, second: Transaction): Int =
@@ -35,9 +35,9 @@ class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
   val volumeToTrade = 50
 
   def receiver = {
-    case StartSignal()  => start
+    case StartSignal    => start
     case t: Transaction => transactions = t :: transactions
-    case Tick() => {
+    case Tick => {
       computeVWAP
       if (tradingPrice > vwap) {
         // sell
@@ -70,6 +70,6 @@ class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
 
   def start = {
     println("TransactionVwapTrader: Started")
-    system.scheduler.schedule(0 milliseconds, timeFrameMillis milliseconds, self, Tick())
+    system.scheduler.schedule(0 milliseconds, timeFrameMillis milliseconds, self, Tick)
   }
 }

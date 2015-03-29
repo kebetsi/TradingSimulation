@@ -9,7 +9,6 @@ import ch.epfl.ts.data.Currency
 class RevenueComputeFX(traderNames: Map[Long, String]) extends RevenueCompute(traderNames) {
   /*
    * The revenue Compute for FX backtesting.
-   * 
    */
   
   //Simple , just to have a functional output

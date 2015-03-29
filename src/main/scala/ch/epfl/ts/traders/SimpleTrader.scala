@@ -7,7 +7,7 @@ import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Order}
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-case class SendMarketOrder()
+case object SendMarketOrder
 
 /**
  * Simple trader that periodically sends market ask and bid orders alternatively.
@@ -21,7 +21,7 @@ class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends 
   var alternate = 0
 
   override def receiver = {
-    case StartSignal() => start
+    case StartSignal     => start
     case SendMarketOrder => {
       if (alternate % 2 == 0) {
         println("SimpleTrader: sending market bid order")

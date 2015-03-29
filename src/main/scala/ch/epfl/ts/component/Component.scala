@@ -7,8 +7,8 @@ import scala.reflect.ClassTag
 import scala.language.existentials
 import scala.collection.mutable.{HashMap => MHashMap}
 
-case class StartSignal()
-case class StopSignal()
+case object StartSignal
+case object StopSignal
 case class ComponentRegistration(ar: ActorRef, ct: Class[_], name: String)
 
 final class ComponentBuilder(name: String) {
@@ -26,12 +26,12 @@ final class ComponentBuilder(name: String) {
   def add(src: ComponentRef, dest: ComponentRef) = (src, dest, classOf[Any])
 
   def start = instances.map(cr => {
-    cr.ar ! new StartSignal()
+    cr.ar ! StartSignal
     println("Sending start Signal to " + cr.ar)
   })
   
   def stop = instances.map { cr => {
-    cr.ar ! new StopSignal()
+    cr.ar ! StopSignal
     println("Sending stop Signal to " + cr.ar)
   } }
 
@@ -66,11 +66,11 @@ abstract class Component extends Receiver {
       dest += (ct -> (ar :: dest.getOrElse(ct, List())))
       destName += (name -> ar)
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
-    case s: StartSignal => stopped = false
-      receiver(s)
+    case StartSignal => stopped = false
+      receiver(StartSignal)
       println("Received Start " + this.getClass.getSimpleName)
-    case s: StopSignal => context.stop(self)
-      receiver(s)
+    case StopSignal => context.stop(self)
+      receiver(StopSignal)
       println("Received Stop " + this.getClass.getSimpleName)
     case y if stopped => println("Received data when stopped " + this.getClass.getSimpleName + " of type " + y.getClass )
   }
