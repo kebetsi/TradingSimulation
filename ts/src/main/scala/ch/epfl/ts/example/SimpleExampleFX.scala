@@ -42,17 +42,18 @@ object SimpleExampleFX {
     
     // Trader: cross moving average
     val traderId : Long = 123L
+    val symbol = "EUR/USD"
     val volume = 10.0
     val shortPeriod = 5
     val longPeriod = 20
-    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId, shortPeriod, longPeriod, volume), "simpleTrader")
+    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId,symbol, shortPeriod, longPeriod, volume), "simpleTrader")
    
     // Indicator
     // specify period over which we build the OHLC (from quotes)
-    val period : Long = 5
+    val period : Long = 5000 //OHLC of 5 seconds
     val smaShort = builder.createRef(Props(classOf[SmaIndicator], shortPeriod), "smaShort")
     val smaLong = builder.createRef(Props(classOf[SmaIndicator], longPeriod), "smaLong")
-    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId, period), "ohlcIndicator")
+    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId,symbol, period), "ohlcIndicator")
     
     // Display
     val traderNames = Map(traderId -> "MovingAverageFXTrader")
