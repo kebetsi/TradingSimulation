@@ -2,13 +2,14 @@ package ch.epfl.ts.indicators
 
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.{ OHLC, Transaction, Quote }
-import scala.collection.mutable.MutableList
 import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.Currency.Currency
+import scala.collection.mutable.MutableList
 
 /**
  * computes OHLC tick for a tick frame of the provided size, the OHLCs are identified with the provided marketId
  */
-class OhlcIndicator(marketId: Long, symbol: String, tickSizeMillis: Long) extends Component {
+class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis: Long) extends Component {
 
   /**
    * stores transactions' price values
@@ -17,16 +18,12 @@ class OhlcIndicator(marketId: Long, symbol: String, tickSizeMillis: Long) extend
   var volume: Double = 0.0
   var close: Double = 0.0
   var currentTick: Long = 0
-
-  val (whatC, withC) = {
-    val temp = symbol.split("/");
-    (Currency.fromString(temp(0)), Currency.fromString(temp(1)))
-  }
+  val (whatC, withC) = symbol
 
   override def receiver = {
     
     //We either receive the price from quote (Backtesting/realtime trading) or from transaction (for simulation)
-      
+    
     case t: Transaction => {
       if (whichTick(t.timestamp) > currentTick) {
         // new tick, send OHLC with values stored until now, and reset accumulators (Transaction volume & prices)

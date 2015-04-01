@@ -11,7 +11,7 @@ import ch.epfl.ts.data.Currency
  */
 
 //symbol format  EUR/CHF , CHF/USD .. , as string => easier for user. 
-class SimpleFXTrader(val uid: Long, val symbol: String, val shortPeriod: Int, val longPeriod: Int, val volume: Double) extends Component {
+class SimpleFXTrader(val uid: Long, symbol: (Currency,Currency), val shortPeriod: Int, val longPeriod: Int, val volume: Double) extends Component {
 
   //this variables are used to synchronized the two moving average 
   var shortMaCount: Int = 0
@@ -35,8 +35,7 @@ class SimpleFXTrader(val uid: Long, val symbol: String, val shortPeriod: Int, va
   //to make sure that we have initialized our price before starting to trade
   var priceReady: Boolean = false
 
-  val (whatC,withC) = {val temp = symbol.split("/"); 
-                      (Currency.fromString(temp(0)),Currency.fromString(temp(1)))}
+  val (whatC,withC) = symbol
 
   
   override def receiver = {

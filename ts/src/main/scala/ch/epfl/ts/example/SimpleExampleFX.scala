@@ -18,6 +18,7 @@ import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MA, SMA }
+import ch.epfl.ts.data.Currency
 
 
 object SimpleExampleFX {
@@ -42,7 +43,7 @@ object SimpleExampleFX {
     
     // Trader: cross moving average
     val traderId : Long = 123L
-    val symbol = "EUR/USD"
+    val symbol = (Currency.EUR,Currency.USD)
     val volume = 10.0
     val shortPeriod = 5
     val longPeriod = 20
