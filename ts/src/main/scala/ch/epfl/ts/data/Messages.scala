@@ -87,3 +87,9 @@ case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Curren
  * @param author
  */
 case class Tweet(timestamp: Long, content: String, sentiment: Int, imagesrc: String, author: String) extends Streamable
+
+/**
+ * Messages that are used for the communication between broker and its agents
+ * TODO(sygi): put this in separate file
+ */
+case class Register(traderId: Long)
