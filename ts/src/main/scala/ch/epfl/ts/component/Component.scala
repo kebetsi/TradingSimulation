@@ -65,13 +65,19 @@ abstract class Component extends Receiver {
       dest += (ct -> (ar :: dest.getOrElse(ct, List())))
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
     case StartSignal => stopped = false
-      receiver(StartSignal)
+      start
       println("Received Start " + this.getClass.getSimpleName)
     case StopSignal => context.stop(self)
-      receiver(StopSignal)
+      stop
       println("Received Stop " + this.getClass.getSimpleName)
     case y if stopped => println("Received data when stopped " + this.getClass.getSimpleName + " of type " + y.getClass )
   }
+
+  // subclass can override do initialization here
+  def start: Unit = {}
+
+  // subclass can override do release resources here
+  def stop: Unit = {}
 
   def receiver: PartialFunction[Any, Unit]
 
