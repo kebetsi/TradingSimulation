@@ -58,13 +58,11 @@ trait Receiver extends Actor {
 
 abstract class Component extends Receiver {
   var dest = MHashMap[Class[_], List[ActorRef]]()
-  var destName = MHashMap[String, ActorRef]()
   var stopped = true
 
   final def componentReceive: PartialFunction[Any, Unit] = {
     case ComponentRegistration(ar, ct, name) =>
       dest += (ct -> (ar :: dest.getOrElse(ct, List())))
-      destName += (name -> ar)
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
     case StartSignal => stopped = false
       receiver(StartSignal)
@@ -81,8 +79,6 @@ abstract class Component extends Receiver {
   override def receive = componentReceive orElse receiver
 
   final def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t))
-  final def send[T](name: String, t: T) = destName.get(name).map(_ ! t)
   final def send[T: ClassTag](t: List[T]) = t.map( elem => dest.get(elem.getClass).map(_.map(_ ! elem)))
-  final def send[T](name: String, t: List[T]) = destName.get(name).map(d => t.map(d ! _))
 }
 
