@@ -36,7 +36,7 @@ object MarketSimulatorBenchmark {
     println(orders.length)
     
     // create factory
-    implicit val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
+    val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
 
     // Create Components
     val orderFeeder = builder.createRef(Props(classOf[OrderFeeder], orders), "feeder")
@@ -45,11 +45,11 @@ object MarketSimulatorBenchmark {
 
     // Create Connections
     //orders
-    orderFeeder.addDestination(market, classOf[LimitAskOrder], classOf[LimitBidOrder],
+    orderFeeder->(market, classOf[LimitAskOrder], classOf[LimitBidOrder],
       classOf[MarketAskOrder], classOf[MarketBidOrder], classOf[DelOrder], classOf[LastOrder])
     // start and end signals
-    orderFeeder.addDestination(timeCounter, classOf[StartSending])
-    market.addDestination(timeCounter, classOf[FinishedProcessingOrders])
+    orderFeeder->(timeCounter, classOf[StartSending])
+    market->(timeCounter, classOf[FinishedProcessingOrders])
 
     // start the benchmark
     builder.start

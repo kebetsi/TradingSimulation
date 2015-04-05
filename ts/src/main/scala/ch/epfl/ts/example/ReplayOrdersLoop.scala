@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 object ReplayOrdersLoop {
 
   def main(args: Array[String]) {
-    implicit val builder = new ComponentBuilder("ReplayFinanceSystem")
+    val builder = new ComponentBuilder("ReplayFinanceSystem")
 
     // replayer params
     val initTime = 25210389L
@@ -74,32 +74,32 @@ object ReplayOrdersLoop {
 
     // Create connections
     // replay
-    replayer.addDestination(market, classOf[Order], classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
+    replayer->(market, classOf[Order], classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     // market
-    market.addDestination(backloop, classOf[Transaction], classOf[LimitBidOrder], classOf[LimitAskOrder], classOf[DelOrder])
-    market.addDestination(display, classOf[Transaction])
+    market->(backloop, classOf[Transaction], classOf[LimitBidOrder], classOf[LimitAskOrder], classOf[DelOrder])
+    market->(display, classOf[Transaction])
     // backLoop
-    backloop.addDestination(sobiTrader, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
-    backloop.addDestination(transactionVwap, classOf[Transaction])
-    backloop.addDestination(ohlcShort, classOf[Transaction])
-    backloop.addDestination(ohlclong, classOf[Transaction])
+    backloop->(sobiTrader, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
+    backloop->(transactionVwap, classOf[Transaction])
+    backloop->(ohlcShort, classOf[Transaction])
+    backloop->(ohlclong, classOf[Transaction])
     // ohlc
-    ohlclong.addDestination(smaLong, classOf[OHLC])
-    ohlcShort.addDestination(smaShort, classOf[OHLC])
+    ohlclong->(smaLong, classOf[OHLC])
+    ohlcShort->(smaShort, classOf[OHLC])
     // moving averages
-    smaLong.addDestination(deTrader, classOf[SMA])
-    smaShort.addDestination(dcTrader, classOf[SMA])
+    smaLong->(deTrader, classOf[SMA])
+    smaShort->(dcTrader, classOf[SMA])
     // traders
     // simpleTrader
-    simpleTrader.addDestination(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
+    simpleTrader->(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // SobiTrader
-    sobiTrader.addDestination(market, classOf[LimitBidOrder], classOf[LimitAskOrder])
+    sobiTrader->(market, classOf[LimitBidOrder], classOf[LimitAskOrder])
     // Double Crossover Trader
-    dcTrader.addDestination(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
+    dcTrader->(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // Double Envelope Trader
-    deTrader.addDestination(market, classOf[MarketBidOrder], classOf[MarketAskOrder])
+    deTrader->(market, classOf[MarketBidOrder], classOf[MarketAskOrder])
     // VWAP trader
-    transactionVwap.addDestination(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
+    transactionVwap->(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
     builder.start
   }

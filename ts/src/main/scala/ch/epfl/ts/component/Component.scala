@@ -36,14 +36,14 @@ final class ComponentBuilder(name: String) {
   } }
 
   def createRef(props: ComponentProps, name: String) = {
-    instances = new ComponentRef(system.actorOf(props, name), props.clazz, name) :: instances
+    instances = new ComponentRef(system.actorOf(props, name), props.clazz, name, this) :: instances
     instances.head
   }
 }
 
-class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String) {
+class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: ComponentBuilder) {
   // TODO: Verify clazz <: Component
-  def addDestination(destination: ComponentRef, types: Class[_]*)(implicit cb: ComponentBuilder) = {
+  def ->(destination: ComponentRef, types: Class[_]*) = {
     types.map(cb.add(this, destination, _))
   }
 }
