@@ -63,8 +63,7 @@ object SimpleExampleFX {
     fxQuoteFetcher.addDestination(trader, classOf[Quote])
     fxQuoteFetcher.addDestination(ohlcIndicator, classOf[Quote])
 
-    trader.addDestination(forexMarket, classOf[MarketAskOrder])
-    trader.addDestination(forexMarket, classOf[MarketBidOrder])
+    trader.addDestination(forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
     forexMarket.addDestination(backloop, classOf[Transaction])
     forexMarket.addDestination(display, classOf[Transaction])

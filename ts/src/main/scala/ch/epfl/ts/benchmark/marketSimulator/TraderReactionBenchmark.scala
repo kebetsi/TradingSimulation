@@ -35,12 +35,8 @@ object TraderReactionBenchmark {
 
     // Create Connections
     //orders
-    orderFeeder.addDestination(market, classOf[LimitAskOrder])
-    orderFeeder.addDestination(market, classOf[LimitBidOrder])
-    orderFeeder.addDestination(market, classOf[MarketAskOrder])
-    orderFeeder.addDestination(market, classOf[MarketBidOrder])
-    orderFeeder.addDestination(market, classOf[DelOrder])
-    orderFeeder.addDestination(market, classOf[LastOrder])
+    orderFeeder.addDestination(market, classOf[LimitAskOrder], classOf[LimitBidOrder],
+      classOf[MarketAskOrder], classOf[MarketBidOrder], classOf[DelOrder], classOf[LastOrder])
     // used to test without the backloop
 //    market.addDestination(trader, classOf[Transaction])
     market.addDestination(backloop, classOf[Transaction])

@@ -74,20 +74,12 @@ object ReplayOrdersLoop {
 
     // Create connections
     // replay
-    replayer.addDestination(market, classOf[Order])
-    replayer.addDestination(market, classOf[LimitAskOrder])
-    replayer.addDestination(market, classOf[LimitBidOrder])
-    replayer.addDestination(market, classOf[DelOrder])
+    replayer.addDestination(market, classOf[Order], classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     // market
-    market.addDestination(backloop, classOf[Transaction])
-    market.addDestination(backloop, classOf[LimitBidOrder])
-    market.addDestination(backloop, classOf[LimitAskOrder])
-    market.addDestination(backloop, classOf[DelOrder])
+    market.addDestination(backloop, classOf[Transaction], classOf[LimitBidOrder], classOf[LimitAskOrder], classOf[DelOrder])
     market.addDestination(display, classOf[Transaction])
     // backLoop
-    backloop.addDestination(sobiTrader, classOf[LimitAskOrder])
-    backloop.addDestination(sobiTrader, classOf[LimitBidOrder])
-    backloop.addDestination(sobiTrader, classOf[DelOrder])
+    backloop.addDestination(sobiTrader, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     backloop.addDestination(transactionVwap, classOf[Transaction])
     backloop.addDestination(ohlcShort, classOf[Transaction])
     backloop.addDestination(ohlclong, classOf[Transaction])
@@ -97,23 +89,17 @@ object ReplayOrdersLoop {
     // moving averages
     smaLong.addDestination(deTrader, classOf[SMA])
     smaShort.addDestination(dcTrader, classOf[SMA])
-    smaLong.addDestination(dcTrader, classOf[SMA])
     // traders
     // simpleTrader
-    simpleTrader.addDestination(market, classOf[MarketAskOrder])
-    simpleTrader.addDestination(market, classOf[MarketBidOrder])
+    simpleTrader.addDestination(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // SobiTrader
-    sobiTrader.addDestination(market, classOf[LimitBidOrder])
-    sobiTrader.addDestination(market, classOf[LimitAskOrder])
+    sobiTrader.addDestination(market, classOf[LimitBidOrder], classOf[LimitAskOrder])
     // Double Crossover Trader
-    dcTrader.addDestination(market, classOf[MarketAskOrder])
-    dcTrader.addDestination(market, classOf[MarketBidOrder])
+    dcTrader.addDestination(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // Double Envelope Trader
-    deTrader.addDestination(market, classOf[MarketBidOrder])
-    deTrader.addDestination(market, classOf[MarketAskOrder])
+    deTrader.addDestination(market, classOf[MarketBidOrder], classOf[MarketAskOrder])
     // VWAP trader
-    transactionVwap.addDestination(market, classOf[MarketAskOrder])
-    transactionVwap.addDestination(market, classOf[MarketBidOrder])
+    transactionVwap.addDestination(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
     builder.start
   }

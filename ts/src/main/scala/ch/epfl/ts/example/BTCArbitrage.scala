@@ -63,9 +63,7 @@ object BTCArbitrage {
     // Create the connections
     // BTC-e
     // fetcher to market
-    btceOrderFetcher.addDestination(btceMarket, classOf[LimitAskOrder])
-    btceOrderFetcher.addDestination(btceMarket, classOf[LimitBidOrder])
-    btceOrderFetcher.addDestination(btceMarket, classOf[DelOrder])
+    btceOrderFetcher.addDestination(btceMarket, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     // fetcher to backloop
     btceTransactionFetcher.addDestination(btceBackLoop, classOf[Transaction])
     // market to backloop
@@ -74,9 +72,7 @@ object BTCArbitrage {
     btceBackLoop.addDestination(arbitrageur, classOf[Transaction])
     // Bitstamp
     // fetcher to market
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitAskOrder])
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitBidOrder])
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[DelOrder])
+    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     // fetcher to backloop
     bitstampTransactionFetcher.addDestination(bitstampBackLoop, classOf[Transaction])
     // market to backloop
@@ -85,10 +81,8 @@ object BTCArbitrage {
     bitstampBackLoop.addDestination(arbitrageur, classOf[Transaction])
     bitstampBackLoop.addDestination(arbitrageur, classOf[OHLC])
     // Arbitrageur to markets
-    arbitrageur.addDestination(btceMarket, classOf[MarketBidOrder])
-    arbitrageur.addDestination(btceMarket, classOf[MarketAskOrder])
-    arbitrageur.addDestination(bitstampMarket, classOf[MarketAskOrder])
-    arbitrageur.addDestination(bitstampMarket, classOf[MarketBidOrder])
+    arbitrageur.addDestination(btceMarket, classOf[MarketBidOrder], classOf[MarketAskOrder])
+    arbitrageur.addDestination(bitstampMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // Start the system
     builder.start
   }

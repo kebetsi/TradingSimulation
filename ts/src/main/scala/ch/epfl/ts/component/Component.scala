@@ -43,8 +43,8 @@ final class ComponentBuilder(name: String) {
 
 class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String) {
   // TODO: Verify clazz <: Component
-  def addDestination(destination: ComponentRef, data: Class[_])(implicit cb: ComponentBuilder) = {
-    cb.add(this, destination, data)
+  def addDestination(destination: ComponentRef, types: Class[_]*)(implicit cb: ComponentBuilder) = {
+    types.map(cb.add(this, destination, _))
   }
 }
 
