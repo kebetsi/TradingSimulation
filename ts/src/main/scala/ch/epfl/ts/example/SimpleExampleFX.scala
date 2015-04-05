@@ -59,19 +59,15 @@ object SimpleExampleFX {
     val display = builder.createRef(Props(classOf[RevenueComputeFX], traderNames), "display")
 
     // ----- Connecting actors
-    fxQuoteFetcher->(forexMarket, classOf[Quote])
-    fxQuoteFetcher->(trader, classOf[Quote])
-    fxQuoteFetcher->(ohlcIndicator, classOf[Quote])
+    fxQuoteFetcher->(Seq(forexMarket, trader, ohlcIndicator), classOf[Quote])
 
     trader->(forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
-    forexMarket->(backloop, classOf[Transaction])
-    forexMarket->(display, classOf[Transaction])
+    forexMarket->(Seq(backloop, display), classOf[Transaction])
     
     smaShort->(trader, classOf[SMA])
     smaLong->(trader, classOf[SMA])
-    ohlcIndicator->(smaShort, classOf[OHLC])
-    ohlcIndicator->(smaLong, classOf[OHLC])
+    ohlcIndicator->(Seq(smaShort, smaLong), classOf[OHLC])
 
     backloop->(trader, classOf[Transaction])
 

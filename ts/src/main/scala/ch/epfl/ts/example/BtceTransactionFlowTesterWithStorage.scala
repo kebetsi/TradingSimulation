@@ -37,10 +37,8 @@ object BtceTransactionFlowTesterWithStorage {
     val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampPullFetcher, implicitly[ClassTag[Transaction]]), "bitstampFetcher")
 
     // Create the connections
-    btceFetcher->(printer, classOf[Transaction])
-    btceFetcher->(btcePersistor, classOf[Transaction])
-    bitstampFetcher->(printer, classOf[Transaction])
-    bitstampFetcher->(bitstampPersistor, classOf[Transaction])
+    btceFetcher->(Seq(printer, btcePersistor), classOf[Transaction])
+    bitstampFetcher->(Seq(printer, bitstampPersistor), classOf[Transaction])
 
     // Start the system
     builder.start

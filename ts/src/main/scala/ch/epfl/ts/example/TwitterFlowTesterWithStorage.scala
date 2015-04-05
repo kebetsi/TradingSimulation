@@ -22,8 +22,7 @@ object TwitterFlowTesterWithStorage {
     val fetcher = builder.createRef(Props(classOf[TwitterFetchComponent]), "twitter-fetcher")
 
     // Create the connections
-    fetcher->(printer, classOf[Tweet])
-    fetcher->(persistor, classOf[Tweet])
+    fetcher->(Seq(printer, persistor), classOf[Tweet])
 
     // Start the system
     builder.start

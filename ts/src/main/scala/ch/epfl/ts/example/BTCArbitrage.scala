@@ -78,8 +78,7 @@ object BTCArbitrage {
     // market to backloop
     bitstampMarket->(bitstampBackLoop, classOf[Transaction])
     // backloop to arbitrageur
-    bitstampBackLoop->(arbitrageur, classOf[Transaction])
-    bitstampBackLoop->(arbitrageur, classOf[OHLC])
+    bitstampBackLoop->(arbitrageur, classOf[Transaction], classOf[OHLC])
     // Arbitrageur to markets
     arbitrageur->(btceMarket, classOf[MarketBidOrder], classOf[MarketAskOrder])
     arbitrageur->(bitstampMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])

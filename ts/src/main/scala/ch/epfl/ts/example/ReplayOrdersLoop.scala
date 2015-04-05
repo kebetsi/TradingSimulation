@@ -80,9 +80,7 @@ object ReplayOrdersLoop {
     market->(display, classOf[Transaction])
     // backLoop
     backloop->(sobiTrader, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
-    backloop->(transactionVwap, classOf[Transaction])
-    backloop->(ohlcShort, classOf[Transaction])
-    backloop->(ohlclong, classOf[Transaction])
+    backloop->(Seq(transactionVwap, ohlcShort, ohlclong), classOf[Transaction])
     // ohlc
     ohlclong->(smaLong, classOf[OHLC])
     ohlcShort->(smaShort, classOf[OHLC])

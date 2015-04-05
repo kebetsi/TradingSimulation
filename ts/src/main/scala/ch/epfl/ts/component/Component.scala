@@ -46,6 +46,10 @@ class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: 
   def ->(destination: ComponentRef, types: Class[_]*) = {
     types.map(cb.add(this, destination, _))
   }
+
+  def ->(refs: Seq[ComponentRef], types: Class[_]*) = {
+    for (ref <- refs; typ <- types) cb.add(this, ref, typ)
+  }
 }
 
 
