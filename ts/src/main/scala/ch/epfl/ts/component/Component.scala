@@ -29,7 +29,7 @@ final class ComponentBuilder(name: String) {
     cr.ar ! StartSignal
     println("Sending start Signal to " + cr.ar)
   })
-  
+
   def stop = instances.map { cr => {
     cr.ar ! StopSignal
     println("Sending stop Signal to " + cr.ar)
@@ -41,12 +41,23 @@ final class ComponentBuilder(name: String) {
   }
 }
 
+/** Encapsulates [[akka.actor.ActorRef]] to facilitate connection of components
+  */
 class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: ComponentBuilder) {
-  // TODO: Verify clazz <: Component
+  /** Connects current component to the destination component
+    *
+    * @param destination the destination component
+    * @param types the types of messages that the destination expects to receive
+    */
   def ->(destination: ComponentRef, types: Class[_]*) = {
     types.map(cb.add(this, destination, _))
   }
 
+  /** Connects current component to the specified components
+    *
+    * @param refs the destination components
+    * @param types the types of messages that the destination components expect to receive
+    */
   def ->(refs: Seq[ComponentRef], types: Class[_]*) = {
     for (ref <- refs; typ <- types) cb.add(this, ref, typ)
   }
@@ -91,4 +102,3 @@ abstract class Component extends Receiver {
   final def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t))
   final def send[T: ClassTag](t: List[T]) = t.map( elem => dest.get(elem.getClass).map(_.map(_ ! elem)))
 }
-
