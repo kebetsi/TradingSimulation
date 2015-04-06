@@ -1,6 +1,6 @@
 package ch.epfl.ts.engine
 
-import ch.epfl.ts.component.{ Component, StartSignal }
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Transaction
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
@@ -20,7 +20,7 @@ abstract class RevenueCompute(traderNames: Map[Long, String]) extends Component 
   var currentTradingPrice: Double = 0.0
 
   def process(t: Transaction)
-   
+
   // TODO: Better stats (when Wallet component is ready)
   def displayStats(traderId: Long) = {
     var disp = new StringBuffer()

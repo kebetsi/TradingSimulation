@@ -2,7 +2,7 @@ package ch.epfl.ts.component.replay
 
 import akka.actor.Cancellable
 import ch.epfl.ts.component.persist.Persistance
-import ch.epfl.ts.component.{Component, StartSignal, StopSignal}
+import ch.epfl.ts.component.Component
 
 import scala.concurrent.duration.DurationLong
 import scala.language.postfixOps
@@ -18,10 +18,6 @@ class Replay[T: ClassTag](p: Persistance[T], conf: ReplayConfig) extends Compone
   var currentTime = conf.initTimeMs
 
   override def receiver = {
-    case StopSignal   =>
-      schedule.cancel()
-    case StartSignal  =>
-      schedule = start(conf.compression)
     case Tick if sender == self =>
       process()
       currentTime += 1000
@@ -29,11 +25,21 @@ class Replay[T: ClassTag](p: Persistance[T], conf: ReplayConfig) extends Compone
       schedule.cancel()
       currentTime = r.initTimeMs
       // TODO: discard waiting objects
-      schedule = start(r.compression)
+      schedule = startScheduler(r.compression)
     case _ =>
   }
-  private def start(compression: Double) = {
+
+  private def startScheduler(compression: Double) = {
     context.system.scheduler.schedule(10 milliseconds, Math.round(compression * 1000) milliseconds, self, Tick)
   }
+
+  override def stop = {
+    schedule.cancel()
+  }
+
+  override def start = {
+    schedule = startScheduler(conf.compression)
+  }
+
   private def process() = send[T](p.loadBatch(currentTime, currentTime + 999))
 }

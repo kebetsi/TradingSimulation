@@ -22,7 +22,7 @@ import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MA, SMA }
 
 object SimpleExampleFX {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("simpleFX")
+    val builder = new ComponentBuilder("simpleFX")
     val marketForexId = MarketNames.FOREX_ID
 
     // ----- Creating actors
@@ -59,22 +59,17 @@ object SimpleExampleFX {
     val display = builder.createRef(Props(classOf[RevenueComputeFX], traderNames), "display")
 
     // ----- Connecting actors
-    fxQuoteFetcher.addDestination(forexMarket, classOf[Quote])
-    fxQuoteFetcher.addDestination(trader, classOf[Quote])
-    fxQuoteFetcher.addDestination(ohlcIndicator, classOf[Quote])
+    fxQuoteFetcher->(Seq(forexMarket, trader, ohlcIndicator), classOf[Quote])
 
-    trader.addDestination(forexMarket, classOf[MarketAskOrder])
-    trader.addDestination(forexMarket, classOf[MarketBidOrder])
+    trader->(forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
-    forexMarket.addDestination(backloop, classOf[Transaction])
-    forexMarket.addDestination(display, classOf[Transaction])
+    forexMarket->(Seq(backloop, display), classOf[Transaction])
     
-    smaShort.addDestination(trader, classOf[SMA])
-    smaLong.addDestination(trader, classOf[SMA])
-    ohlcIndicator.addDestination(smaShort, classOf[OHLC])
-    ohlcIndicator.addDestination(smaLong, classOf[OHLC])
+    smaShort->(trader, classOf[SMA])
+    smaLong->(trader, classOf[SMA])
+    ohlcIndicator->(Seq(smaShort, smaLong), classOf[OHLC])
 
-    backloop.addDestination(trader, classOf[Transaction])
+    backloop->(trader, classOf[Transaction])
 
     builder.start
   }

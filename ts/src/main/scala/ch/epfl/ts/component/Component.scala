@@ -30,22 +30,37 @@ final class ComponentBuilder(name: String) {
     cr.ar ! StartSignal
     println("Sending start Signal to " + cr.ar)
   })
-  
+
   def stop = instances.map { cr => {
     cr.ar ! StopSignal
     println("Sending stop Signal to " + cr.ar)
   } }
 
   def createRef(props: ComponentProps, name: String) = {
-    instances = new ComponentRef(system.actorOf(props, name), props.clazz, name) :: instances
+    instances = new ComponentRef(system.actorOf(props, name), props.clazz, name, this) :: instances
     instances.head
   }
 }
 
-class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String) {
-  // TODO: Verify clazz <: Component
-  def addDestination(destination: ComponentRef, data: Class[_])(implicit cb: ComponentBuilder) = {
-    cb.add(this, destination, data)
+/** Encapsulates [[akka.actor.ActorRef]] to facilitate connection of components
+  */
+class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: ComponentBuilder) {
+  /** Connects current component to the destination component
+    *
+    * @param destination the destination component
+    * @param types the types of messages that the destination expects to receive
+    */
+  def ->(destination: ComponentRef, types: Class[_]*) = {
+    types.map(cb.add(this, destination, _))
+  }
+
+  /** Connects current component to the specified components
+    *
+    * @param refs the destination components
+    * @param types the types of messages that the destination components expect to receive
+    */
+  def ->(refs: Seq[ComponentRef], types: Class[_]*) = {
+    for (ref <- refs; typ <- types) cb.add(this, ref, typ)
   }
 }
 
@@ -59,22 +74,26 @@ trait Receiver extends Actor {
 
 abstract class Component extends Receiver {
   var dest = MHashMap[Class[_], List[ActorRef]]()
-  var destName = MHashMap[String, ActorRef]()
   var stopped = true
 
   final def componentReceive: PartialFunction[Any, Unit] = {
     case ComponentRegistration(ar, ct, name) =>
       dest += (ct -> (ar :: dest.getOrElse(ct, List())))
-      destName += (name -> ar)
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
     case StartSignal => stopped = false
-      receiver(StartSignal)
+      start
       println("Received Start " + this.getClass.getSimpleName)
     case StopSignal => context.stop(self)
-      receiver(StopSignal)
+      stop
       println("Received Stop " + this.getClass.getSimpleName)
     case y if stopped => println("Received data when stopped " + this.getClass.getSimpleName + " of type " + y.getClass )
   }
+
+  // subclass can override do initialization here
+  def start: Unit = {}
+
+  // subclass can override do release resources here
+  def stop: Unit = {}
 
   def receiver: PartialFunction[Any, Unit]
 
@@ -82,8 +101,5 @@ abstract class Component extends Receiver {
   override def receive = componentReceive orElse receiver
 
   final def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t))
-  final def send[T](name: String, t: T) = destName.get(name).map(_ ! t)
   final def send[T: ClassTag](t: List[T]) = t.map( elem => dest.get(elem.getClass).map(_.map(_ ! elem)))
-  final def send[T](name: String, t: List[T]) = destName.get(name).map(d => t.map(d ! _))
 }
-

@@ -1,6 +1,6 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Order}
 
@@ -21,7 +21,6 @@ class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends 
   var alternate = 0
 
   override def receiver = {
-    case StartSignal     => start
     case SendMarketOrder => {
       if (alternate % 2 == 0) {
         println("SimpleTrader: sending market bid order")
@@ -36,7 +35,7 @@ class SimpleTrader(uid: Long, intervalMillis: Int, orderVolume: Double) extends 
     case _ => println("SimpleTrader: received unknown")
   }
 
-  def start = {
+  override def start = {
     system.scheduler.schedule(initDelayMillis milliseconds, intervalMillis milliseconds, self, SendMarketOrder)
   }
 

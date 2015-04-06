@@ -3,7 +3,6 @@ package ch.epfl.ts.engine
 import ch.epfl.ts.data.Transaction
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.data.Currency
 
 class RevenueComputeSim(traderNames: Map[Long, String],pingIntervalMillis: Int) extends RevenueCompute(traderNames) {
