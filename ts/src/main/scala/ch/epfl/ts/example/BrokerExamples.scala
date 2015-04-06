@@ -17,7 +17,7 @@ object BrokerExamples {
     val tId = 15L
     val trader = builder.createRef(Props(classOf[SimpleTraderWithBroker], tId), "Trader")
 
-    trader.addDestination(broker, classOf[Register])
+    trader->(broker, classOf[Register])
 
     builder.start
 

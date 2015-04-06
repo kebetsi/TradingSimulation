@@ -8,7 +8,7 @@ import scala.language.existentials
 import scala.collection.mutable.{HashMap => MHashMap}
 import ch.epfl.ts.data.Streamable
 
-case class StartSignal() extends Streamable
+case object StartSignal
 case object StopSignal
 case class ComponentRegistration(ar: ActorRef, ct: Class[_], name: String)
 
