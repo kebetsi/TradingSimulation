@@ -1,6 +1,6 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, Order, Transaction}
 import ch.epfl.ts.engine.{MarketRules, OrderBook}
@@ -26,8 +26,6 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
   var currentOrderId: Long = 456789
 
   override def receiver = {
-    case StartSignal              => start
-
     case limitAsk: LimitAskOrder  => book insertAskOrder limitAsk
     case limitBid: LimitBidOrder  => book insertBidOrder limitBid
     case delete: DelOrder         => removeOrder(delete)
@@ -53,7 +51,7 @@ class SobiTrader(uid: Long, intervalMillis: Int, quartile: Int, theta: Double, o
     case _ => println("SobiTrader: received unknown")
   }
 
-  def start = {
+  override def start = {
     system.scheduler.schedule(0 milliseconds, intervalMillis milliseconds, self, PossibleOrder)
   }
 

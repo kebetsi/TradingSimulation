@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
  */
 object BtceTransactionFlowTesterWithStorage {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("DataSourceSystem")
+    val builder = new ComponentBuilder("DataSourceSystem")
 
     // Initialize the Interface to DB
     val btceXactPersit = new TransactionPersistor("btce-transaction-db-batch")
@@ -37,10 +37,8 @@ object BtceTransactionFlowTesterWithStorage {
     val bitstampFetcher = builder.createRef(Props(classOf[PullFetchComponent[Transaction]], bitstampPullFetcher, implicitly[ClassTag[Transaction]]), "bitstampFetcher")
 
     // Create the connections
-    btceFetcher.addDestination(printer, classOf[Transaction])
-    btceFetcher.addDestination(btcePersistor, classOf[Transaction])
-    bitstampFetcher.addDestination(printer, classOf[Transaction])
-    bitstampFetcher.addDestination(bitstampPersistor, classOf[Transaction])
+    btceFetcher->(Seq(printer, btcePersistor), classOf[Transaction])
+    bitstampFetcher->(Seq(printer, bitstampPersistor), classOf[Transaction])
 
     // Start the system
     builder.start

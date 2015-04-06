@@ -1,6 +1,6 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Transaction}
 
@@ -35,7 +35,6 @@ class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
   val volumeToTrade = 50
 
   def receiver = {
-    case StartSignal    => start
     case t: Transaction => transactions = t :: transactions
     case Tick => {
       computeVWAP
@@ -68,7 +67,7 @@ class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
     }
   }
 
-  def start = {
+  override def start = {
     println("TransactionVwapTrader: Started")
     system.scheduler.schedule(0 milliseconds, timeFrameMillis milliseconds, self, Tick)
   }

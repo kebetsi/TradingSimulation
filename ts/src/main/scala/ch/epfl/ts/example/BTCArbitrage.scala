@@ -24,7 +24,7 @@ import ch.epfl.ts.data.MarketBidOrder
 object BTCArbitrage {
 
   def main(args: Array[String]) {
-    implicit val builder = new ComponentBuilder("ArbitrageSystem")
+    val builder = new ComponentBuilder("ArbitrageSystem")
 
     // Initialize the Interfaces to the DBs
     val btceXactPersit = new TransactionPersistor("btce-transaction-db2")
@@ -63,32 +63,25 @@ object BTCArbitrage {
     // Create the connections
     // BTC-e
     // fetcher to market
-    btceOrderFetcher.addDestination(btceMarket, classOf[LimitAskOrder])
-    btceOrderFetcher.addDestination(btceMarket, classOf[LimitBidOrder])
-    btceOrderFetcher.addDestination(btceMarket, classOf[DelOrder])
+    btceOrderFetcher->(btceMarket, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     // fetcher to backloop
-    btceTransactionFetcher.addDestination(btceBackLoop, classOf[Transaction])
+    btceTransactionFetcher->(btceBackLoop, classOf[Transaction])
     // market to backloop
-    btceMarket.addDestination(btceBackLoop, classOf[Transaction])
+    btceMarket->(btceBackLoop, classOf[Transaction])
     // backloop to arbitrageur
-    btceBackLoop.addDestination(arbitrageur, classOf[Transaction])
+    btceBackLoop->(arbitrageur, classOf[Transaction])
     // Bitstamp
     // fetcher to market
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitAskOrder])
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[LimitBidOrder])
-    bitstampOrderFetcher.addDestination(bitstampMarket, classOf[DelOrder])
+    bitstampOrderFetcher->(bitstampMarket, classOf[LimitAskOrder], classOf[LimitBidOrder], classOf[DelOrder])
     // fetcher to backloop
-    bitstampTransactionFetcher.addDestination(bitstampBackLoop, classOf[Transaction])
+    bitstampTransactionFetcher->(bitstampBackLoop, classOf[Transaction])
     // market to backloop
-    bitstampMarket.addDestination(bitstampBackLoop, classOf[Transaction])
+    bitstampMarket->(bitstampBackLoop, classOf[Transaction])
     // backloop to arbitrageur
-    bitstampBackLoop.addDestination(arbitrageur, classOf[Transaction])
-    bitstampBackLoop.addDestination(arbitrageur, classOf[OHLC])
+    bitstampBackLoop->(arbitrageur, classOf[Transaction], classOf[OHLC])
     // Arbitrageur to markets
-    arbitrageur.addDestination(btceMarket, classOf[MarketBidOrder])
-    arbitrageur.addDestination(btceMarket, classOf[MarketAskOrder])
-    arbitrageur.addDestination(bitstampMarket, classOf[MarketAskOrder])
-    arbitrageur.addDestination(bitstampMarket, classOf[MarketBidOrder])
+    arbitrageur->(btceMarket, classOf[MarketBidOrder], classOf[MarketAskOrder])
+    arbitrageur->(bitstampMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // Start the system
     builder.start
   }
