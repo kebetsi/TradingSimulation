@@ -30,4 +30,8 @@ object Currency extends Enumeration {
       }
     }
   }
+  
+  def pairFromString(s: String): (Currency, Currency) = {
+    ( Currency.fromString(s.slice(0, 3)), Currency.fromString(s.slice(3,6)) )
+  }
 }
