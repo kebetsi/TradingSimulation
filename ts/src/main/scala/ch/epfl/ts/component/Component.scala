@@ -1,22 +1,26 @@
 package ch.epfl.ts.component
 
-import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.actor._
 
 import scala.reflect.ClassTag
 
 import scala.language.existentials
 import scala.collection.mutable.{HashMap => MHashMap}
-import ch.epfl.ts.data.Streamable
+import com.typesafe.config.{ConfigFactory, Config}
 
 case object StartSignal
 case object StopSignal
 case class ComponentRegistration(ar: ActorRef, ct: Class[_], name: String)
 
-final class ComponentBuilder(name: String) {
+final class ComponentBuilder(myName: String, config: Config) {
   type ComponentProps = akka.actor.Props
-  val system = ActorSystem(name)
+  val system = ActorSystem(myName, config)
   var graph = Map[ComponentRef, List[(ComponentRef, Class[_])]]()
   var instances = List[ComponentRef]()
+
+  def this(name: String){
+    this(name, ConfigFactory.load())
+  }
 
   def add(src: ComponentRef, dest: ComponentRef, data: Class[_]) {
     println("Connecting " + src.ar + " to " + dest.ar + " for type " + data.getSimpleName)
@@ -64,7 +68,6 @@ class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: 
   }
 }
 
-
 trait Receiver extends Actor {
   def receive: PartialFunction[Any, Unit]
 
@@ -100,6 +103,6 @@ abstract class Component extends Receiver {
   /* TODO: Dirty hack, componentReceive giving back unmatched to rematch in receiver using a andThen */
   override def receive = componentReceive orElse receiver
 
-  final def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t))
-  final def send[T: ClassTag](t: List[T]) = t.map( elem => dest.get(elem.getClass).map(_.map(_ ! elem)))
+  def send[T: ClassTag](t: T) = dest.get(t.getClass).map(_.map (_ ! t)) //TODO(sygi): support superclasses
+  def send[T: ClassTag](t: List[T]) = t.map( elem => dest.get(elem.getClass).map(_.map(_ ! elem)))
 }

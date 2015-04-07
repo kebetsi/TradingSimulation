@@ -2,12 +2,14 @@ package ch.epfl.ts.engine
 
 import akka.actor.{Actor, ActorRef, Props}
 import ch.epfl.ts.data.Currency.Currency
-import ch.epfl.ts.data.Order
+import ch.epfl.ts.data.{Register, Order}
+import akka.actor.Actor.Receive
+import ch.epfl.ts.component.Component
 
 /**
  * Manages multiple wallets
  */
-class WalletDispatcher() extends Actor {
+/*class WalletDispatcher() extends Actor {
   // TODO: Multiple WalletChief Instances
 
   import context._
@@ -85,17 +87,21 @@ class WalletChief extends Actor {
         wallets = wallets + (uid -> w)
     }
   }
-}
+}*/
 
 
 /*
 * Represents a wallet
 * @param userId
 */
-sealed class Wallet(userId: Long) {
+class Wallet extends Actor {
   var openOrders: List[Order] = Nil
   var closedOrders: List[Order] = Nil
   var canceledOrders: List[Order] = Nil
 
   var funds: Map[Currency, Double] = Map[Currency, Double]()
+
+  override def receive = {
+    case GetWalletFunds(uid) => println("Wallet got a GetWalletFunds request")
+  }
 }

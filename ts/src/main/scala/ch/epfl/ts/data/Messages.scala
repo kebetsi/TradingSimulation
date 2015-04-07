@@ -93,3 +93,5 @@ case class Tweet(timestamp: Long, content: String, sentiment: Int, imagesrc: Str
  * TODO(sygi): put this in separate file
  */
 case class Register(traderId: Long)
+
+case class ConfirmRegistration()
