@@ -9,37 +9,28 @@ import scala.collection.mutable.MutableList
 /**
  * Moving Average value data
  */
-abstract class MA(val value: Double, val period: Int)
+abstract class MA(val value: Map[Int,Double])
 
 /**
  * Moving average superclass. To implement a moving average indicator,
  * extend this class and implement the computeMa() method.
  */
-abstract class MaIndicator(period: Int) extends Component {
+abstract class MaIndicator(periods:List[Int]) extends Component {
 
   var values: MutableList[OHLC] = MutableList[OHLC]()
-  //var valuesQuote: MutableList[Quote] = MutableList[Quote]()
+  val sortedPeriod=periods.sorted
+  val maxPeriod = periods.last
   def receiver = {
     case o: OHLC       => {
       println("maIndicator: received ohlc: " + o)
       values += o //
-      if (values.size == period) {
+      if (values.size == maxPeriod) {
         val ma = computeMa
         println("maIndicator: sending " + ma)
         send(ma)
-        values.clear()
+        values=values.tail
       }
-    }
-   /* case o: Quote => {
-      println("maIndicator: received quote: "+ o)
-      valuesQuote += o 
-      if (valuesQuote.size == period) {
-        val ma = computeMa
-        println("maI-ndicator: sending " +ma)
-        send(ma)
-        valuesQuote.clear()
-      }
-    }*/
+    } 
     case _             =>
   }
   
