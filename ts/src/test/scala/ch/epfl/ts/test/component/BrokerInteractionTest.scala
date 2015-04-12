@@ -48,9 +48,9 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
         EventFilter.debug(message = "Broker: No such wallet", occurrences = 1) intercept {
           broker ! GetWalletFunds(38265L)
         }
-        /*EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {
+        EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {
           broker ! GetWalletFunds(15L) //this causes dead letters, as broker replies
-        }*/
+        }
       }
     }
   }
@@ -68,9 +68,6 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
         }
       }
     }
-  }
-
-  "A trader " can {
     " check the state of his wallet" in {
       within(1 second) {
         EventFilter.debug(message = USD + " -> Some(100.0)", occurrences = 1) intercept {
@@ -82,9 +79,6 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
         }
       }
     }
-  }
-
-  "A trader " can {
     " place the order" in {
       within(1 second) {
         EventFilter.debug(message = "Broker: received order", occurrences = 1) intercept {
