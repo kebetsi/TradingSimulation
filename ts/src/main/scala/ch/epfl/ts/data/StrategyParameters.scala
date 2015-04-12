@@ -6,15 +6,24 @@ import ch.epfl.ts.data.Currency.Currency
 /**
  * Class behaving much like a map, designed to hold values
  * for a trading strategy's parameters.
- * When given a parameter and its value, it checks that the value
- * is within the parameter's acceptable range.
+ * Each parameter checks the validity of its value on instantiation.
+ * 
+ * It can be constructed with an arbitrary number of parameters.
  */
-class StrategyParameters {
-  /**
-   * Constructor which takes an arbitrary number of Parameter -> Value pairs
-   * (much like a map).
-   */
-   // TODO
+class StrategyParameters(val parameters: (String, Parameter[_])*) {
+  
+  // TODO: mechanism to get parameter value with automatic fallback on a default value
+  
+  override def toString: String = {
+    val strings = (for {
+      p <- parameters
+      key = p._1
+      paramType = p._2.toString()
+      value = p._2.get().toString()
+    } yield key + " (type " + paramType + ") = " + value).toList
+    
+    strings.reduce((a, b) => a + '\n' + b)
+  }
 }
 
 /**
@@ -51,7 +60,6 @@ abstract class Parameter[T](val name: String) {
 trait ParameterTrait[T] {
   
   /**
-   * Should be implemented in each concrete strategy parameter
    * @return Whether the value is suitable for this parameter
    */
   def isValid(value: T): Boolean
@@ -71,12 +79,15 @@ case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Param
 }
 
 object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {
+  private type CurrencyPair = Tuple2[Currency, Currency]
+  
   /**
    * All currency pairs are acceptable as long as they're not twice the same.
+   * @TODO: It would be great if we could enforce an order inside the pair, so that we avoid having to handle swapped currency pairs
    */
-  def isValid(value: (Currency, Currency)): Boolean = (value._1 != value._2)
+  def isValid(v: CurrencyPair): Boolean = (v._1 != v._2)
   
-  def validValues: Iterable[(Currency, Currency)] = {
+  def validValues: Iterable[CurrencyPair] = {
     val allCurrencies = Currency.supportedCurrencies()
     
     // TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?

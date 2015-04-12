@@ -6,20 +6,16 @@ import org.scalatest.FunSuite
 import ch.epfl.ts.data.Currency
 import scala.util.Try
 import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.StrategyParameters
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
   
   test("Should allow to add several parameters at a time") {
-    assert(false, "Test not implemented")
-  }
-
-  test("Should accept valid values for a parameter") {
-	  assert(false, "Test not implemented")
-  }
-  
-  test("Should reject invalid values for a parameter") {
-    assert(false, "Test not implemented")
+    val myParameters = new StrategyParameters(
+      "tradedCurrencies" -> CurrencyPairParameter((Currency.EUR, Currency.CHF)),
+      "someOtherParameter" -> CurrencyPairParameter((Currency.USD, Currency.CAD))
+    )
   }
   
   test("Should hold the parameters and yield back their values") {
