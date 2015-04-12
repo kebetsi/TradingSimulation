@@ -30,4 +30,9 @@ object Currency extends Enumeration {
       }
     }
   }
+  
+  def supportedCurrencies(): Set[Currency] = Set(
+    BTC, LTC,
+    USD, CHF, RUR, EUR, JPY, GBP, AUD, CAD
+  )
 }

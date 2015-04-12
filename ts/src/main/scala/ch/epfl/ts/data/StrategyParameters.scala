@@ -33,7 +33,7 @@ abstract class Parameter[T](val name: String) {
   def get(): T
   
   /** The companion object of this parameter */
-  protected val companion: ParameterTrait[T]
+  protected def companion: ParameterTrait[T]
   
   /**
    * Whether or not this particle instance has been
@@ -63,4 +63,27 @@ trait ParameterTrait[T] {
   def validValues: Iterable[T]
 }
 
-case class CurrencyParameter(currency: Currency) extends Parameter("Currency")
+
+case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter[(Currency, Currency)]("CurrencyPair") {  
+  def companion = CurrencyPairParameter
+  
+  def get(): (Currency, Currency) = currencies
+}
+
+object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {
+  /**
+   * All currency pairs are acceptable as long as they're not twice the same.
+   */
+  def isValid(value: (Currency, Currency)): Boolean = (value._1 != value._2)
+  
+  def validValues: Iterable[(Currency, Currency)] = {
+    val allCurrencies = Currency.supportedCurrencies()
+    
+    // TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
+    for {
+      c1 <- allCurrencies
+      c2 <- allCurrencies
+      if c1 != c2
+    } yield (c1, c2)
+  }
+}
