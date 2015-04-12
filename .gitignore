@@ -20,11 +20,16 @@ project/plugins/project/
 .cache
 .classpath
 .project
-
+.settings
+.metadata
 
 TradingSimulation.iml
 .idea/
-project/
 
-#testing-ilia
-src/test/scala/ch/epfl/ts/test/
+project/target
+target/
+
+# OS specific
+.DS_Store
+
+
