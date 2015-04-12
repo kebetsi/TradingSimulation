@@ -5,7 +5,6 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import ch.epfl.ts.data.Currency
 
-
 @RunWith(classOf[JUnitRunner]) 
 class CurrencyTestSuite extends FunSuite {
   
