@@ -26,6 +26,8 @@ class StrategyParameters(val parameters: (String, Parameter[_])*) {
   }
 }
 
+
+
 /**
  * Represents a generic trading strategy parameter.
  * Strategies can declare required and optional parameters.
@@ -53,6 +55,8 @@ abstract class Parameter[T](val name: String) {
   override def toString: String = name + "Parameter"
 }
 
+
+
 /**
  * "Static" methods that should be implemented in each concrete
  * parameter's companion object.
@@ -72,29 +76,57 @@ trait ParameterTrait[T] {
 }
 
 
-case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter[(Currency, Currency)]("CurrencyPair") {  
-  def companion = CurrencyPairParameter
+
+/**
+ * Parameter representing a floating point coefficient in range [0; 1]
+ */
+case class CoefficientParameter(coefficient: Double) extends Parameter[Double]("Coefficient") {  
+  def companion = CoefficientParameter
+  def get(): Double = coefficient
+}
+
+object CoefficientParameter extends ParameterTrait[Double] {
+  /**
+   * Coefficient must lie in [0; 1]
+   */
+  def isValid(v: Double): Boolean = (v >= 0.0) && (v <= 1.0) 
   
-  def get(): (Currency, Currency) = currencies
+  // TODO: handle user-selected resolution for these values
+  def validValues: Iterable[Double] = {
+    val resolution = 0.01
+    for {
+      n <- 0 to (1 / resolution).toInt
+    } yield (n * resolution)
+  }
+}
+
+
+
+/**
+ * Parameter representing a pair of currencies to be traded.
+ */
+case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter[(Currency, Currency)]("CurrencyPair") {  
+	def companion = CurrencyPairParameter
+	def get(): (Currency, Currency) = currencies
 }
 
 object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {
-  private type CurrencyPair = Tuple2[Currency, Currency]
-  
-  /**
-   * All currency pairs are acceptable as long as they're not twice the same.
-   * @TODO: It would be great if we could enforce an order inside the pair, so that we avoid having to handle swapped currency pairs
-   */
-  def isValid(v: CurrencyPair): Boolean = (v._1 != v._2)
-  
-  def validValues: Iterable[CurrencyPair] = {
-    val allCurrencies = Currency.supportedCurrencies()
-    
-    // TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
-    for {
-      c1 <- allCurrencies
-      c2 <- allCurrencies
-      if c1 != c2
-    } yield (c1, c2)
-  }
+	private type CurrencyPair = Tuple2[Currency, Currency]
+			
+			/**
+			 * All currency pairs are acceptable as long as they're not twice the same.
+			 * @TODO: It would be great if we could enforce an order inside the pair, so that we avoid having to handle swapped currency pairs
+			 */
+			def isValid(v: CurrencyPair): Boolean = (v._1 != v._2)
+			
+			def validValues: Iterable[CurrencyPair] = {
+					val allCurrencies = Currency.supportedCurrencies()
+							
+							// TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
+							for {
+								c1 <- allCurrencies
+								c2 <- allCurrencies
+								if c1 != c2
+							} yield (c1, c2)
+			}
 }
