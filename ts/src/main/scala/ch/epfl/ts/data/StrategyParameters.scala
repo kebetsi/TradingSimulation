@@ -38,7 +38,7 @@ abstract class Parameter[T](val name: String) {
   /**
    * At construction, ensure that the given value is legal for this parameter.
    */
-  assert(isValid, "Illegal value " + get() + " for strategy parameter " + toString)
+  assert(isValid, "Illegal value " + get() + " for strategy parameter " + companion.name)
   
   /** Retrieve the value for this parameter */
   def get(): T
@@ -52,7 +52,7 @@ abstract class Parameter[T](val name: String) {
    */
   def isValid: Boolean = companion.isValid(get())
   
-  override def toString: String = name + "Parameter"
+  override def toString: String = get() + " (type: " + companion.name + ")"
 }
 
 
@@ -65,6 +65,9 @@ trait ParameterTrait[T] {
   /** Make a new instance of the associated parameter */
   def getInstance(v: T): Parameter[T]
   
+  /** Name of this parameter type */
+  def name: String = this.getClass.getName
+  
   /**
    * @return Whether the value is suitable for this parameter
    */
@@ -75,6 +78,8 @@ trait ParameterTrait[T] {
    * TODO: How to handle infinite ranges? Use streams?
    */
   def validValues: Iterable[T]
+  
+  override def toString = name
 }
 
 

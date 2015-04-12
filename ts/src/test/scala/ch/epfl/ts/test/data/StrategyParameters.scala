@@ -46,9 +46,9 @@ class StrategyParametersTests extends FunSuite {
     )
   }
   
-//  test("Should hold the parameters and yield back their values") {
-//	  assert(false, "Test not implemented")
-//  }
+  test("Should hold the parameters and yield back their values") {
+	  assert(false, "Test not implemented")
+  }
   
   testConcreteParameter(
       CoefficientParameter,
