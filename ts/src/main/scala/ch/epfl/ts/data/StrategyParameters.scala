@@ -60,6 +60,8 @@ abstract class Parameter[T](val name: String) {
 /**
  * "Static" methods that should be implemented in each concrete
  * parameter's companion object.
+ * If the designer of a strategy wishes to change any of the fields
+ * in this trait, it is easy to extend it and override the field.
  */
 trait ParameterTrait[T] {
   /** Make a new instance of the associated parameter */
@@ -78,6 +80,11 @@ trait ParameterTrait[T] {
    * TODO: How to handle infinite ranges? Use streams?
    */
   def validValues: Iterable[T]
+  
+  /**
+   * Default value for this parameter
+   */
+  def defaultValue: T
   
   override def toString = name
 }
@@ -107,6 +114,8 @@ object CoefficientParameter extends ParameterTrait[Double] {
       n <- 0 to (1 / resolution).toInt
     } yield (n * resolution)
   }
+  
+  def defaultValue = 1.0
 }
 
 
@@ -139,4 +148,6 @@ object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {
 						if c1 != c2
 					} yield (c1, c2)
 	}
+  
+  def defaultValue = (Currency.EUR, Currency.CHF)
 }
