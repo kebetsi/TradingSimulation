@@ -20,11 +20,9 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    * We also perform type checking.
    */
   def get[T : ClassTag](key: String): Option[T] = {
-    val tag = implicitly[ClassTag[T]].runtimeClass
-    
     parameters.get(key) match {
       case Some(p) => p.get() match {
-        case v if tag.isInstance(v) => Some(v.asInstanceOf[T])
+        case v: T => Some(v)
         case _ => None
       }
       case _ => None
@@ -39,7 +37,7 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    */
   def getOrElse[T : ClassTag](key: String, fallback: T): T =
     get[T](key) match {
-      case Some(v) => v.asInstanceOf[T]
+      case Some(v) => v
       case _ => fallback
     }
   

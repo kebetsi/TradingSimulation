@@ -21,6 +21,8 @@ class StrategyParametersTests extends FunSuite {
   val coefficient1 = 0.2342341341
   val coefficient2 = -0.2342341341
   
+  private type CurrencyPair = (Currency.Currency, Currency.Currency)
+  
   /** Generic function to test basic functionality expected from Parameter subclasses */
   def testConcreteParameter[T](parameterTrait: ParameterTrait[T], validValues: Iterable[T], invalidValues: Iterable[T]) = {
     test(parameterTrait + " should give back the value it was instantiated with") {
@@ -69,15 +71,24 @@ class StrategyParametersTests extends FunSuite {
       "someCoefficient" -> CoefficientParameter(coefficient1)
     )
     
-    assert(myParameters.get("tradedCurrencies") == Some(currencies1))
-    assert(myParameters.get("someCoefficient") == Some(coefficient1))
+    assert(myParameters.get[CurrencyPair]("tradedCurrencies") == Some(currencies1))
+    assert(myParameters.get[Double]("someCoefficient") == Some(coefficient1))
   }
   
   test("Should not yield a value if it doesn't have the expected type") {
     val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
     
-    val got = myParameters.get[(Currency.Currency, Currency.Currency)]("tradedCurrencies")
-    assert(got == None)
+    val got = myParameters.get[CurrencyPair]("tradedCurrencies")
+    assert(got == None, "Should not allow for the wrong type to be retrieved")
+  }
+  
+  test("Should fallback on default if allowed") {
+	  val myParameters = new StrategyParameters()
+	  
+	  val got1 = myParameters.getOrDefault("tradedCurrencies", CurrencyPairParameter)
+	  val got2 = myParameters.getOrDefault("someCoefficient", CoefficientParameter)
+	  assert(got1 == CurrencyPairParameter.defaultValue)
+	  assert(got2 == CoefficientParameter.defaultValue)
   }
   
   testConcreteParameter(
