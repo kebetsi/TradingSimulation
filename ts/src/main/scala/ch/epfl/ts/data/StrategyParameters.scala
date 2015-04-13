@@ -12,14 +12,14 @@ import scala.reflect.ClassTag
  * It can be constructed with an arbitrary number of parameters.
  */
 class StrategyParameters(params: (String, Parameter[_])*) {
-  
+  type Key = String
   val parameters = params.toMap
   
   /**
    * Similar to what a map's `get` would do.
    * We also perform type checking.
    */
-  def get[T : ClassTag](key: String): Option[T] = {
+  def get[T : ClassTag](key: Key): Option[T] = {
     parameters.get(key) match {
       case Some(p) => p.get() match {
         case v: T => Some(v)
@@ -35,13 +35,13 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    *   - Such a key doesn't exist
    *   - The key exists but doesn't have the right parameter type
    */
-  def getOrElse[T : ClassTag](key: String, fallback: T): T =
+  def getOrElse[T : ClassTag](key: Key, fallback: T): T =
     get[T](key) match {
       case Some(v) => v
       case _ => fallback
     }
   
-  def getOrDefault[T : ClassTag](key: String, parameterType: ParameterTrait[T]): T =
+  def getOrDefault[T : ClassTag](key: Key, parameterType: ParameterTrait[T]): T =
     getOrElse(key, parameterType.defaultValue)
   
   override def toString: String = {
