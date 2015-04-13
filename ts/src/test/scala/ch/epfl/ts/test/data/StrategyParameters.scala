@@ -13,6 +13,13 @@ import ch.epfl.ts.data.ParameterTrait
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
+  /**
+   * Common test values
+   */
+	val currencies1 = (Currency.EUR, Currency.CHF)
+	val currencies2 = (Currency.GBP, Currency.USD)
+  val coefficient1 = 0.2342341341
+  val coefficient2 = -0.2342341341
   
   /** Generic function to test basic functionality expected from Parameter subclasses */
   def testConcreteParameter[T](parameterTrait: ParameterTrait[T], validValues: Iterable[T], invalidValues: Iterable[T]) = {
@@ -43,16 +50,34 @@ class StrategyParametersTests extends FunSuite {
     }
   }
   
-  
   test("Should allow to add several parameters at a time") {
     val myParameters = new StrategyParameters(
-      "tradedCurrencies" -> CurrencyPairParameter((Currency.EUR, Currency.CHF)),
-      "someOtherParameter" -> CurrencyPairParameter((Currency.USD, Currency.CAD))
+      "tradedCurrencies" -> CurrencyPairParameter(currencies1),
+      "someCoefficient" -> CoefficientParameter(coefficient1),
+      "someOtherParameter" -> CurrencyPairParameter(currencies2)
     )
   }
   
+  test("Should fail at instantiation with illegal parameters") {
+	  val attempt = Try(new StrategyParameters("someCoefficient" -> CoefficientParameter(coefficient2)))
+    assert(attempt.isFailure, "Should fail to instantiate a coefficient with value " + coefficient2)
+  }
+  
   test("Should hold the parameters and yield back their values") {
-	  assert(false, "Test not implemented")
+	  val myParameters = new StrategyParameters(
+      "tradedCurrencies" -> CurrencyPairParameter(currencies1),
+      "someCoefficient" -> CoefficientParameter(coefficient1)
+    )
+    
+    assert(myParameters.get("tradedCurrencies") == Some(currencies1))
+    assert(myParameters.get("someCoefficient") == Some(coefficient1))
+  }
+  
+  test("Should not yield a value if it doesn't have the expected type") {
+    val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
+    
+    val got = myParameters.get[(Currency.Currency, Currency.Currency)]("tradedCurrencies")
+    assert(got == None)
   }
   
   testConcreteParameter(

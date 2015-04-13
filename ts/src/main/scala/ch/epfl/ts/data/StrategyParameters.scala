@@ -1,6 +1,7 @@
 package ch.epfl.ts.data
 
 import ch.epfl.ts.data.Currency.Currency
+import scala.reflect.ClassTag
 
 
 /**
@@ -10,9 +11,40 @@ import ch.epfl.ts.data.Currency.Currency
  * 
  * It can be constructed with an arbitrary number of parameters.
  */
-class StrategyParameters(val parameters: (String, Parameter[_])*) {
+class StrategyParameters(params: (String, Parameter[_])*) {
   
-  // TODO: mechanism to get parameter value with automatic fallback on a default value
+  val parameters = params.toMap
+  
+  /**
+   * Similar to what a map's `get` would do.
+   * We also perform type checking.
+   */
+  def get[T : ClassTag](key: String): Option[T] = {
+    val tag = implicitly[ClassTag[T]].runtimeClass
+    
+    parameters.get(key) match {
+      case Some(p) => p.get() match {
+        case v if tag.isInstance(v) => Some(v.asInstanceOf[T])
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+  
+  /**
+   * Get the value for this key
+   * or fallback on the provided default if:
+   *   - Such a key doesn't exist
+   *   - The key exists but doesn't have the right parameter type
+   */
+  def getOrElse[T : ClassTag](key: String, fallback: T): T =
+    get[T](key) match {
+      case Some(v) => v.asInstanceOf[T]
+      case _ => fallback
+    }
+  
+  def getOrDefault[T : ClassTag](key: String, parameterType: ParameterTrait[T]): T =
+    getOrElse(key, parameterType.defaultValue)
   
   override def toString: String = {
     val strings = (for {
