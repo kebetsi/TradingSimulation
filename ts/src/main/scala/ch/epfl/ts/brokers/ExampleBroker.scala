@@ -4,16 +4,33 @@ import akka.actor.{ActorLogging, Props, ActorRef}
 import akka.pattern.ask
 import akka.util.Timeout
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data.Order
+import ch.epfl.ts.data._
 import ch.epfl.ts.engine._
-import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.engine.GetWalletFunds
 import ch.epfl.ts.engine.WalletConfirm
-import ch.epfl.ts.data.Register
-import ch.epfl.ts.data.ConfirmRegistration
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.Some
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.engine.WalletConfirm
+import ch.epfl.ts.data.Register
+import ch.epfl.ts.engine.FundWallet
+import scala.Some
+import ch.epfl.ts.engine.WalletFunds
+import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.engine.WalletInsufficient
+import ch.epfl.ts.data.ConfirmRegistration
+import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.engine.WalletConfirm
+import ch.epfl.ts.data.Register
+import ch.epfl.ts.engine.FundWallet
+import scala.Some
+import ch.epfl.ts.engine.WalletFunds
+import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.engine.WalletInsufficient
+import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.ConfirmRegistration
 
 /**
  * Created by sygi on 03.04.15.
@@ -64,7 +81,8 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
       val replyTo = sender
       executeForWallet(uid, FundWallet(uid, withC, -volume * bidPrice), {
         case WalletConfirm(uid) => {
-          replyTo ! WalletConfirm(uid)
+          send(MarketBidOrder(oid, uid, time, whatC, withC, volume, bidPrice))
+          replyTo ! WalletConfirm(uid) //means: order placed
           log.debug("Broker: Wallet confirmed")
         }
         case WalletInsufficient(uid) => {
@@ -74,6 +92,21 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
         case _ => log.debug("Unexpected message")
       })
       //TODO(sygi): place the order if succeeded
+    }
+    case Transaction(mid, price, volume, timestamp, whatC, withC, buyerId, buyOrderId, sellerId, sellOrderId) => {
+      log.debug("Broker: received transaction: " + buyerId + " " + sellerId)
+      if (mapping.contains(buyerId)){
+        //TODO(sygi): refactor charging wallet
+        val replyTo = mapping.getOrElse(buyerId, null)
+        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume), {
+          case WalletConfirm(uid) => {
+            log.debug("Broker: Transaction executed")
+            replyTo ! WalletConfirm(uid) //TODO(sygi): change to some better information (or don't inform at all, as everybody gots Transaction)
+          }
+          case p => log.debug("Broker: A wallet replied with an unexpected message: " + p)
+        })
+      }
+      //TODO(sygi): do the same with the seller
     }
     //TODO(sygi): other orders
     case o: Order => {

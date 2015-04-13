@@ -11,7 +11,10 @@ import ch.epfl.ts.data.Currency._
 import com.typesafe.config.ConfigFactory
 import scala.language.postfixOps
 import scala.reflect.ClassTag
-import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.engine.{ForexMarketRules, MarketFXSimulator, GetWalletFunds}
+import ch.epfl.ts.component.fetch.MarketNames
+import akka.util.Timeout
+import ch.epfl.ts.data.Quote
 
 /**
  * Created by sygi on 07.04.15.
@@ -24,11 +27,15 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
 )))
     with WordSpecLike {
 
-  val broker: ActorRef = system.actorOf(Props(classOf[ExampleBroker]), "Broker")
+  val marketID = 1L
+  val market = system.actorOf(Props(classOf[FxMarketWrapped], marketID, new ForexMarketRules()), MarketNames.FOREX_NAME)
+  val broker: ActorRef = system.actorOf(Props(classOf[SimpleBrokerWrapped], market), "Broker")
   val tId = 15L
   val trader = system.actorOf(Props(classOf[SimpleTraderWrapped], tId, broker), "Trader")
 
+  market ! StartSignal
   broker ! StartSignal
+  market ! Quote(marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
 
   "A trader " should {
     " register in a broker on startSignal" in {
@@ -82,7 +89,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
     " place the order" in {
       within(1 second) {
         EventFilter.debug(message = "Broker: received order", occurrences = 1) intercept {
-          EventFilter.debug(message = "TraderWithB: order succeeded", occurrences = 1) intercept {
+          EventFilter.debug(message = "TraderWithB: order placement succeeded", occurrences = 1) intercept {
             trader ! 'sendMarketOrder
           }
         }
@@ -93,8 +100,23 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
   "Wallet " should {
     " block the orders exceeding funds" in {
       within(1 second) {
-        EventFilter.debug(message = "TraderWithB: order failed", occurrences = 1) intercept {
-          trader ! 'sendTooBigOrder
+        EventFilter.debug(message = "MarkekFXSimulator : received a bidOrder", occurrences = 0) intercept {
+          EventFilter.debug(message = "TraderWithB: order failed", occurrences = 1) intercept {
+            trader ! 'sendTooBigOrder
+          }
+        }
+      }
+    }
+  }
+
+  "Market " should {
+    " reply to the broker" in {
+      within(1 second){
+        EventFilter.debug(message = "Broker: Transaction executed", occurrences = 1) intercept {
+          EventFilter.debug(message = "TraderWithB: Got a wallet confirmation", occurrences = 1) intercept {
+          //one for order placement, second for transaction confirmation
+            trader ! 'sendMarketOrder
+          }
         }
       }
     }
@@ -113,3 +135,26 @@ class SimpleTraderWrapped(uid: Long, broker: ActorRef) extends SimpleTraderWithB
 
   override def send[T: ClassTag](t: List[T]) = t.map(broker ! _)
 }
+
+/**
+ * Analogical class for the broker.
+ */
+class SimpleBrokerWrapped(market: ActorRef) extends ExampleBroker {
+  override def send[T: ClassTag](t: T) {
+    market ! t
+  }
+
+  override def send[T: ClassTag](t: List[T]) = t.map(market ! _)
+}
+
+class FxMarketWrapped(uid: Long, rules: ForexMarketRules) extends MarketFXSimulator(uid, rules) {
+  import context.dispatcher
+  override def send[T: ClassTag](t: T) {
+    val broker = context.actorSelection("../Broker")
+    implicit val timeout = new Timeout(100 milliseconds)
+    for (res <- broker.resolveOne()) {
+      res ! t
+    }
+  }
+}
+

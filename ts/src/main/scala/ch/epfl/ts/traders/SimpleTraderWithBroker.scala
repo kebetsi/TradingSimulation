@@ -43,17 +43,17 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
 
     case WalletConfirm(tid) => {
       if (uid != tid)
-        log.error("Broker replied to the wrong trader")
+        log.error("TraderWithB: Broker replied to the wrong trader")
       log.debug("TraderWithB: Got a wallet confirmation")
     }
 
     case 'sendTooBigOrder => {
-      val order = MarketBidOrder(oid, uid, System.currentTimeMillis(), BTC, USD, 1000.0, 100000.0)
+      val order = MarketBidOrder(oid, uid, System.currentTimeMillis(), CHF, USD, 1000.0, 100000.0)
       placeOrder(order)
       oid = oid + 1
     }
     case 'sendMarketOrder => {
-      val order = MarketBidOrder(oid, uid, System.currentTimeMillis(), BTC, USD, 3.0, 14.0)
+      val order = MarketBidOrder(oid, uid, System.currentTimeMillis(), CHF, USD, 3.0, 14.0)
       placeOrder(order)
       oid = oid + 1
     }
@@ -73,7 +73,7 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
     implicit val timeout = new Timeout(500 milliseconds)
     val future = (broker ? order).mapTo[WalletState]
     future onSuccess {
-      case WalletConfirm(uid) => log.debug("TraderWithB: order succeeded")
+      case WalletConfirm(uid) => log.debug("TraderWithB: order placement succeeded")
       case WalletInsufficient(uid) => log.debug("TraderWithB: order failed")
     }
     future onFailure {
