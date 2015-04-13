@@ -8,7 +8,7 @@ import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Quote}
 /* This simple trader will use two moving average and send order when this two MA cross each other.
  * @ Param the length of the two moving average period.
  */
-class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, val volume : Double) extends Component{
+class SimpleFXTrader(val uid: Long, val shortPeriod: Int, val longPeriod : Int, val volume : Double) extends Component {
   
   //this variables are used to synchronized the two moving average 
   var shortMaCount : Int = 0

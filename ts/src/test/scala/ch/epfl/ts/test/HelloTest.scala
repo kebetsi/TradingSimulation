@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
 @RunWith(classOf[JUnitRunner]) 
 class HelloTest extends FunSuite {
   
-  test("My first test") {
+  test("Tests are being executed") {
     assert(2 + 2 == 4)
   }  
   
