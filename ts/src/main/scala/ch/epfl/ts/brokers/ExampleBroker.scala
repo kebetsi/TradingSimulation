@@ -74,6 +74,7 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
     }
 
     //TODO(sygi): refactor charging the wallet/placing an order
+    //TODO(sygi): other orders
     case o: MarketBidOrder => {
       log.debug("Broker: received order")
       val replyTo = sender
@@ -108,11 +109,6 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
         })
       }
       //TODO(sygi): do the same with the seller
-    }
-    //TODO(sygi): other orders
-    case o: Order => {
-      println("Broker received order")
-
     }
     case p => println("Broker: received unknown " + p)
   }

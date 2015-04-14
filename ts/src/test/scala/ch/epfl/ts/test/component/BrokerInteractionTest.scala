@@ -88,24 +88,26 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
     }
     " place the order" in {
       within(1 second) {
+        EventFilter.debug(message = "TraderWithB: Got a wallet confirmation", occurrences = 1) intercept {
         EventFilter.debug(message = "Broker: received order", occurrences = 1) intercept {
           EventFilter.debug(message = "TraderWithB: order placement succeeded", occurrences = 1) intercept {
             trader ! 'sendMarketOrder
           }
         }
-        EventFilter.debug(message = USD + " -> Some(58.0)", occurrences = 1) intercept {
-          EventFilter.debug(message = CHF + " -> Some(3.0)", occurrences = 1) intercept {
-            trader ! 'knowYourWallet
+       }
+        EventFilter.debug(message = USD + " -> Some(97.0)", occurrences = 1) intercept {
+          EventFilter.debug(start = CHF + " -> Some", occurrences = 1) intercept {
+              trader ! 'knowYourWallet
+            }
           }
         }
-      }
-    }
+    } //TODO(sygi): indent
   }
 
   "Wallet " should {
     " block the orders exceeding funds" in {
       within(1 second) {
-        EventFilter.debug(message = "MarkekFXSimulator : received a bidOrder", occurrences = 0) intercept {
+        EventFilter.debug(message = "MarketFXSimulator : received a bidOrder", occurrences = 0) intercept {
           EventFilter.debug(message = "TraderWithB: order failed", occurrences = 1) intercept {
             trader ! 'sendTooBigOrder
           }
