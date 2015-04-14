@@ -10,18 +10,15 @@ import ch.epfl.ts.engine.GetWalletFunds
 import ch.epfl.ts.engine.WalletConfirm
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.Some
-import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.{Order, MarketBidOrder}
 import ch.epfl.ts.engine.WalletConfirm
 import ch.epfl.ts.data.Register
 import ch.epfl.ts.engine.FundWallet
-import scala.Some
 import ch.epfl.ts.engine.WalletFunds
 import ch.epfl.ts.engine.GetWalletFunds
 import ch.epfl.ts.engine.WalletInsufficient
 import ch.epfl.ts.data.ConfirmRegistration
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.engine.WalletConfirm
 import ch.epfl.ts.data.Register
 import ch.epfl.ts.engine.FundWallet
@@ -75,13 +72,17 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
         }
       })
     }
+
     //TODO(sygi): refactor charging the wallet/placing an order
-    case MarketBidOrder(oid, uid, time, whatC, withC, volume, bidPrice) => {//TODO(sygi): which currency is being bought?
+    case o: MarketBidOrder => {
       log.debug("Broker: received order")
       val replyTo = sender
-      executeForWallet(uid, FundWallet(uid, withC, -volume * bidPrice), {
+      val uid = o.chargedTraderId()
+      val placementCost = o.costValue()
+      val costCurrency = o.costCurrency()
+      executeForWallet(uid, FundWallet(uid, costCurrency, -placementCost), {
         case WalletConfirm(uid) => {
-          send(MarketBidOrder(oid, uid, time, whatC, withC, volume, bidPrice))
+          send(o)
           replyTo ! WalletConfirm(uid) //means: order placed
           log.debug("Broker: Wallet confirmed")
         }
@@ -91,17 +92,17 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
         }
         case _ => log.debug("Unexpected message")
       })
-      //TODO(sygi): place the order if succeeded
     }
+
     case Transaction(mid, price, volume, timestamp, whatC, withC, buyerId, buyOrderId, sellerId, sellOrderId) => {
       log.debug("Broker: received transaction: " + buyerId + " " + sellerId)
       if (mapping.contains(buyerId)){
         //TODO(sygi): refactor charging wallet
         val replyTo = mapping.getOrElse(buyerId, null)
-        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume), {
+        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume), { //TODO(sygi): this should not be volume, but what?
           case WalletConfirm(uid) => {
             log.debug("Broker: Transaction executed")
-            replyTo ! WalletConfirm(uid) //TODO(sygi): change to some better information (or don't inform at all, as everybody gots Transaction)
+            replyTo ! WalletConfirm(uid) //TODO(sygi): change to some better information (or don't inform at all, as everybody gets Transaction)
           }
           case p => log.debug("Broker: A wallet replied with an unexpected message: " + p)
         })

@@ -33,6 +33,7 @@ case class ExecutedOrder(val oid: Long, val uid: Long, val timestamp: Long, val 
 object ExecutedOrder {
   def apply(o: Order): ExecutedOrder = ExecutedOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, o.price)
 }
+//TODO(sygi): change this messages and actually use them to communicate broker -> trader
 
 
 /* *****************************
@@ -67,7 +68,7 @@ case class WalletCanceledOrders(override val uid: Long, caO: List[Order]) extend
 
 /* Actions */
 case class FundWallet(override val uid: Long, c: Currency, q: Double) extends WalletState(uid)
-
+//TODO(sygi): remove unnecessary messages
 
 /* *****************************
  * Matcher

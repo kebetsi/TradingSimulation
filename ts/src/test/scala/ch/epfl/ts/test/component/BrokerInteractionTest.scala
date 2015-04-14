@@ -93,6 +93,11 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
             trader ! 'sendMarketOrder
           }
         }
+        EventFilter.debug(message = USD + " -> Some(58.0)", occurrences = 1) intercept {
+          EventFilter.debug(message = CHF + " -> Some(3.0)", occurrences = 1) intercept {
+            trader ! 'knowYourWallet
+          }
+        }
       }
     }
   }
@@ -114,7 +119,6 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
       within(1 second){
         EventFilter.debug(message = "Broker: Transaction executed", occurrences = 1) intercept {
           EventFilter.debug(message = "TraderWithB: Got a wallet confirmation", occurrences = 1) intercept {
-          //one for order placement, second for transaction confirmation
             trader ! 'sendMarketOrder
           }
         }
