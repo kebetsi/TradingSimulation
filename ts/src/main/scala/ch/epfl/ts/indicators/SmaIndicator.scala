@@ -1,6 +1,6 @@
 package ch.epfl.ts.indicators
 
-case class SMA(override val value: Map[Int, Double]) extends MA(value)
+case class SMA(override val value: Map[Int, Double]) extends MovingAverage(value)
 
 /**
  * Simple moving average indicator

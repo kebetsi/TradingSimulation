@@ -1,7 +1,7 @@
 package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.indicators.MA
+import ch.epfl.ts.indicators.MovingAverage
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Quote }
 import ch.epfl.ts.data.Currency
@@ -16,7 +16,8 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency), val shortPerio
   //contains the moving average obtained one period before ( used to detect the point when the two MA cross )
   var previousShort: Double = 0.0
   var previousLong: Double = 0.0
-  var init = true
+  //start making decision
+  var start = false
   // stock the current Moving average
   var currentShort: Double = 0.0
   var currentLong: Double = 0.0
@@ -28,7 +29,7 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency), val shortPerio
 
   override def receiver = {
 
-    case ma: MA => {
+    case ma: MovingAverage => {
       println("Trader receive MAs")
       ma.value.get(shortPeriod) match {
         case Some(x) => currentShort = x
@@ -38,23 +39,29 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency), val shortPerio
         case Some(x) => currentLong = x
         case None    => println("Missing indicator with period " + longPeriod)
       }
-      //Check signals and make appropriate orders
-      if (init) {
-        previousShort = currentShort
-        previousLong = currentLong
-        init = false
+      
+      //we need to have previousShort and previousLong set before starting decision function
+      if (start){
+        decideOrder()
       }
-      decideOrder()
+      else{
+       previousShort = currentShort
+       previousLong = currentLong
+       start=true
+      }
+
     }
 
     case _ => println("SimpleTrader: received unknown")
   }
   def decideOrder() = {
+    //the two MA cross and short moving average is above long average : BUY signal
     if (previousShort < currentLong && currentShort > currentLong) {
       //price specified only for limit orders
       send(MarketBidOrder(oid, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, volume, -1))
       println("simple trader : buying")
       oid += 1
+    //the two MA cross and short moving average is below long average : SELL signal
     } else if (previousShort > currentLong && currentShort < currentLong) {
       //price specified only for limit orders
       send(MarketAskOrder(oid, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, volume, -1))

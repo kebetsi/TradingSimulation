@@ -9,7 +9,7 @@ import scala.collection.mutable.MutableList
 /**
  * Moving Average value data
  */
-abstract class MA(val value: Map[Int,Double])
+abstract class MovingAverage(val value: Map[Int,Double])
 
 /**
  * Moving average superclass. To implement a moving average indicator,
@@ -37,6 +37,6 @@ abstract class MaIndicator(periods:List[Int]) extends Component {
   /**
    * compute moving average
    */
-  def computeMa : MA
+  def computeMa : MovingAverage
 
 }

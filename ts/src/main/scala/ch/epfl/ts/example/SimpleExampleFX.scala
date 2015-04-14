@@ -17,7 +17,7 @@ import ch.epfl.ts.data.{ Quote, OHLC }
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MA, SMA }
+import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.engine.RevenueCompute
 
@@ -36,13 +36,6 @@ object SimpleExampleFX {
     val rules = new ForexMarketRules()
     val forexMarket = builder.createRef(Props(classOf[MarketFXSimulator], marketForexId, rules), MarketNames.FOREX_NAME)
     
-    // Persistor
-    val dummyPersistor = new DummyPersistor()
-    
-    // Backloop
-    val backloop = builder.createRef(Props(classOf[BackLoop], marketForexId, dummyPersistor), "backloop")
-    
-    
     // Trader: cross moving average
     val traderId : Long = 123L
     val symbol = (Currency.EUR,Currency.USD)
@@ -54,7 +47,7 @@ object SimpleExampleFX {
    
     // Indicator
     // specify period over which we build the OHLC (from quotes)
-    val period : Long = 2000 //OHLC of 2 seconds
+    val period : Long = 20000 //OHLC of 20 seconds 
     val maCross = builder.createRef(Props(classOf[SmaIndicator], periods), "maCross")
     val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId,symbol, period), "ohlcIndicator")
     
@@ -69,15 +62,12 @@ object SimpleExampleFX {
     trader.addDestination(forexMarket, classOf[MarketAskOrder])
     trader.addDestination(forexMarket, classOf[MarketBidOrder])
 
-    forexMarket.addDestination(backloop, classOf[Transaction])
     forexMarket.addDestination(display, classOf[Transaction])
     
     maCross.addDestination(trader, classOf[SMA])
     ohlcIndicator.addDestination(maCross, classOf[OHLC])
 
-    
-    backloop.addDestination(trader, classOf[Transaction])
-
+ 
     
     builder.start
   }
