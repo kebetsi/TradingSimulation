@@ -23,7 +23,10 @@ trait Streamable
  */
 case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
 
-trait Chargable {
+/**
+ * Trait representing an object that causes placing a charge on the wallet.
+ */
+trait Chargeable {
   def costValue(): Double
   def costCurrency(): Currency
   def chargedTraderId(): Long
@@ -60,9 +63,8 @@ case class LimitAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val 
 abstract class MarketOrder extends Order
 
 case class MarketBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
-  extends MarketOrder with Chargable {
-  override def costValue(): Double =
-    volume * price
+  extends MarketOrder with Chargeable {
+  override def costValue(): Double = volume
   override def costCurrency() = withC
   override def chargedTraderId() = uid
 }

@@ -99,7 +99,7 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
       if (mapping.contains(buyerId)){
         //TODO(sygi): refactor charging wallet
         val replyTo = mapping.getOrElse(buyerId, null)
-        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume), { //TODO(sygi): this should not be volume, but what?
+        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume * price), { //TODO(sygi): times or divided by price?
           case WalletConfirm(uid) => {
             log.debug("Broker: Transaction executed")
             replyTo ! WalletConfirm(uid) //TODO(sygi): change to some better information (or don't inform at all, as everybody gets Transaction)
