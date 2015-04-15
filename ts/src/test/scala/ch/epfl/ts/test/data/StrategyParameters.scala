@@ -76,15 +76,20 @@ class StrategyParametersTests extends FunSuite {
       "someCoefficient" -> CoefficientParameter(coefficient1)
     )
     
-    assert(myParameters.get[CurrencyPair]("tradedCurrencies") == Some(currencies1))
-    assert(myParameters.get[Double]("someCoefficient") == Some(coefficient1))
+    assert(myParameters.get[CurrencyPair]("tradedCurrencies") == currencies1)
+    assert(myParameters.get[Double]("someCoefficient") == coefficient1)
+  }
+  
+  test("Should not say it has a value if it doesn't have the expected type") {
+    val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
+    assert(!myParameters.has[CurrencyPair]("tradedCurrencies"), "Should not allow for the wrong type to be retrieved")
   }
   
   test("Should not yield a value if it doesn't have the expected type") {
-    val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
-    
-    val got = myParameters.get[CurrencyPair]("tradedCurrencies")
-    assert(got == None, "Should not allow for the wrong type to be retrieved")
+	  val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
+	  
+	  val got = myParameters.getOption[CurrencyPair]("tradedCurrencies")
+	  assert(got == None, "Should not allow for the wrong type to be retrieved")
   }
   
   test("Should fallback on default if allowed") {

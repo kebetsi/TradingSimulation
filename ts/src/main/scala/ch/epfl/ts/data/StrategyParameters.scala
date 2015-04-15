@@ -20,10 +20,37 @@ class StrategyParameters(params: (String, Parameter[_])*) {
   val parameters = params.toMap
   
   /**
+   * @return True only if the key is available in `parameters` AND has the specified type.
+   */
+  def has[T: ClassTag](key: Key): Boolean = {
+    parameters.get(key) match {
+      case Some(p) => p.get() match {
+        case v: T => true
+        case _ => false
+      }
+      case _ => false
+    }
+  }
+  
+  /**
+   * Get the value if it is there, otherwise throw an exception.
+   * Use it only if you are confident `params` contains the desired key.
+   */
+  def get[T: ClassTag](key: Key): T = {
+    parameters.get(key) match {
+      case Some(p) => p.get() match {
+        case v: T => v
+        case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
+      }
+      case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
+    }
+  }
+  
+  /**
    * Similar to what a map's `get` would do.
    * We also perform type checking.
    */
-  def get[T : ClassTag](key: Key): Option[T] = {
+  def getOption[T : ClassTag](key: Key): Option[T] = {
     parameters.get(key) match {
       case Some(p) => p.get() match {
         case v: T => Some(v)
@@ -40,7 +67,7 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    *   - The key exists but doesn't have the right parameter type
    */
   def getOrElse[T : ClassTag](key: Key, fallback: T): T =
-    get[T](key) match {
+    getOption[T](key) match {
       case Some(v) => v
       case _ => fallback
     }
@@ -99,7 +126,7 @@ abstract class Parameter[T](val name: String) {
  */
 trait ParameterTrait[T] {
   /** Make a new instance of the associated parameter */
-  def getInstance(v: Any): Parameter[T]
+  def getInstance(v: T): Parameter[T]
   
   /** Name of this parameter type */
   def name: String = this.getClass.getName
@@ -159,7 +186,7 @@ object CoefficientParameter extends ParameterTrait[Double] {
  */
 case class NaturalNumberParameter(natural: Int) extends Parameter[Int]("NaturalNumber") {  
   def companion = NaturalNumberParameter
-  def get(): Double = natural
+  def get(): Int = natural
 }
 
 object NaturalNumberParameter extends ParameterTrait[Int] {
@@ -172,7 +199,7 @@ object NaturalNumberParameter extends ParameterTrait[Int] {
   
   def validValues: Iterable[Int] = {
     // Lazily enumerates values from 0 to +inf
-    val s: Stream[Int] = 0 #:: (s map (x => x + 1))
+    def s: Stream[Int] = 0 #:: (s map (x => x + 1))
     s
   }
   
@@ -206,10 +233,11 @@ object TimeParameter extends ParameterTrait[FiniteDuration] {
    * Duration must be positive or null
    */
   def isValid(v: Long): Boolean = (v >= 0) 
+  def isValid(d: FiniteDuration): Boolean = (d.length >= 0) 
   
   def validValues: Iterable[FiniteDuration] = {
     // Lazily enumerates values from 0 to +inf
-    val s: Stream[FiniteDuration] = (0L milliseconds) #:: ( s map { d => FiniteDuration((d.length + 1), d.unit) } )
+    def s: Stream[FiniteDuration] = (0L milliseconds) #:: (s map { d => FiniteDuration((d.length + 1), d.unit) })
     s
   }
   
