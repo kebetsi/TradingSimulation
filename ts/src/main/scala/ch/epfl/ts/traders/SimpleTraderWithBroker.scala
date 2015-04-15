@@ -28,7 +28,7 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
   var oid = 1L
   override def receiver = {
     case q: Quote => {
-      println("TraderWithB receided a quote: " + q)
+      log.debug("TraderWithB receided a quote: " + q)
 
     }
     case ConfirmRegistration => {

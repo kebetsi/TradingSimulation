@@ -32,7 +32,7 @@ import ch.epfl.ts.data.ConfirmRegistration
 /**
  * Created by sygi on 03.04.15.
  */
-class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println -> log.debug
+class ExampleBroker extends Component with ActorLogging {
   import context.dispatcher
   var mapping = Map[Long, ActorRef]()
   override def receiver: PartialFunction[Any, Unit] = {
@@ -40,7 +40,7 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
       log.debug("Broker: registration of agent " + id)
       log.debug("with ref: " + sender())
       if (mapping.get(id) != None){
-        println("Duplicate Id")
+        log.debug("Duplicate Id")
         //TODO(sygi): reply to the trader that registration failed
         //TODO(sygi): return?
       }
@@ -53,14 +53,13 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
       val replyTo = sender
       executeForWallet(uid, FundWallet(uid, curr, value), {
         case WalletConfirm(uid) => {
-          println("Broker: Wallet confirmed")
+          log.debug("Broker: Wallet confirmed")
           replyTo ! WalletConfirm(uid)
         }
         case WalletInsufficient(uid) => {
-          println("Broker: insufficient funds")
+          log.debug("Broker: insufficient funds")
           replyTo ! WalletInsufficient(uid)
         }
-        case p => println("FundWallet: Unexpected message " + p)
       })
     }
     case GetWalletFunds(uid) => { //TODO(sygi): check if trader asks for his wallet
@@ -110,7 +109,7 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
       }
       //TODO(sygi): do the same with the seller
     }
-    case p => println("Broker: received unknown " + p)
+    case p => log.debug("Broker: received unknown " + p)
   }
 
   def executeForWallet(uid: Long, question: WalletState, f: PartialFunction[Any, Unit]) = {
@@ -120,7 +119,7 @@ class ExampleBroker extends Component with ActorLogging { //TODO(sygi): println 
         val future = (walletActor ? question).mapTo[WalletState]
         future onSuccess f
         future onFailure {
-          case p => println("Wallet command failed: " + p)
+          case p => log.debug("Broker: Wallet command failed: " + p)
         }
       }
       case None => log.debug("Broker: No such wallet")
