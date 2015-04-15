@@ -8,7 +8,7 @@ import ch.epfl.ts.component.utils.{BackLoop, Printer}
 import ch.epfl.ts.data.{DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder, MarketBidOrder, OHLC, Order, Transaction}
 import ch.epfl.ts.engine.{MarketRules, OrderBookMarketSimulator, RevenueCompute}
 import ch.epfl.ts.indicators.{OhlcIndicator, SMA, SmaIndicator}
-import ch.epfl.ts.traders.{DoubleCrossoverTrader, DoubleEnvelopeTrader, SimpleTrader, SobiTrader, TransactionVwapTrader}
+import ch.epfl.ts.traders.{DoubleCrossoverTrader, DoubleEnvelopeTrader, MadTrader, SobiTrader, TransactionVwapTrader}
 
 import scala.reflect.ClassTag
 
@@ -65,7 +65,7 @@ object ReplayOrdersLoop {
     // Traders
     val traderNames: Map[Long, String] = Map(0L -> "Finance", 123L -> "SobiTrader", 132L -> "SimpleTrader", 333L -> "VwapTrader", 444L -> "DcTrader", 555L -> "DeTrader")
     val sobiTrader = builder.createRef(Props(classOf[SobiTrader], 123L, 3000, 2, 700.0, 50, 100.0, rules), "sobiTrader")
-    val simpleTrader = builder.createRef(Props(classOf[SimpleTrader], 132L, 10000, 50.0), "simpleTrader")
+    val madTrader = builder.createRef(Props(classOf[MadTrader], 132L, 10000, 50.0), "simpleTrader")
     val transactionVwap = builder.createRef(Props(classOf[TransactionVwapTrader], 333L, longTickSizeMillis.toInt), "transactionVwapTrader")
     val dcTrader = builder.createRef(Props(classOf[DoubleCrossoverTrader], 444L, 5, 10, 50.0), "dcTrader")
     val deTrader = builder.createRef(Props(classOf[DoubleEnvelopeTrader], 555L, 0.025, 50.0), "deTrader")
@@ -89,7 +89,7 @@ object ReplayOrdersLoop {
     smaShort->(dcTrader, classOf[SMA])
     // traders
     // simpleTrader
-    simpleTrader->(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
+    madTrader->(market, classOf[MarketAskOrder], classOf[MarketBidOrder])
     // SobiTrader
     sobiTrader->(market, classOf[LimitBidOrder], classOf[LimitAskOrder])
     // Double Crossover Trader
