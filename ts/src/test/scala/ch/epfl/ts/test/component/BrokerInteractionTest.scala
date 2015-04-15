@@ -52,11 +52,13 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
   "A broker " should {
     " create a wallet for the trader" in {
       within(1 second) {
-        EventFilter.debug(message = "Broker: No such wallet", occurrences = 1) intercept {
+        EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 1) intercept {
           broker ! GetWalletFunds(38265L)
         }
-        EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {
-          broker ! GetWalletFunds(15L) //this causes dead letters, as broker replies
+        EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 0) intercept {
+          EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {
+            broker ! GetWalletFunds(15L) //this causes dead letters, as broker replies
+          }
         }
       }
     }

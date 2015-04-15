@@ -35,6 +35,7 @@ import ch.epfl.ts.data.ConfirmRegistration
 class ExampleBroker extends Component with ActorLogging {
   import context.dispatcher
   var mapping = Map[Long, ActorRef]()
+  val dummyReturn: PartialFunction[Any, Unit] = {case _ => {}}
   override def receiver: PartialFunction[Any, Unit] = {
     case Register(id) => {
       log.debug("Broker: registration of agent " + id)
@@ -42,7 +43,7 @@ class ExampleBroker extends Component with ActorLogging {
       if (mapping.get(id) != None){
         log.debug("Duplicate Id")
         //TODO(sygi): reply to the trader that registration failed
-        //TODO(sygi): return?
+        return dummyReturn
       }
       mapping = mapping + (id -> sender())
       context.actorOf(Props[Wallet], "wallet" + id)
@@ -62,9 +63,13 @@ class ExampleBroker extends Component with ActorLogging {
         }
       })
     }
-    case GetWalletFunds(uid) => { //TODO(sygi): check if trader asks for his wallet
+    case GetWalletFunds(uid) => {
       log.debug("Broker: got a get show wallet request")
       val replyTo = sender
+      if (mapping.get(uid) != Some(replyTo)) {
+        log.debug("Broker: someone asks for not - his wallet")
+        return dummyReturn
+      }
       executeForWallet(uid, GetWalletFunds(uid), {
         case w: WalletFunds => {
           replyTo ! w
