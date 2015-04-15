@@ -7,14 +7,10 @@ import ch.epfl.ts.data.Currency._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import akka.pattern.ask
-import ch.epfl.ts.engine._
-import ch.epfl.ts.engine.GetWalletFunds
-import ch.epfl.ts.engine.WalletConfirm
+import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedOrder, AcceptedOrder, RejectedOrder}
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Register
-import ch.epfl.ts.engine.FundWallet
 import ch.epfl.ts.data.ConfirmRegistration
-import ch.epfl.ts.engine.WalletFunds
 import akka.util.Timeout
 
 /**

@@ -4,34 +4,12 @@ import akka.actor.{ActorLogging, Props, ActorRef}
 import akka.pattern.ask
 import akka.util.Timeout
 import ch.epfl.ts.component.Component
-import ch.epfl.ts.data._
-import ch.epfl.ts.engine._
-import ch.epfl.ts.engine.GetWalletFunds
-import ch.epfl.ts.engine.WalletConfirm
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import ch.epfl.ts.engine.WalletConfirm
-import ch.epfl.ts.engine.FundWallet
-import ch.epfl.ts.engine.WalletFunds
-import ch.epfl.ts.engine.GetWalletFunds
-import ch.epfl.ts.engine.WalletInsufficient
-import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.engine.WalletConfirm
-import ch.epfl.ts.engine.FundWallet
+import ch.epfl.ts.engine.{Wallet, WalletConfirm, FundWallet, WalletFunds,
+  GetWalletFunds,WalletInsufficient, ExecutedOrder, WalletState, AcceptedOrder, RejectedOrder}
 import scala.Some
-import ch.epfl.ts.engine.WalletFunds
-import ch.epfl.ts.engine.GetWalletFunds
-import ch.epfl.ts.engine.WalletInsufficient
-import ch.epfl.ts.data.Transaction
-import ch.epfl.ts.engine.WalletConfirm
-import ch.epfl.ts.data.Register
-import ch.epfl.ts.engine.FundWallet
-import scala.Some
-import ch.epfl.ts.engine.WalletFunds
-import ch.epfl.ts.engine.GetWalletFunds
-import ch.epfl.ts.engine.WalletInsufficient
-import ch.epfl.ts.data.Currency
-import ch.epfl.ts.data.ConfirmRegistration
+import ch.epfl.ts.data.{Register, ConfirmRegistration, Order}
 
 /**
  * Created by sygi on 03.04.15.
