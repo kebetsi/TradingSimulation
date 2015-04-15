@@ -29,6 +29,8 @@ TradingSimulation.iml
 project/target
 target/
 
+data/
+
 # OS specific
 .DS_Store
 

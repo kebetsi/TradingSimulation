@@ -98,8 +98,8 @@ class StrategyParametersTests extends FunSuite {
     )
     
   testConcreteParameter(
-  		CurrencyPairParameter,
-  		List((Currency.EUR, Currency.CHF), (Currency.GBP, Currency.USD)),
-  		List((Currency.EUR, Currency.EUR), (Currency.CHF, Currency.CHF))
-  		)
+      CurrencyPairParameter,
+      List((Currency.EUR, Currency.CHF), (Currency.GBP, Currency.USD)),
+      List((Currency.EUR, Currency.EUR), (Currency.CHF, Currency.CHF))
+    )
 }

@@ -169,14 +169,14 @@ object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {
 	def isValid(v: CurrencyPair): Boolean = (v._1 != v._2)
 	
 	def validValues: Iterable[CurrencyPair] = {
-			val allCurrencies = Currency.supportedCurrencies()
-					
-					// TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
-					for {
-						c1 <- allCurrencies
-						c2 <- allCurrencies
-						if c1 != c2
-					} yield (c1, c2)
+		val allCurrencies = Currency.supportedCurrencies()
+				
+		// TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
+		for {
+			c1 <- allCurrencies
+			c2 <- allCurrencies
+			if c1 != c2
+		} yield (c1, c2)
 	}
   
   def defaultValue = (Currency.EUR, Currency.CHF)
