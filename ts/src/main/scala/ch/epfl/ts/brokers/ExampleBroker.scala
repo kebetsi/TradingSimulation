@@ -121,12 +121,12 @@ class ExampleBroker extends Component with ActorLogging {
   //TODO(sygi) - implement it
   //def addToWallet(uid: Long, currency: Currency, amount: Double, messageOnSuccess: Option[Any], messageOnFailure: Option[Any])
 
-  def executeForWallet(uid: Long, question: WalletState, f: PartialFunction[Any, Unit]) = {
+  def executeForWallet(uid: Long, question: WalletState, cb: PartialFunction[Any, Unit]) = { 
     context.child("wallet" + uid) match {
       case Some(walletActor) => {
         implicit val timeout = new Timeout(100 milliseconds)
         val future = (walletActor ? question).mapTo[WalletState]
-        future onSuccess f
+        future onSuccess cb
         future onFailure {
           case p => log.debug("Broker: Wallet command failed: " + p)
         }
