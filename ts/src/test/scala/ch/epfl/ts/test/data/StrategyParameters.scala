@@ -82,7 +82,11 @@ class StrategyParametersTests extends FunSuite {
   
   test("Should not say it has a value if it doesn't have the expected type") {
     val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
-    assert(!myParameters.has[CurrencyPair]("tradedCurrencies"), "Should not allow for the wrong type to be retrieved")
+    assert(!myParameters.hasWithType("tradedCurrencies", CurrencyPairParameter), "Should not allow for the wrong type to be retrieved")
+  }
+  test("Should say it has a value if we don't care about the type") {
+	  val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
+	  assert(myParameters.has("tradedCurrencies"), "Should allow for another type to match")
   }
   
   test("Should not yield a value if it doesn't have the expected type") {

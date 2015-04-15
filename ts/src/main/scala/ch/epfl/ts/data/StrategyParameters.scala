@@ -20,17 +20,18 @@ class StrategyParameters(params: (String, Parameter[_])*) {
   val parameters = params.toMap
   
   /**
-   * @return True only if the key is available in `parameters` AND has the specified type.
+   * @return True only if the key is available in `parameters`
    */
-  def has[T: ClassTag](key: Key): Boolean = {
-    parameters.get(key) match {
-      case Some(p) => p.get() match {
-        case v: T => true
+  def has(key: Key): Boolean = parameters.contains(key)
+  /**
+   * @return True only if the key is available in `parameters`
+   *         AND it has the expected `Parameter` type
+   */
+  def hasWithType[T](key: Key, companion: ParameterTrait[T]): Boolean =
+		  parameters.get(key) match {
+		    case Some(p) => (p.companion == companion)
         case _ => false
-      }
-      case _ => false
-    }
-  }
+		  }
   
   /**
    * Get the value if it is there, otherwise throw an exception.
@@ -105,7 +106,7 @@ abstract class Parameter[T](val name: String) {
   def get(): T
   
   /** The companion object of this parameter */
-  protected def companion: ParameterTrait[T]
+  def companion: ParameterTrait[T]
   
   /**
    * Whether or not this particle instance has been
