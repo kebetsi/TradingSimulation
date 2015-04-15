@@ -17,7 +17,7 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency), val shortPerio
   var previousShort: Double = 0.0
   var previousLong: Double = 0.0
   //start making decision
-  var start = false
+  var hasStarted = false
   // stock the current Moving average
   var currentShort: Double = 0.0
   var currentLong: Double = 0.0
@@ -41,13 +41,13 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency), val shortPerio
       }
       
       //we need to have previousShort and previousLong set before starting decision function
-      if (start){
+      if (hasStarted){
         decideOrder()
       }
       else{
        previousShort = currentShort
        previousLong = currentLong
-       start=true
+       hasStarted=true
       }
 
     }
