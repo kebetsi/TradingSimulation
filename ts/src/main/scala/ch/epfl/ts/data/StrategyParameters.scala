@@ -1,11 +1,11 @@
 package ch.epfl.ts.data
 
 import ch.epfl.ts.data.Currency.Currency
-import scala.reflect.ClassTag
 import scala.concurrent.duration.TimeUnit
 import scala.concurrent.duration.{ MILLISECONDS => MillisecondsUnit }
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.DurationLong
+import scala.reflect.ClassTag
 
 
 /**
@@ -15,7 +15,7 @@ import scala.concurrent.duration.DurationLong
  * 
  * It can be constructed with an arbitrary number of parameters.
  */
-class StrategyParameters(params: (String, Parameter[_])*) {
+class StrategyParameters(params: (String, Parameter)*) {
   type Key = String
   val parameters = params.toMap
   
@@ -27,20 +27,20 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    * @return True only if the key is available in `parameters`
    *         AND it has the expected `Parameter` type
    */
-  def hasWithType[T](key: Key, companion: ParameterTrait[T]): Boolean =
-		  parameters.get(key) match {
-		    case Some(p) => (p.companion == companion)
-        case _ => false
-		  }
+  def hasWithType(key: Key, companion: ParameterTrait): Boolean =
+	  parameters.get(key) match {
+	    case Some(p) => (p.companion == companion)
+      case _ => false
+	  }
   
   /**
    * Get the value if it is there, otherwise throw an exception.
    * Use it only if you are confident `params` contains the desired key.
    */
-  def get[T: ClassTag](key: Key): T = {
+  def get[V: ClassTag](key: Key): V = {
     parameters.get(key) match {
       case Some(p) => p.get() match {
-        case v: T => v
+        case v: V => v
         case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
       }
       case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
@@ -51,10 +51,10 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    * Similar to what a map's `get` would do.
    * We also perform type checking.
    */
-  def getOption[T : ClassTag](key: Key): Option[T] = {
+  def getOption[V: ClassTag](key: Key): Option[V] = {
     parameters.get(key) match {
       case Some(p) => p.get() match {
-        case v: T => Some(v)
+        case v: V => Some(v)
         case _ => None
       }
       case _ => None
@@ -67,13 +67,13 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    *   - Such a key doesn't exist
    *   - The key exists but doesn't have the right parameter type
    */
-  def getOrElse[T : ClassTag](key: Key, fallback: T): T =
-    getOption[T](key) match {
+  def getOrElse[V: ClassTag](key: Key, fallback: V): V =
+    getOption[V](key) match {
       case Some(v) => v
       case _ => fallback
     }
   
-  def getOrDefault[T : ClassTag](key: Key, parameterType: ParameterTrait[T]): T =
+  def getOrDefault[V: ClassTag](key: Key, parameterType: ParameterTrait{ type T = V }): V =
     getOrElse(key, parameterType.defaultValue)
   
   override def toString: String = {
@@ -94,9 +94,11 @@ class StrategyParameters(params: (String, Parameter[_])*) {
  * Represents a generic trading strategy parameter.
  * Strategies can declare required and optional parameters.
  * Each parameter has a "range" of valid values.
- * @param T Parameter value type
  */
-abstract class Parameter[T](val name: String) {
+abstract class Parameter(val name: String) { self =>
+  /** Type of the value this parameter holds */
+  type T
+  
   /**
    * At construction, ensure that the given value is legal for this parameter.
    */
@@ -106,7 +108,7 @@ abstract class Parameter[T](val name: String) {
   def get(): T
   
   /** The companion object of this parameter */
-  def companion: ParameterTrait[T]
+  def companion: ParameterTrait{ type T = self.T}
   
   /**
    * Whether or not this particle instance has been
@@ -125,9 +127,11 @@ abstract class Parameter[T](val name: String) {
  * If the designer of a strategy wishes to change any of the fields
  * in this trait, it is easy to extend it and override the field.
  */
-trait ParameterTrait[T] {
+trait ParameterTrait { self =>
+  type T
+  
   /** Make a new instance of the associated parameter */
-  def getInstance(v: T): Parameter[T]
+  def getInstance(v: T): Parameter{ type T = self.T}
   
   /** Name of this parameter type */
   def name: String = this.getClass.getName
@@ -156,12 +160,14 @@ trait ParameterTrait[T] {
 /**
  * Parameter representing a floating point coefficient in range [0; 1]
  */
-case class CoefficientParameter(coefficient: Double) extends Parameter[Double]("Coefficient") {  
+case class CoefficientParameter(coefficient: Double) extends Parameter("Coefficient") {
+  type T = Double
   def companion = CoefficientParameter
   def get(): Double = coefficient
 }
 
-object CoefficientParameter extends ParameterTrait[Double] {
+object CoefficientParameter extends ParameterTrait {
+  type T = Double
   def getInstance(v: Double) = new CoefficientParameter(v)
   
   /**
@@ -185,12 +191,14 @@ object CoefficientParameter extends ParameterTrait[Double] {
 /**
  * Parameter representing a floating point coefficient in range [0; 1]
  */
-case class NaturalNumberParameter(natural: Int) extends Parameter[Int]("NaturalNumber") {  
+case class NaturalNumberParameter(natural: Int) extends Parameter("NaturalNumber") {
+  type T = Int
   def companion = NaturalNumberParameter
   def get(): Int = natural
 }
 
-object NaturalNumberParameter extends ParameterTrait[Int] {
+object NaturalNumberParameter extends ParameterTrait {
+  type T = Int
   def getInstance(v: Int) = new NaturalNumberParameter(v)
   
   /**
@@ -211,7 +219,8 @@ object NaturalNumberParameter extends ParameterTrait[Int] {
  * @param duration
  * @param unit Defaults to milliseconds
  */
-case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter[FiniteDuration]("Time") {
+case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter("Time") {
+  type T = FiniteDuration
   def this(duration: Long) = this(duration, MillisecondsUnit)
 	def this(duration: FiniteDuration) = this(duration.length, duration.unit)
   
@@ -219,8 +228,10 @@ case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter[Finit
   def get(): FiniteDuration = FiniteDuration(duration, unit)
 }
 
-object TimeParameter extends ParameterTrait[FiniteDuration] {
+object TimeParameter extends ParameterTrait {
   import scala.language.postfixOps
+  
+  type T = FiniteDuration
   
   def getInstance(v: Long) = new TimeParameter(v)
   def getInstance(v: Long, u: TimeUnit) = new TimeParameter(v, u)
@@ -244,22 +255,23 @@ object TimeParameter extends ParameterTrait[FiniteDuration] {
 /**
  * Parameter representing a pair of currencies to be traded.
  */
-case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter[(Currency, Currency)]("CurrencyPair") {  
+case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter("CurrencyPair") {  
+  type T = (Currency, Currency)
 	def companion = CurrencyPairParameter
 	def get(): (Currency, Currency) = currencies
 }
 
-object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {
-	private type CurrencyPair = Tuple2[Currency, Currency]
-	def getInstance(v: CurrencyPair) = new CurrencyPairParameter(v)
+object CurrencyPairParameter extends ParameterTrait {
+	type T = (Currency, Currency)
+	def getInstance(v: T) = new CurrencyPairParameter(v)
   
 	/**
 	 * All currency pairs are acceptable as long as they're not twice the same.
 	 * @TODO: It would be great if we could enforce an order inside the pair, so that we avoid having to handle swapped currency pairs
 	 */
-	def isValid(v: CurrencyPair): Boolean = (v._1 != v._2)
+	def isValid(v: T): Boolean = (v._1 != v._2)
 	
-	def validValues: Iterable[CurrencyPair] = {
+	def validValues: Iterable[T] = {
 		val allCurrencies = Currency.supportedCurrencies()
 				
 		// TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?

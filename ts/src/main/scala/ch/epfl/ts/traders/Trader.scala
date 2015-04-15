@@ -14,14 +14,15 @@ abstract class Trader(parameters: StrategyParameters) extends Component {
   /** Gives a handle to the companion object */
   def companion: TraderCompanion
   
-  /**
-   * On instantiation, check that all mandatory parameters have been provided
-   */
+  // On instantiation, check that all mandatory parameters have been provided
   for {
     p <- companion.requiredParameters
     key = p._1
     theType = p._2
   } yield assert(parameters.hasWithType(key, theType), "Trading strategy requires parameter " + key + " with type " + theType)
+  
+  // Fill optional parameters with their default value
+  // TODO
 }
 
 /**
@@ -35,16 +36,18 @@ abstract class Trader(parameters: StrategyParameters) extends Component {
 trait TraderCompanion {
   type Key = String
   
+  def getInstance(uid: Long, parameters: StrategyParameters): Trader
+  
   /**
    * Parameters for which the user of the strategy *must* provide a value.
    */
-  def requiredParameters: Map[Key, ParameterTrait[_]]
+  def requiredParameters: Map[Key, ParameterTrait]
   
   /**
    * If the user of the strategy doesn't provide
    * Should not overlap with requiredParameters
    */
-  def optionalParameters: Map[Key, ParameterTrait[_]] = Map()
+  def optionalParameters: Map[Key, ParameterTrait] = Map()
   
-  def parameters: Map[Key, ParameterTrait[_]] = requiredParameters ++ optionalParameters
+  def parameters: Map[Key, ParameterTrait] = requiredParameters ++ optionalParameters
 }

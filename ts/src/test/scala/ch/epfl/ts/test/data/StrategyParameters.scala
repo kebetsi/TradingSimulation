@@ -16,6 +16,7 @@ import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.traders.TraderCompanion
 import ch.epfl.ts.traders.MadTrader
+import ch.epfl.ts.data.StrategyParameters
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -30,7 +31,7 @@ class StrategyParametersTests extends FunSuite {
   private type CurrencyPair = (Currency.Currency, Currency.Currency)
   
   /** Generic function to test basic functionality expected from Parameter subclasses */
-  def testConcreteParameter[T](parameterTrait: ParameterTrait[T], validValues: Iterable[T], invalidValues: Iterable[T]) = {
+  def testConcreteParameter[V](parameterTrait: ParameterTrait{ type T = V}, validValues: Iterable[V], invalidValues: Iterable[V]) = {
     
     test(parameterTrait + " should give back the value it was instantiated with") {
       for {
@@ -91,13 +92,13 @@ class StrategyParametersTests extends FunSuite {
       
       test(strategyCompanion + " should allow instantiation with parameters' default values") {
         val parameters = for {
-          pair <- strategyCompanion.requiredParameters
+          pair <- strategyCompanion.requiredParameters.toSeq
           key = pair._1
-          defaultValue = pair._2.defaultValue.asInstanceOf[pair._2.t.runtimeClass]
-          parameter = pair._2.getInstance(defaultValue)
+          parameter = pair._2.getInstance(pair._2.defaultValue)
         } yield (key, parameter)
         
-        val attempt = Try(make(parameters:*))
+        val sp = new StrategyParameters(parameters: _*)
+        val attempt = Try(make(sp))
         assert(attempt.isSuccess)
       }
     }
