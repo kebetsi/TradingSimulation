@@ -14,6 +14,8 @@ import ch.epfl.ts.data.Parameter
 import ch.epfl.ts.data.ParameterTrait
 import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.traders.TraderCompanion
+import ch.epfl.ts.traders.MadTrader
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -54,6 +56,50 @@ class StrategyParametersTests extends FunSuite {
     test(parameterTrait + " should have a default value which is valid") {
     	val attempt = Try(parameterTrait.getInstance(parameterTrait.defaultValue))
     	assert(attempt.isSuccess, "Should accept " + parameterTrait.defaultValue)
+    }
+  }
+  
+  
+  /**
+   * Generic function to test concrete trading strategy implementation's correct
+   * behavior when instantiated with correct & incorrect parameters
+   */
+  def testConcreteStrategy(strategyCompanion: TraderCompanion) = {
+    def make(p: StrategyParameters) = strategyCompanion.getInstance(42, p)
+    val emptyParameters = new StrategyParameters()
+    val required = strategyCompanion.requiredParameters
+    val optonal = strategyCompanion.optionalParameters
+    
+    
+    /**
+     * Strategies not having any required parameter
+     */
+    if(required.isEmpty) {
+      test(strategyCompanion + " should allow instantiation with no parameters") {
+        val attempt = Try(make(emptyParameters))
+        assert(attempt.isSuccess)
+      }
+    }
+    /**
+     * Strategies with required parameters
+     */
+    else {
+    	test(strategyCompanion + " should not allow instantiation with no parameters") {
+    		val attempt = Try(make(emptyParameters))
+    		assert(attempt.isFailure)
+    	}
+      
+      test(strategyCompanion + " should allow instantiation with parameters' default values") {
+        val parameters = for {
+          pair <- strategyCompanion.requiredParameters
+          key = pair._1
+          defaultValue = pair._2.defaultValue.asInstanceOf[pair._2.t.runtimeClass]
+          parameter = pair._2.getInstance(defaultValue)
+        } yield (key, parameter)
+        
+        val attempt = Try(make(parameters:*))
+        assert(attempt.isSuccess)
+      }
     }
   }
   
@@ -128,4 +174,9 @@ class StrategyParametersTests extends FunSuite {
       List((Currency.EUR, Currency.CHF), (Currency.GBP, Currency.USD)),
       List((Currency.EUR, Currency.EUR), (Currency.CHF, Currency.CHF))
     )
+
+
+  /** Simple tests for strategy's parameterization */
+  testConcreteStrategy(MadTrader)
+    
 }
