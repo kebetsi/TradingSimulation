@@ -39,6 +39,7 @@ class ForexMarketRules extends MarketRules {
               newOrder.whatC, newOrder.withC,
               newOrder.uid, newOrder.oid,
               sellerTraderId, sellOrderId))
+        send(ExecutedOrder.apply(mbid))
         
       case mask: MarketAskOrder =>
         println("Receive MASK order")
@@ -50,6 +51,7 @@ class ForexMarketRules extends MarketRules {
                         newOrder.whatC, newOrder.withC,
                         buyerTraderId, buyOrderId,
                         newOrder.uid, newOrder.oid))
+        send(ExecutedOrder.apply(mask))
 
     }
   }
