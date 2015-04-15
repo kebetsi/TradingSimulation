@@ -197,11 +197,7 @@ object NaturalNumberParameter extends ParameterTrait[Int] {
    */
   def isValid(v: Int): Boolean = (v >= 0) 
   
-  def validValues: Iterable[Int] = {
-    // Lazily enumerates values from 0 to +inf
-    def s: Stream[Int] = 0 #:: (s map (x => x + 1))
-    s
-  }
+  def validValues: Iterable[Int] = Stream.from(0)
   
   def defaultValue = 0
 }
@@ -235,11 +231,9 @@ object TimeParameter extends ParameterTrait[FiniteDuration] {
   def isValid(v: Long): Boolean = (v >= 0) 
   def isValid(d: FiniteDuration): Boolean = (d.length >= 0) 
   
-  def validValues: Iterable[FiniteDuration] = {
-    // Lazily enumerates values from 0 to +inf
-    def s: Stream[FiniteDuration] = (0L milliseconds) #:: (s map { d => FiniteDuration((d.length + 1), d.unit) })
-    s
-  }
+  // TODO: user-selected resolution
+  def validValues: Iterable[FiniteDuration] =
+    Stream.from(0) map { n => (100L * n) milliseconds }
   
   def defaultValue = (0L milliseconds)
 }

@@ -44,9 +44,9 @@ class StrategyParametersTests extends FunSuite {
       } yield assert(attempt.isFailure, "Should fail with illegal value " + myValue)
     }
   
-    test(parameterTrait + " should accept all values within the acceptable range") {
+    test(parameterTrait + " should accept the 100 first values it declares as valid values") {
       for {
-        value <- parameterTrait.validValues
+        value <- (parameterTrait.validValues take 100).toList
         attempt = Try(parameterTrait.getInstance(value))
       } yield assert(attempt.isSuccess, "Should accept " + value)
     }
