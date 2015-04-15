@@ -9,6 +9,7 @@ object Dependencies {
     "junit" % "junit" % "4.8.1" % "test",
     "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test",
     "com.typesafe.akka" %% "akka-actor" % "2.3.6" withSources() withJavadoc(),
+    "com.typesafe.akka" %% "akka-testkit" % "2.3.6" % "test",
     "com.typesafe.slick" %% "slick" % "2.1.0" withSources() withJavadoc()
   )
 
