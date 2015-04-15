@@ -43,7 +43,20 @@ abstract class Order() extends Streamable {
   def volume: Double
   def price: Double
 }
-
+/**
+ * @Param :          WhatC represent which currency we are buying and WithC represent the currency
+ *                   with which we are buying (WhatC =) EUR / (WithC =) USD means that we buying Euro
+ *                   with Dollars the price of this currency is the value of 1 Euro expressed in dollar. 
+ * 
+ * Type of orders : You send a bid order if you want to buy a security at a given price.
+ *                  You send a ask order if you want to sell a security.
+ *                
+ * Limit order :    Limit order are left open during a certain period of time and are match if the currency
+ *                  reach the given price.  
+ * 
+ * Market order :   Those orders are immediately executed at the current price 
+ * 
+ */
 abstract class LimitOrder extends Order
 
 case class LimitBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
