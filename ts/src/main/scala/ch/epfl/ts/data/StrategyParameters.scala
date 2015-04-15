@@ -2,6 +2,10 @@ package ch.epfl.ts.data
 
 import ch.epfl.ts.data.Currency.Currency
 import scala.reflect.ClassTag
+import scala.concurrent.duration.TimeUnit
+import scala.concurrent.duration.{ MILLISECONDS => MillisecondsUnit }
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.DurationLong
 
 
 /**
@@ -95,7 +99,7 @@ abstract class Parameter[T](val name: String) {
  */
 trait ParameterTrait[T] {
   /** Make a new instance of the associated parameter */
-  def getInstance(v: T): Parameter[T]
+  def getInstance(v: Any): Parameter[T]
   
   /** Name of this parameter type */
   def name: String = this.getClass.getName
@@ -164,7 +168,7 @@ object NaturalNumberParameter extends ParameterTrait[Int] {
   /**
    * Coefficient must lie in { 0, 1, ... }
    */
-  def isValid(v: Int): Boolean = (v >= 1) 
+  def isValid(v: Int): Boolean = (v >= 0) 
   
   def validValues: Iterable[Int] = {
     // Lazily enumerates values from 0 to +inf
@@ -173,6 +177,43 @@ object NaturalNumberParameter extends ParameterTrait[Int] {
   }
   
   def defaultValue = 0
+}
+
+
+
+/**
+ * Parameter representing a duration.
+ * 
+ * @param duration
+ * @param unit Defaults to milliseconds
+ */
+case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter[FiniteDuration]("Time") {
+  def this(duration: Long) = this(duration, MillisecondsUnit)
+	def this(duration: FiniteDuration) = this(duration.length, duration.unit)
+  
+  def companion = TimeParameter
+  def get(): FiniteDuration = FiniteDuration(duration, unit)
+}
+
+object TimeParameter extends ParameterTrait[FiniteDuration] {
+  import scala.language.postfixOps
+  
+  def getInstance(v: Long) = new TimeParameter(v)
+  def getInstance(v: Long, u: TimeUnit) = new TimeParameter(v, u)
+  def getInstance(d: FiniteDuration) = new TimeParameter(d)
+  
+  /**
+   * Duration must be positive or null
+   */
+  def isValid(v: Long): Boolean = (v >= 0) 
+  
+  def validValues: Iterable[FiniteDuration] = {
+    // Lazily enumerates values from 0 to +inf
+    val s: Stream[FiniteDuration] = (0L milliseconds) #:: ( s map { d => FiniteDuration((d.length + 1), d.unit) } )
+    s
+  }
+  
+  def defaultValue = (0L milliseconds)
 }
 
 

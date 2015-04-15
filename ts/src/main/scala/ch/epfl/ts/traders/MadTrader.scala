@@ -1,8 +1,7 @@
 package ch.epfl.ts.traders
 
-import scala.language.postfixOps
 import scala.util.Random
-import scala.concurrent.duration.DurationLong
+import scala.concurrent.duration.FiniteDuration
 import ch.epfl.ts.data.LimitAskOrder
 import ch.epfl.ts.data.LimitBidOrder
 import ch.epfl.ts.data.Order
@@ -15,6 +14,7 @@ import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.TimeParameter
 
 /**
  * Required and optional parameters used by this strategy
@@ -56,8 +56,8 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
   // TODO: this initial order Id should be unique in the system
   var orderId = 4567
   
-  val initialDelay: Long = parameters.getOrDefault(MadTrader.INITIAL_DELAY, TimeParameter)
-  val interval: Long = parameters.get(MadTrader.INTERVAL)
+  val initialDelay: FiniteDuration = parameters.getOrDefault(MadTrader.INITIAL_DELAY, TimeParameter)
+  val interval: FiniteDuration = parameters.get(MadTrader.INTERVAL)
   val volume: Int = parameters.get(MadTrader.ORDER_VOLUME)
   val volumeVariation: Double = parameters.get(MadTrader.ORDER_VOLUME_VARIATION)
   val currencies: (Currency.Currency, Currency.Currency) = parameters.get(MadTrader.INTERVAL)
@@ -90,6 +90,6 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
    * When simulation is started, plan ahead the next random trade
    */
   override def start = {
-    system.scheduler.schedule(initialDelay milliseconds, interval milliseconds, self, SendMarketOrder)
+    system.scheduler.schedule(initialDelay, interval, self, SendMarketOrder)
   }
 }

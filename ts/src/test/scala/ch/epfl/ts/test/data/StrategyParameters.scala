@@ -1,16 +1,19 @@
 package ch.epfl.ts.test.data
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import org.scalatest.FunSuite
-import ch.epfl.ts.data.Currency
+import scala.language.postfixOps
 import scala.util.Try
-import ch.epfl.ts.data.CurrencyPairParameter
-import ch.epfl.ts.data.StrategyParameters
+import org.junit.runner.RunWith
+import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
+import scala.concurrent.duration.DurationLong
 import ch.epfl.ts.data.CoefficientParameter
+import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.Parameter
 import ch.epfl.ts.data.ParameterTrait
-import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.TimeParameter
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -104,6 +107,12 @@ class StrategyParametersTests extends FunSuite {
       List(0, 10, 1000, 1337),
       List(-1, -10, -1337)
     )
+    
+  testConcreteParameter(
+  		TimeParameter,
+  		List(0L hours, 10L seconds, 1L milliseconds, 1337L milliseconds),
+  		List(-1L seconds, -1000L milliseconds)
+  	)
     
   testConcreteParameter(
       CurrencyPairParameter,
