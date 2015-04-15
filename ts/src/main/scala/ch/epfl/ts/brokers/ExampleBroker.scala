@@ -78,8 +78,7 @@ class ExampleBroker extends Component with ActorLogging {
     }
 
     //TODO(sygi): refactor charging the wallet/placing an order
-    //TODO(sygi): other orders
-    case o: MarketBidOrder => {
+    case o: Order => {
       log.debug("Broker: received order")
       val replyTo = sender
       val uid = o.chargedTraderId()
@@ -102,9 +101,9 @@ class ExampleBroker extends Component with ActorLogging {
     case Transaction(mid, price, volume, timestamp, whatC, withC, buyerId, buyOrderId, sellerId, sellOrderId) => {
       log.debug("Broker: received transaction: " + buyerId + " " + sellerId)
       if (mapping.contains(buyerId)){
-        //TODO(sygi): refactor charging wallet
+        //TODO(sygi): refactor charging wallet (implement addToWallet function)
         val replyTo = mapping.getOrElse(buyerId, null)
-        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume * price), { //TODO(sygi): times or divided by price?
+        executeForWallet(buyerId, FundWallet(buyerId, whatC, volume / price), {
           case WalletConfirm(uid) => {
             log.debug("Broker: Transaction executed")
             replyTo ! WalletConfirm(uid) //TODO(sygi): change to some better information (or don't inform at all, as everybody gets Transaction)
@@ -116,6 +115,9 @@ class ExampleBroker extends Component with ActorLogging {
     }
     case p => log.debug("Broker: received unknown " + p)
   }
+
+  //TODO(sygi) - implement it
+  //def addToWallet(uid: Long, currency: Currency, amount: Double, messageOnSuccess: Option[Any], messageOnFailure: Option[Any])
 
   def executeForWallet(uid: Long, question: WalletState, f: PartialFunction[Any, Unit]) = {
     context.child("wallet" + uid) match {

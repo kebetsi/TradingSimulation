@@ -42,7 +42,7 @@ trait Chargeable {
  * @param volume
  * @param price
  */
-abstract class Order() extends Streamable {
+abstract class Order() extends Streamable with Chargeable {
   def oid: Long
   def uid: Long
   def timestamp: Long
@@ -50,6 +50,9 @@ abstract class Order() extends Streamable {
   def withC: Currency
   def volume: Double
   def price: Double
+  override def costValue(): Double = volume
+  override def costCurrency() = withC
+  override def chargedTraderId() = uid
 }
 
 abstract class LimitOrder extends Order
@@ -63,11 +66,7 @@ case class LimitAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val 
 abstract class MarketOrder extends Order
 
 case class MarketBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
-  extends MarketOrder with Chargeable {
-  override def costValue(): Double = volume
-  override def costCurrency() = withC
-  override def chargedTraderId() = uid
-}
+  extends MarketOrder
 
 case class MarketAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends MarketOrder
