@@ -29,7 +29,6 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
   override def receiver = {
     case q: Quote => {
       log.debug("TraderWithB receided a quote: " + q)
-
     }
     case ConfirmRegistration => {
       broker = sender()
@@ -45,6 +44,10 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
       if (uid != tid)
         log.error("TraderWithB: Broker replied to the wrong trader")
       log.debug("TraderWithB: Got a wallet confirmation")
+    }
+
+    case _: ExecutedOrder => {
+      log.debug("TraderWithB: Got an executed order")
     }
 
     case 'sendTooBigOrder => {
@@ -71,10 +74,11 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
 
   def placeOrder(order: MarketOrder) = {
     implicit val timeout = new Timeout(500 milliseconds)
-    val future = (broker ? order).mapTo[WalletState]
+    val future = (broker ? order).mapTo[Order]
     future onSuccess {
-      case WalletConfirm(uid) => log.debug("TraderWithB: order placement succeeded")
-      case WalletInsufficient(uid) => log.debug("TraderWithB: order failed")
+      case _: AcceptedOrder => log.debug("TraderWithB: order placement succeeded")
+      case _: RejectedOrder => log.debug("TraderWithB: order failed")
+      case _ => log.debug("TraderWithB: unknown order response")
     }
     future onFailure {
       case p => log.debug("Wallet command failed: " + p)

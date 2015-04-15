@@ -57,7 +57,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
         }
         EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 0) intercept {
           EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {
-            broker ! GetWalletFunds(15L) //this causes dead letters, as broker replies
+            trader ! 'knowYourWallet
           }
         }
       }
@@ -90,7 +90,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
     }
     " place the order" in {
       within(1 second) {
-        EventFilter.debug(message = "TraderWithB: Got a wallet confirmation", occurrences = 1) intercept {
+        EventFilter.debug(message = "TraderWithB: Got an executed order", occurrences = 1) intercept {
           EventFilter.debug(message = "Broker: received order", occurrences = 1) intercept {
             EventFilter.debug(message = "TraderWithB: order placement succeeded", occurrences = 1) intercept {
               trader ! 'sendMarketOrder
@@ -122,7 +122,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
     " reply to the broker" in {
       within(1 second){
         EventFilter.debug(message = "Broker: Transaction executed", occurrences = 1) intercept {
-          EventFilter.debug(message = "TraderWithB: Got a wallet confirmation", occurrences = 1) intercept {
+          EventFilter.debug(message = "TraderWithB: Got an executed order", occurrences = 1) intercept {
             trader ! 'sendMarketOrder
           }
         }
