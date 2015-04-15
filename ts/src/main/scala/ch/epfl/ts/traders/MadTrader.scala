@@ -14,6 +14,7 @@ import ch.epfl.ts.data.CurrencyPairParameter
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.CoefficientParameter
+import ch.epfl.ts.data.NaturalNumberParameter
 
 /**
  * Required and optional parameters used by this strategy
@@ -35,7 +36,7 @@ object MadTrader extends TraderCompanion {
   
   override def requiredParameters: Map[Key, ParameterTrait[_]] = Map(
       INTERVAL -> TimeParameter,
-      ORDER_VOLUME -> IntParameter,
+      ORDER_VOLUME -> NaturalNumberParameter,
       CURRENCY_PAIR -> CurrencyPairParameter
     )
   override def optionalParameters: Map[Key, ParameterTrait[_]] = Map(

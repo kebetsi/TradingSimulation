@@ -151,6 +151,33 @@ object CoefficientParameter extends ParameterTrait[Double] {
 
 
 /**
+ * Parameter representing a floating point coefficient in range [0; 1]
+ */
+case class NaturalNumberParameter(natural: Int) extends Parameter[Int]("NaturalNumber") {  
+  def companion = NaturalNumberParameter
+  def get(): Double = natural
+}
+
+object NaturalNumberParameter extends ParameterTrait[Int] {
+  def getInstance(v: Int) = new NaturalNumberParameter(v)
+  
+  /**
+   * Coefficient must lie in { 0, 1, ... }
+   */
+  def isValid(v: Int): Boolean = (v >= 1) 
+  
+  def validValues: Iterable[Int] = {
+    // Lazily enumerates values from 0 to +inf
+    val s: Stream[Int] = 0 #:: (s map (x => x + 1))
+    s
+  }
+  
+  def defaultValue = 0
+}
+
+
+
+/**
  * Parameter representing a pair of currencies to be traded.
  */
 case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter[(Currency, Currency)]("CurrencyPair") {  

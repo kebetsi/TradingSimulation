@@ -10,6 +10,7 @@ import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Parameter
 import ch.epfl.ts.data.ParameterTrait
+import ch.epfl.ts.data.NaturalNumberParameter
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -25,6 +26,7 @@ class StrategyParametersTests extends FunSuite {
   
   /** Generic function to test basic functionality expected from Parameter subclasses */
   def testConcreteParameter[T](parameterTrait: ParameterTrait[T], validValues: Iterable[T], invalidValues: Iterable[T]) = {
+    
     test(parameterTrait + " should give back the value it was instantiated with") {
       for {
         myValue <- validValues
@@ -95,6 +97,12 @@ class StrategyParametersTests extends FunSuite {
       CoefficientParameter,
       List(0.058924379237491379, 0.0, 1.0),
       List(-1.0, -0.0001, 1.000001)
+    )
+  
+  testConcreteParameter(
+      NaturalNumberParameter,
+      List(0, 10, 1000, 1337),
+      List(-1, -10, -1337)
     )
     
   testConcreteParameter(
