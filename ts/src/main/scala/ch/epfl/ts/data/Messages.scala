@@ -23,6 +23,14 @@ trait Streamable
  */
 case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long, whatC: Currency, withC: Currency, buyerId: Long, buyOrderId: Long, sellerId: Long, sellOrderId: Long) extends Streamable
 
+/**
+ * Trait representing an object that causes placing a charge on the wallet.
+ */
+trait Chargeable {
+  def costValue(): Double
+  def costCurrency(): Currency
+  def chargedTraderId(): Long
+}
 
 /**
  * Data Transfer Object representing a Order
@@ -34,7 +42,7 @@ case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long
  * @param volume
  * @param price
  */
-abstract class Order() extends Streamable {
+abstract class Order() extends Streamable with Chargeable {
   def oid: Long
   def uid: Long
   def timestamp: Long
@@ -42,6 +50,9 @@ abstract class Order() extends Streamable {
   def withC: Currency
   def volume: Double
   def price: Double
+  override def costValue(): Double = volume
+  override def costCurrency() = withC
+  override def chargedTraderId() = uid
 }
 
 abstract class LimitOrder extends Order
@@ -87,3 +98,11 @@ case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Curren
  * @param author
  */
 case class Tweet(timestamp: Long, content: String, sentiment: Int, imagesrc: String, author: String) extends Streamable
+
+/**
+ * Messages that are used for the communication between broker and its agents
+ * TODO(sygi): put this in separate file
+ */
+case class Register(traderId: Long)
+
+case class ConfirmRegistration()

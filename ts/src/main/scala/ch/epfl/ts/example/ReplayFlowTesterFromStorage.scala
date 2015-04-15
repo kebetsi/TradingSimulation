@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
  */
 object ReplayFlowTesterFromStorage {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("ReplayFlowTesterSystem")
+    val builder = new ComponentBuilder("ReplayFlowTesterSystem")
 
     // Initialize the Interface to DB
     val btceXactPersit = new TransactionPersistor("btce-transaction-db")
@@ -29,7 +29,7 @@ object ReplayFlowTesterFromStorage {
     val replayer = builder.createRef(Props(classOf[Replay[Transaction]], btceXactPersit, replayConf, implicitly[ClassTag[Transaction]]), "replayer")
 
     // Create the connections
-    replayer.addDestination(printer, classOf[Transaction])
+    replayer->(printer, classOf[Transaction])
 
     // Start the system
     builder.start

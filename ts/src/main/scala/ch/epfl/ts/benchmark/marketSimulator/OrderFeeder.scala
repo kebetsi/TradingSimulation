@@ -1,6 +1,6 @@
 package ch.epfl.ts.benchmark.marketSimulator
 
-import ch.epfl.ts.component.{Component, StartSignal}
+import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.Order
 
@@ -12,13 +12,13 @@ case class LastOrder(val oid: Long, val uid: Long, val timestamp: Long, val what
  * that there are no more orders to process.
  */
 class OrderFeeder(orders: List[Order]) extends Component {
+	def receiver = {
+		case _ =>
+	}
 
-  def receiver = {
-    case StartSignal => {
-      val ordersSent = orders :+ LastOrder(0L, 0L, System.currentTimeMillis(), DEF, DEF, 0.0, 0.0)
-      send(StartSending(orders.size))
-      ordersSent.map { o => send(o) }
-    }
-    case _ => println("OrderFeeder: unknown received")
+  override def start = {
+    val ordersSent = orders :+ LastOrder(0L, 0L, System.currentTimeMillis(), DEF, DEF, 0.0, 0.0)
+    send(StartSending(orders.size))
+    ordersSent.map { o => send(o) }
   }
 }

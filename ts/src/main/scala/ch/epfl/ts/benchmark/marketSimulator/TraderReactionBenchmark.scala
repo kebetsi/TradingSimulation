@@ -20,7 +20,7 @@ object TraderReactionBenchmark {
     orders = LimitBidOrder(0L, 0L, System.currentTimeMillis(), BTC, USD, 50.0, 50.0) :: orders
 
     // create factory
-    implicit val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
+    val builder = new ComponentBuilder("MarketSimulatorBenchmarkSystem")
 
     // Persistor
     val persistor = new TransactionPersistor("bench-persistor")
@@ -35,20 +35,16 @@ object TraderReactionBenchmark {
 
     // Create Connections
     //orders
-    orderFeeder.addDestination(market, classOf[LimitAskOrder])
-    orderFeeder.addDestination(market, classOf[LimitBidOrder])
-    orderFeeder.addDestination(market, classOf[MarketAskOrder])
-    orderFeeder.addDestination(market, classOf[MarketBidOrder])
-    orderFeeder.addDestination(market, classOf[DelOrder])
-    orderFeeder.addDestination(market, classOf[LastOrder])
+    orderFeeder->(market, classOf[LimitAskOrder], classOf[LimitBidOrder],
+      classOf[MarketAskOrder], classOf[MarketBidOrder], classOf[DelOrder], classOf[LastOrder])
     // used to test without the backloop
-//    market.addDestination(trader, classOf[Transaction])
-    market.addDestination(backloop, classOf[Transaction])
-    backloop.addDestination(trader, classOf[Transaction])
-    trader.addDestination(market, classOf[LastOrder])
+//    market->(trader, classOf[Transaction])
+    market->(backloop, classOf[Transaction])
+    backloop->(trader, classOf[Transaction])
+    trader->(market, classOf[LastOrder])
     // start and end signals
-    orderFeeder.addDestination(timeCounter, classOf[StartSending])
-    market.addDestination(timeCounter, classOf[FinishedProcessingOrders])
+    orderFeeder->(timeCounter, classOf[StartSending])
+    market->(timeCounter, classOf[FinishedProcessingOrders])
 
     // start the benchmark
     builder.start

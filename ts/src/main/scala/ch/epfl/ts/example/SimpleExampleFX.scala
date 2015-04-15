@@ -24,7 +24,7 @@ import ch.epfl.ts.engine.RevenueCompute
 
 object SimpleExampleFX {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("simpleFX")
+    val builder = new ComponentBuilder("simpleFX")
     val marketForexId = MarketNames.FOREX_ID
 
     // ----- Creating actors
@@ -56,18 +56,14 @@ object SimpleExampleFX {
     val display = builder.createRef(Props(classOf[RevenueComputeFX], traderNames), "display")
 
     // ----- Connecting actors
-    fxQuoteFetcher.addDestination(forexMarket, classOf[Quote])
-    fxQuoteFetcher.addDestination(ohlcIndicator, classOf[Quote])
+    fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator), classOf[Quote])
 
-    trader.addDestination(forexMarket, classOf[MarketAskOrder])
-    trader.addDestination(forexMarket, classOf[MarketBidOrder])
+    trader -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
-    forexMarket.addDestination(display, classOf[Transaction])
+    forexMarket -> (display, classOf[Transaction])
     
-    maCross.addDestination(trader, classOf[SMA])
-    ohlcIndicator.addDestination(maCross, classOf[OHLC])
-
- 
+    maCross -> (trader, classOf[SMA])
+    ohlcIndicator -> (maCross, classOf[OHLC])
     
     builder.start
   }
