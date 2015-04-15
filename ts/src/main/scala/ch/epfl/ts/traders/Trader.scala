@@ -2,13 +2,16 @@ package ch.epfl.ts.traders
 
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.ParameterTrait
+import ch.epfl.ts.data.StrategyParameters
 
 /**
  * Abstract class to be extended by all concrete Trader implementations.
  * A Trader represents the implementation of a trading strategy.
+ * 
+ * It factorizes parameter handling for concrete trading strategies.
  */
-abstract class Trader extends Component {
-  
+abstract class Trader(parameters: StrategyParameters) extends Component {
+  // TODO: check on instantiation that all mandatory parameters have been provided
 }
 
 /**
@@ -31,7 +34,7 @@ trait TraderCompanion {
    * If the user of the strategy doesn't provide
    * Should not overlap with requiredParameters
    */
-  def optionalParameters: Map[Key, ParameterTrait[_]]
+  def optionalParameters: Map[Key, ParameterTrait[_]] = Map()
   
   def parameters: Map[Key, ParameterTrait[_]] = requiredParameters ++ optionalParameters
 }
