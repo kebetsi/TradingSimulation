@@ -11,7 +11,17 @@ import ch.epfl.ts.data.StrategyParameters
  * It factorizes parameter handling for concrete trading strategies.
  */
 abstract class Trader(parameters: StrategyParameters) extends Component {
-  // TODO: check on instantiation that all mandatory parameters have been provided
+  /** Gives a handle to the companion object */
+  def companion: TraderCompanion
+  
+  /**
+   * On instantiation, check that all mandatory parameters have been provided
+   */
+  for {
+    p <- companion.requiredParameters
+    key = p._1
+    theType = p._2
+  } yield assert(parameters.hasWithType(key, theType), "Trading strategy requires parameter " + key + " with type " + theType)
 }
 
 /**
