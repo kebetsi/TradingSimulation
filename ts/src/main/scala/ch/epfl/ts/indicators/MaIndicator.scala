@@ -18,24 +18,25 @@ abstract class MovingAverage(val value: Map[Int,Double])
 abstract class MaIndicator(periods:List[Int]) extends Component {
 
   var values: MutableList[OHLC] = MutableList[OHLC]()
-  val sortedPeriod=periods.sorted
+  val sortedPeriod = periods.sorted
   val maxPeriod = periods.last
+  
   def receiver = {
-    case o: OHLC       => {
+    case o: OHLC => {
       println("maIndicator: received ohlc: " + o)
-      values += o //
+      values += o
       if (values.size == maxPeriod) {
         val ma = computeMa
         println("maIndicator: sending " + ma)
         send(ma)
-        values=values.tail
+        values = values.tail
       }
     } 
-    case _             =>
+    case _ =>
   }
   
   /**
-   * compute moving average
+   * Compute moving average
    */
   def computeMa : MovingAverage
 
