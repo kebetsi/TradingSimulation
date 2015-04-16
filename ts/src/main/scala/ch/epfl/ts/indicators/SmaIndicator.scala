@@ -1,15 +1,19 @@
 package ch.epfl.ts.indicators
 
-case class SMA(override val value: Double, override val period: Int) extends MA(value, period)
+case class SMA(override val value: Map[Int, Double]) extends MovingAverage(value)
 
 /**
  * Simple moving average indicator
  */
-class SmaIndicator(period: Int) extends MaIndicator(period) {
+class SmaIndicator(periods: List[Int]) extends MaIndicator(periods: List[Int]) {
 
   def computeMa: SMA = {
-    var sma: Double = 0.0
-    values.map { o => sma = sma + o.close }
-    SMA(sma / values.size, period)
+
+    def auxCompute(period: Int): Double = {
+      var sma: Double = 0.0
+      values.takeRight(period).map { o => sma = sma + o.close }
+      sma / period
+    }
+    SMA(periods.map(p => (p -> auxCompute(p))).toMap)
   }
 }
