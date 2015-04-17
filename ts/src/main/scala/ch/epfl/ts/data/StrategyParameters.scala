@@ -12,13 +12,13 @@ import scala.reflect.ClassTag
  * Class behaving much like a map, designed to hold values
  * for a trading strategy's parameters.
  * Each parameter checks the validity of its value on instantiation.
- * 
+ *
  * It can be constructed with an arbitrary number of parameters.
  */
 class StrategyParameters(params: (String, Parameter)*) {
   type Key = String
   val parameters = params.toMap
-  
+
   /**
    * @return True only if the key is available in `parameters`
    */
@@ -32,35 +32,35 @@ class StrategyParameters(params: (String, Parameter)*) {
 	    case Some(p) => (p.companion == companion)
       case _ => false
 	  }
-  
+
   /**
    * Get the value if it is there, otherwise throw an exception.
    * Use it only if you are confident `params` contains the desired key.
    */
   def get[V: ClassTag](key: Key): V = {
     parameters.get(key) match {
-      case Some(p) => p.get() match {
+      case Some(p) => p.value() match {
         case v: V => v
         case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
       }
       case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
     }
   }
-  
+
   /**
    * Similar to what a map's `get` would do.
    * We also perform type checking.
    */
   def getOption[V: ClassTag](key: Key): Option[V] = {
     parameters.get(key) match {
-      case Some(p) => p.get() match {
+      case Some(p) => p.value() match {
         case v: V => Some(v)
         case _ => None
       }
       case _ => None
     }
   }
-  
+
   /**
    * Get the value for this key
    * or fallback on the provided default if:
@@ -72,18 +72,18 @@ class StrategyParameters(params: (String, Parameter)*) {
       case Some(v) => v
       case _ => fallback
     }
-  
+
   def getOrDefault[V: ClassTag](key: Key, parameterType: ParameterTrait{ type T = V }): V =
     getOrElse(key, parameterType.defaultValue)
-  
+
   override def toString: String = {
-    val strings = (for {
+    val strings = for {
       p <- parameters
       key = p._1
-      paramType = p._2.toString()
-      value = p._2.get().toString()
-    } yield key + " (type " + paramType + ") = " + value).toList
-    
+      paramType = p._2.name
+      value = p._2.value().toString()
+    } yield key + " (type " + paramType + ") = " + value
+
     strings.reduce((a, b) => a + '\n' + b)
   }
 }
@@ -98,25 +98,25 @@ class StrategyParameters(params: (String, Parameter)*) {
 abstract class Parameter(val name: String) { self =>
   /** Type of the value this parameter holds */
   type T
-  
+
   /**
    * At construction, ensure that the given value is legal for this parameter.
    */
-  assert(isValid, "Illegal value " + get() + " for strategy parameter " + companion.name)
-  
+  assert(isValid, "Illegal value " + value() + " for strategy parameter " + companion.name)
+
   /** Retrieve the value for this parameter */
-  def get(): T
-  
+  def value(): T
+
   /** The companion object of this parameter */
   def companion: ParameterTrait{ type T = self.T}
-  
+
   /**
    * Whether or not this particle instance has been
    * parameterized with a legal value.
    */
-  def isValid: Boolean = companion.isValid(get())
-  
-  override def toString: String = get() + " (type: " + companion.name + ")"
+  def isValid: Boolean = companion.isValid(value())
+
+  override def toString: String = value() + " (type: " + companion.name + ")"
 }
 
 
@@ -129,13 +129,13 @@ abstract class Parameter(val name: String) { self =>
  */
 trait ParameterTrait { self =>
   type T
-  
+
   /** Make a new instance of the associated parameter */
   def getInstance(v: T): Parameter{ type T = self.T}
-  
+
   /** Name of this parameter type */
   def name: String = this.getClass.getName
-  
+
   /**
    * @return Whether the value is suitable for this parameter
    */
@@ -146,12 +146,12 @@ trait ParameterTrait { self =>
    * TODO: How to handle infinite ranges? Use streams?
    */
   def validValues: Iterable[T]
-  
+
   /**
    * Default value for this parameter
    */
   def defaultValue: T
-  
+
   override def toString = name
 }
 
@@ -163,18 +163,18 @@ trait ParameterTrait { self =>
 case class CoefficientParameter(coefficient: Double) extends Parameter("Coefficient") {
   type T = Double
   def companion = CoefficientParameter
-  def get(): Double = coefficient
+  def value(): Double = coefficient
 }
 
 object CoefficientParameter extends ParameterTrait {
   type T = Double
   def getInstance(v: Double) = new CoefficientParameter(v)
-  
+
   /**
    * Coefficient must lie in [0; 1]
    */
-  def isValid(v: Double): Boolean = (v >= 0.0) && (v <= 1.0) 
-  
+  def isValid(v: Double): Boolean = (v >= 0.0) && (v <= 1.0)
+
   // TODO: handle user-selected resolution for these values
   def validValues: Iterable[Double] = {
     val resolution = 0.01
@@ -182,7 +182,7 @@ object CoefficientParameter extends ParameterTrait {
       n <- 0 to (1 / resolution).toInt
     } yield (n * resolution)
   }
-  
+
   def defaultValue = 1.0
 }
 
@@ -194,20 +194,20 @@ object CoefficientParameter extends ParameterTrait {
 case class NaturalNumberParameter(natural: Int) extends Parameter("NaturalNumber") {
   type T = Int
   def companion = NaturalNumberParameter
-  def get(): Int = natural
+  def value(): Int = natural
 }
 
 object NaturalNumberParameter extends ParameterTrait {
   type T = Int
   def getInstance(v: Int) = new NaturalNumberParameter(v)
-  
+
   /**
    * Coefficient must lie in { 0, 1, ... }
    */
-  def isValid(v: Int): Boolean = (v >= 0) 
-  
+  def isValid(v: Int): Boolean = (v >= 0)
+
   def validValues: Iterable[Int] = Stream.from(0)
-  
+
   def defaultValue = 0
 }
 
@@ -215,7 +215,7 @@ object NaturalNumberParameter extends ParameterTrait {
 
 /**
  * Parameter representing a duration.
- * 
+ *
  * @param duration
  * @param unit Defaults to milliseconds
  */
@@ -223,30 +223,30 @@ case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter("Time
   type T = FiniteDuration
   def this(duration: Long) = this(duration, MillisecondsUnit)
 	def this(duration: FiniteDuration) = this(duration.length, duration.unit)
-  
+
   def companion = TimeParameter
-  def get(): FiniteDuration = FiniteDuration(duration, unit)
+  def value(): FiniteDuration = FiniteDuration(duration, unit)
 }
 
 object TimeParameter extends ParameterTrait {
   import scala.language.postfixOps
-  
+
   type T = FiniteDuration
-  
+
   def getInstance(v: Long) = new TimeParameter(v)
   def getInstance(v: Long, u: TimeUnit) = new TimeParameter(v, u)
   def getInstance(d: FiniteDuration) = new TimeParameter(d)
-  
+
   /**
    * Duration must be positive or null
    */
-  def isValid(v: Long): Boolean = (v >= 0) 
-  def isValid(d: FiniteDuration): Boolean = (d.length >= 0) 
-  
+  def isValid(v: Long): Boolean = (v >= 0)
+  def isValid(d: FiniteDuration): Boolean = (d.length >= 0)
+
   // TODO: user-selected resolution
   def validValues: Iterable[FiniteDuration] =
     Stream.from(0) map { n => (100L * n) milliseconds }
-  
+
   def defaultValue = (0L milliseconds)
 }
 
@@ -255,25 +255,25 @@ object TimeParameter extends ParameterTrait {
 /**
  * Parameter representing a pair of currencies to be traded.
  */
-case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter("CurrencyPair") {  
+case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter("CurrencyPair") {
   type T = (Currency, Currency)
 	def companion = CurrencyPairParameter
-	def get(): (Currency, Currency) = currencies
+	def value(): (Currency, Currency) = currencies
 }
 
 object CurrencyPairParameter extends ParameterTrait {
 	type T = (Currency, Currency)
 	def getInstance(v: T) = new CurrencyPairParameter(v)
-  
+
 	/**
 	 * All currency pairs are acceptable as long as they're not twice the same.
 	 * @TODO: It would be great if we could enforce an order inside the pair, so that we avoid having to handle swapped currency pairs
 	 */
 	def isValid(v: T): Boolean = (v._1 != v._2)
-	
+
 	def validValues: Iterable[T] = {
 		val allCurrencies = Currency.supportedCurrencies()
-				
+
 		// TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
 		for {
 			c1 <- allCurrencies
@@ -281,6 +281,6 @@ object CurrencyPairParameter extends ParameterTrait {
 			if c1 != c2
 		} yield (c1, c2)
 	}
-  
+
   def defaultValue = (Currency.EUR, Currency.CHF)
 }
