@@ -22,18 +22,18 @@ import ch.epfl.ts.data.TimeParameter
 object MadTrader extends TraderCompanion {
   /** Interval between two random trades (in ms) */
 	val INTERVAL = "interval"
-  
+
 	/** Initial delay before the first random trade (in ms) */
   val INITIAL_DELAY = "initial_delay"
-    
+
   /** Volume of currency to trade (in currency unit) */
   val ORDER_VOLUME = "order_volume"
   /** Random variations on the volume (in percentage of the order volume) */
   val ORDER_VOLUME_VARIATION = "order_volume_variation"
-  
+
   /** Which currencies to trade */
   val CURRENCY_PAIR = "currency_pair"
-  
+
   override def requiredParameters: Map[Key, ParameterTrait] = Map(
       INTERVAL -> TimeParameter,
       ORDER_VOLUME -> NaturalNumberParameter,
@@ -43,7 +43,7 @@ object MadTrader extends TraderCompanion {
       INITIAL_DELAY -> TimeParameter,
       ORDER_VOLUME_VARIATION -> CoefficientParameter
   	)
-  
+
   def getInstance(uid: Long, parameters: StrategyParameters): MadTrader = new MadTrader(uid, parameters)
 }
 
@@ -53,12 +53,12 @@ object MadTrader extends TraderCompanion {
 class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
   import context._
   private case object SendMarketOrder
-  
+
   def companion = MadTrader
-  
+
   // TODO: this initial order Id should be unique in the system
   var orderId = 4567
-  
+
   val initialDelay: FiniteDuration = parameters.getOrDefault(MadTrader.INITIAL_DELAY, TimeParameter)
   val interval: FiniteDuration = parameters.get(MadTrader.INTERVAL)
   val volume: Int = parameters.get(MadTrader.ORDER_VOLUME)
@@ -73,15 +73,15 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
     case SendMarketOrder => {
       // Randomize volume and price
       val theVolume = ((1 + volumeVariation * r.nextDouble()) * volume).toInt
-      // TODO: need to set market price here? Since we're using MarketOrder, why do we need price?
-      val thePrice = 10 + r.nextInt(10)
-        
+      // Since we place a Market order, the price set here isn't used
+      val dummyPrice = -1
+
       if (alternate % 2 == 0) {
         println("SimpleTrader: sending market bid order")
-        send[Order](MarketAskOrder(orderId, uid, System.currentTimeMillis(), currencies._1, currencies._2, theVolume, thePrice))
+        send[Order](MarketAskOrder(orderId, uid, System.currentTimeMillis(), currencies._1, currencies._2, theVolume, dummyPrice))
       } else {
         println("SimpleTrader: sending market ask order")
-        send[Order](MarketBidOrder(orderId, uid, System.currentTimeMillis(), currencies._1, currencies._2, theVolume, thePrice))
+        send[Order](MarketBidOrder(orderId, uid, System.currentTimeMillis(), currencies._1, currencies._2, theVolume, dummyPrice))
       }
       alternate = alternate + 1
       orderId = orderId + 1
