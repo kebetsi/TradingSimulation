@@ -25,7 +25,7 @@ class StrategyParametersTests extends FunSuite {
    */
   val legalCurrencies1 = (Currency.EUR, Currency.CHF)
   val legalCurrencies2 = (Currency.GBP, Currency.USD)
-  val illlegalCurrencies = (Currency.GBP, Currency.GBP)
+  val illegalCurrencies = (Currency.GBP, Currency.GBP)
   val legalCoefficient = 0.2342341341
   val illegalCoefficient = -0.2342341341
 
@@ -189,7 +189,7 @@ class StrategyParametersTests extends FunSuite {
   testConcreteParameter(
       CurrencyPairParameter,
       List(legalCurrencies1, legalCurrencies2),
-      List(illlegalCurrencies)
+      List(illegalCurrencies)
     )
 
 
