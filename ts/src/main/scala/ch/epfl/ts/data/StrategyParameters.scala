@@ -21,7 +21,7 @@ class StrategyParameters(params: (String, Parameter[_])*) {
    */
   def get[T : ClassTag](key: Key): Option[T] = {
     parameters.get(key) match {
-      case Some(p) => p.get() match {
+      case Some(p) => p.value() match {
         case v: T => Some(v)
         case _ => None
       }
@@ -68,10 +68,10 @@ abstract class Parameter[T](val name: String) {
   /**
    * At construction, ensure that the given value is legal for this parameter.
    */
-  assert(isValid, "Illegal value " + get() + " for strategy parameter " + companion.name)
+  assert(isValid, "Illegal value " + value() + " for strategy parameter " + companion.name)
   
   /** Retrieve the value for this parameter */
-  def get(): T
+  def value(): T
   
   /** The companion object of this parameter */
   protected def companion: ParameterTrait[T]
@@ -80,9 +80,9 @@ abstract class Parameter[T](val name: String) {
    * Whether or not this particle instance has been
    * parameterized with a legal value.
    */
-  def isValid: Boolean = companion.isValid(get())
+  def isValid: Boolean = companion.isValid(value())
   
-  override def toString: String = get() + " (type: " + companion.name + ")"
+  override def toString: String = value() + " (type: " + companion.name + ")"
 }
 
 
@@ -126,7 +126,7 @@ trait ParameterTrait[T] {
  */
 case class CoefficientParameter(coefficient: Double) extends Parameter[Double]("Coefficient") {  
   def companion = CoefficientParameter
-  def get(): Double = coefficient
+  def value(): Double = coefficient
 }
 
 object CoefficientParameter extends ParameterTrait[Double] {
@@ -155,7 +155,7 @@ object CoefficientParameter extends ParameterTrait[Double] {
  */
 case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter[(Currency, Currency)]("CurrencyPair") {  
 	def companion = CurrencyPairParameter
-	def get(): (Currency, Currency) = currencies
+	def value(): (Currency, Currency) = currencies
 }
 
 object CurrencyPairParameter extends ParameterTrait[(Currency, Currency)] {

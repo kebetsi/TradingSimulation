@@ -16,10 +16,11 @@ class StrategyParametersTests extends FunSuite {
   /**
    * Common test values
    */
-	val currencies1 = (Currency.EUR, Currency.CHF)
-	val currencies2 = (Currency.GBP, Currency.USD)
-  val coefficient1 = 0.2342341341
-  val coefficient2 = -0.2342341341
+  val legalCurrencies1 = (Currency.EUR, Currency.CHF)
+  val legalCurrencies2 = (Currency.GBP, Currency.USD)
+  val illlegalCurrencies = (Currency.GBP, Currency.GBP)
+  val legalCoefficient = 0.2342341341
+  val illegalCoefficient = -0.2342341341
   
   private type CurrencyPair = (Currency.Currency, Currency.Currency)
   
@@ -29,7 +30,7 @@ class StrategyParametersTests extends FunSuite {
       for {
         myValue <- validValues
         parameter = parameterTrait.getInstance(myValue)        
-      } yield assert(parameter.get() == myValue, "Should give back value " + myValue)
+      } yield assert(parameter.value() == myValue, "Should give back value " + myValue)
     }
     
     test(parameterTrait + " should reject invalid values") {
@@ -54,9 +55,9 @@ class StrategyParametersTests extends FunSuite {
   
   test("Should allow to add several parameters at a time") {
     val myParameters = new StrategyParameters(
-      "tradedCurrencies" -> CurrencyPairParameter(currencies1),
-      "someCoefficient" -> CoefficientParameter(coefficient1),
-      "someOtherParameter" -> CurrencyPairParameter(currencies2)
+      "tradedCurrencies" -> CurrencyPairParameter(legalCurrencies1),
+      "someCoefficient" -> CoefficientParameter(legalCoefficient),
+      "someOtherParameter" -> CurrencyPairParameter(legalCurrencies2)
     )
   }
   
@@ -73,25 +74,32 @@ class StrategyParametersTests extends FunSuite {
   }
 
   test("Should fail at instantiation with illegal parameters") {
-	  val attempt = Try(new StrategyParameters("someCoefficient" -> CoefficientParameter(coefficient2)))
-    assert(attempt.isFailure, "Should fail to instantiate a coefficient with value " + coefficient2)
+	  val attempt = Try(new StrategyParameters("someCoefficient" -> CoefficientParameter(illegalCoefficient)))
+    assert(attempt.isFailure, "Should fail to instantiate a coefficient with value " + illegalCoefficient)
   }
   
   test("Should hold the parameters and yield back their values") {
-	  val myParameters = new StrategyParameters(
-      "tradedCurrencies" -> CurrencyPairParameter(currencies1),
-      "someCoefficient" -> CoefficientParameter(coefficient1)
+    val myParameters = new StrategyParameters(
+      "tradedCurrencies" -> CurrencyPairParameter(legalCurrencies1),
+      "someCoefficient" -> CoefficientParameter(legalCoefficient)
     )
     
-    assert(myParameters.get[CurrencyPair]("tradedCurrencies") == Some(currencies1))
-    assert(myParameters.get[Double]("someCoefficient") == Some(coefficient1))
+    assert(myParameters.get[CurrencyPair]("tradedCurrencies") == Some(legalCurrencies1))
+    assert(myParameters.get[Double]("someCoefficient") == Some(legalCoefficient))
+  }
+  
+  test("Should not yield a value if the key asked was never set") {
+    val myParameters = new StrategyParameters("someCoefficient" -> CoefficientParameter(legalCoefficient))
+    
+    val got = myParameters.get[CoefficientParameter]("unknownKey")
+    assert(got == None, "Should yield nothing for an unknown key")
   }
   
   test("Should not yield a value if it doesn't have the expected type") {
-    val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(coefficient1))
-    
-    val got = myParameters.get[CurrencyPair]("tradedCurrencies")
-    assert(got == None, "Should not allow for the wrong type to be retrieved")
+	  val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(legalCoefficient))
+	  
+	  val got = myParameters.get[CurrencyPair]("tradedCurrencies")
+	  assert(got == None, "Should not allow for the wrong type to be retrieved")
   }
   
   test("Should fallback on default if allowed") {
@@ -111,7 +119,7 @@ class StrategyParametersTests extends FunSuite {
     
   testConcreteParameter(
       CurrencyPairParameter,
-      List((Currency.EUR, Currency.CHF), (Currency.GBP, Currency.USD)),
-      List((Currency.EUR, Currency.EUR), (Currency.CHF, Currency.CHF))
+      List(legalCurrencies1, legalCurrencies2),
+      List(illlegalCurrencies)
     )
 }
