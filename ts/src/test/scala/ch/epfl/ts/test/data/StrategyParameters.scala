@@ -60,6 +60,18 @@ class StrategyParametersTests extends FunSuite {
     )
   }
   
+  test("Should have a nice `toString` representation") {
+    val myParameters = new StrategyParameters(
+      "tradedCurrencies" -> CurrencyPairParameter(legalCurrencies1),
+      "someCoefficient" -> CoefficientParameter(legalCoefficient)
+    )
+    val expected =
+      "tradedCurrencies (type CurrencyPair) = " + legalCurrencies1 + "\n" +
+      "someCoefficient (type Coefficient) = " + legalCoefficient
+     
+    assert(myParameters.toString().equals(expected), "\n" + myParameters + "\n Should equal:\n" + expected);
+  }
+
   test("Should fail at instantiation with illegal parameters") {
 	  val attempt = Try(new StrategyParameters("someCoefficient" -> CoefficientParameter(coefficient2)))
     assert(attempt.isFailure, "Should fail to instantiate a coefficient with value " + coefficient2)

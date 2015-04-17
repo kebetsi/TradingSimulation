@@ -45,12 +45,12 @@ class StrategyParameters(params: (String, Parameter[_])*) {
     getOrElse(key, parameterType.defaultValue)
   
   override def toString: String = {
-    val strings = (for {
+    val strings = for {
       p <- parameters
       key = p._1
-      paramType = p._2.toString()
-      value = p._2.get().toString()
-    } yield key + " (type " + paramType + ") = " + value).toList
+      paramType = p._2.name
+      value = p._2.value().toString()
+    } yield key + " (type " + paramType + ") = " + value
     
     strings.reduce((a, b) => a + '\n' + b)
   }
