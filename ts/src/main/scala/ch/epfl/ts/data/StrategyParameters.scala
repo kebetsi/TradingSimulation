@@ -41,9 +41,9 @@ class StrategyParameters(params: (String, Parameter)*) {
     parameters.get(key) match {
       case Some(p) => p.value() match {
         case v: V => v
-        case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
+        case _ => throw new IndexOutOfBoundsException("Key `" + key + "` was not found.")
       }
-      case _ => throw new IndexOutOfBoundsException("Key " + key + " with expected type was not found.")
+      case _ => throw new IndexOutOfBoundsException("Key `" + key + "` was not found.")
     }
   }
 
