@@ -15,16 +15,12 @@ import ch.epfl.ts.engine.{ForexMarketRules, MarketFXSimulator, GetWalletFunds}
 import ch.epfl.ts.component.fetch.MarketNames
 import akka.util.Timeout
 import ch.epfl.ts.data.Quote
+import ch.epfl.ts.test.TestHelpers
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-/**
- * Created by sygi on 07.04.15.
- */
-class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest", ConfigFactory.parseString(
-  """
-  akka.loglevel = "DEBUG"
-  akka.loggers = ["akka.testkit.TestEventListener"]
-  """
-)))
+class BrokerInteractionTest
+    extends TestKit(TestHelpers.makeTestActorSystem("BrokerInteractionTest"))
     with WordSpecLike {
 
   val marketID = 1L
