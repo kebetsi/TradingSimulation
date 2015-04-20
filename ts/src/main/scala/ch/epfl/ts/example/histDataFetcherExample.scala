@@ -24,7 +24,7 @@ object histDataFetcherExample {
     
     // Create Components
     // build fetcher
-    val builtFetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate),"histFetcher1")    
+    val builtFetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 60.0),"histFetcher1")    
     // build printer
     val builtPrinter = builder.createRef(Props(classOf[Printer], "printer1"), "printer1")
 

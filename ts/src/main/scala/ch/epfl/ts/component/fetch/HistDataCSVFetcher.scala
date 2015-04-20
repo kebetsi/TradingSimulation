@@ -28,13 +28,21 @@ import java.util.TimerTask
  *                      if start is set to 2013-04-24 14:34 the fetcher will start reading the first quote available
  *                      in the data file for April 2013 (as if start was set to 2013-04-01 00:00).
  * @param end           Until when to read. Behaves analogous to start, i.e. if end is set to 2013-06-24 14:34
- *                      the fetcher will still read and send all data in June 2013, as if end was set to 2013-06-30 24:00                    
+ *                      the fetcher will still read and send all data in June 2013, as if end was set to 2013-06-30 24:00 
+ * @param speed         The speed at which the fetcher will fetch quotes. Defaults to 1 (which means quotes are replayed
+ *                      as they were recorded). Can be set e.g. to 2 (time runs twice as fast) or 60 (one hour of historical
+ *                      quotes is sent in one minute), etc. Time steps are dT = int(1/speed * dT_historical), in milliseconds.
+ *                      Accordingly: be careful with high speeds, if e.g. speed=1000 the system can't make the difference
+ *                      between dT_historical=4200 and dT_historical=4900, they will be both sent after 4ms in the simulation.
+ *                      If we go even higher, dT will become < 1 and thus 0, which in theory would mean send all the quotes
+ *                      you read at the same time, but in practice would probably f*ck things.
  */
 
 class HistDataCSVFetcher(dataDir: String, 
                          currencyPair: String, 
                          start: Date, 
-                         end: Date
+                         end: Date,
+                         speed: Double = 1.0
                         ) 
                          extends PushFetchComponent[Quote] {
   
@@ -73,7 +81,7 @@ class HistDataCSVFetcher(dataDir: String,
         
         //send the quote and schedule next call
         callback(currQ)
-        timer.schedule(new SendQuotes(), nextQ.timestamp - currQ.timestamp)
+        timer.schedule(new SendQuotes(), (1/speed*(nextQ.timestamp - currQ.timestamp)).toInt)
       } else {
         timer.cancel();
       }
