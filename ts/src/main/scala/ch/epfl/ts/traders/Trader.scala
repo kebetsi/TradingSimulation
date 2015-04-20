@@ -39,12 +39,17 @@ abstract class Trader(parameters: StrategyParameters) extends Component {
  */
 trait TraderCompanion {
   type Key = String
+  
   /**
    * Abstract type which needs to be set by companions to the
    * concrete Trader class they accompany
    */
   type ConcreteTrader <: Trader
-  //implicit def concreteTraderTag = reflect.classTag[ConcreteTrader]
+  /**
+   * Needed to overcome type erasure.
+   * @example `override protected val concreteTraderTag = scala.reflect.classTag[MadTrader]`
+   */
+  protected implicit def concreteTraderTag: ClassTag[ConcreteTrader]
   
   /**
    * Check that the given parameters are valid with respect to what is declared by this strategy,
@@ -60,14 +65,13 @@ trait TraderCompanion {
   
   /**
    * Provide a new instance of the concrete trading strategy using these parameters.
-   * To be overriden for each concrete TraderCompanion.
+   * Can be overriden by concrete TraderCompanion, but the generic implementation should be sufficient.
    */
   // TODO: need to use the implicit actor system, or the ComponentBuilder or something
-  protected def getConcreteInstance[T <: ConcreteTrader : ClassTag](builder: ComponentBuilder,
+  protected def getConcreteInstance(builder: ComponentBuilder,
                                     uid: Long, parameters: StrategyParameters,
-                                    name: String) = { // (implicit evidence: ClassTag[ConcreteTrader])
-    val evidence = implicitly[ClassTag[T]]
-    builder.createRef(Props(evidence.runtimeClass, uid, parameters), name)
+                                    name: String) = {
+    builder.createRef(Props(concreteTraderTag.runtimeClass, uid, parameters), name)
   }
   
   /**

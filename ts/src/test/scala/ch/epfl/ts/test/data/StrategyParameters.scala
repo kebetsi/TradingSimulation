@@ -68,7 +68,7 @@ class StrategyParametersTests extends FunSuite {
    * behavior when instantiated with correct & incorrect parameters
    */
   def testConcreteStrategy(strategyCompanion: TraderCompanion) = {
-    implicit val builder = new ComponentBuilder("ConcreteStrategy test")
+    implicit val builder = new ComponentBuilder("ConcreteStrategyTest")
     
     def make(p: StrategyParameters) = strategyCompanion.getInstance(42, p)
     val emptyParameters = new StrategyParameters()

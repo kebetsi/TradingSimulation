@@ -23,9 +23,6 @@ import ch.epfl.ts.component.ComponentBuilder
 class MadTraderTest
   extends TestKit(TestHelpers.makeTestActorSystem("MadTraderTest"))
   with FunSuiteLike {
-
-  // TODO: refactor all Akka-oriented test helpers into a trait
-  implicit val builder = new ComponentBuilder("MadTraderTest")
   
   val traderId = 42L
   val emptyParameters = new StrategyParameters()
@@ -34,16 +31,7 @@ class MadTraderTest
       MadTrader.INTERVAL -> new TimeParameter(1 seconds),
       MadTrader.ORDER_VOLUME -> NaturalNumberParameter(100)
   )
-    
-  test("Should not allow instantiation without any parameters") {
-    val attempt = Try( MadTrader.getInstance(traderId, emptyParameters) )
-    assert(attempt.isFailure)
-  }
   
-  test("Should allow instantiation with only required parameters") {
-    val trader = MadTrader.getInstance(traderId, legalParameters, "MyMadTrader")
-    assert(trader.name === "MyMadTrader")
-	  //val attempt = Try( MadTrader.getInstance(traderId, legalParameters) )
-		//assert(attempt.isSuccess)
-  }
+  
+  // TODO: refactor generic strategy testing from `StrategyParameter` test suite
 }

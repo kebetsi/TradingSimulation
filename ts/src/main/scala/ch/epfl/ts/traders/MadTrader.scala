@@ -22,6 +22,7 @@ import ch.epfl.ts.component.ComponentBuilder
  */
 object MadTrader extends TraderCompanion {
   type ConcreteTrader = MadTrader
+  override protected val concreteTraderTag = scala.reflect.classTag[MadTrader]
   
   /** Interval between two random trades (in ms) */
 	val INTERVAL = "interval"
