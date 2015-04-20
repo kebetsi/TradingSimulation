@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
  * This system should instantiate a histDataCSVFetcher and 
  * display the fetched data live on the command line
  */
-object histDataFetcherExample {
+object HistDataFetcherExample {
   def main(args: Array[String]) {
     implicit val builder = new ComponentBuilder("histFetcherShowcase")
 
@@ -19,7 +19,7 @@ object histDataFetcherExample {
     val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
     val startDate = dateFormat.parse("201304");
     val endDate   = dateFormat.parse("201305");
-    val workingDir = "/Users/dmeier/data";
+    val workingDir = "./data";
     val currencyPair = "EURCHF";
     
     // Create Components
