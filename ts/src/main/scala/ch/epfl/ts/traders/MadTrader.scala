@@ -32,7 +32,7 @@ object MadTrader extends TraderCompanion {
 
   /** Volume of currency to trade (in currency unit) */
   val ORDER_VOLUME = "order_volume"
-  /** Random variations on the volume (in percentage of the order volume) */
+  /** Random variations on the volume (in percentage of the order volume, both above and below `ORDER_VOLUME`) */
   val ORDER_VOLUME_VARIATION = "order_volume_variation"
 
   /** Which currencies to trade */
@@ -74,7 +74,8 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
     case StartSignal => start
     case SendMarketOrder => {
       // Randomize volume and price
-      val theVolume = ((1 + volumeVariation * r.nextDouble()) * volume).toInt
+      val variation = volumeVariation * (r.nextDouble() - 0.5) * 2.0
+      val theVolume = ((1 + variation) * volume).toInt
       // Since we place a Market order, the price set here isn't used
       val dummyPrice = -1
 
