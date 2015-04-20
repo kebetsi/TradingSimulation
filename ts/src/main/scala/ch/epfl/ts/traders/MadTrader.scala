@@ -1,20 +1,18 @@
 package ch.epfl.ts.traders
 
-import scala.util.Random
 import scala.concurrent.duration.FiniteDuration
-import ch.epfl.ts.component.StartSignal
+import scala.util.Random
+
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.data.LimitAskOrder
-import ch.epfl.ts.data.LimitBidOrder
-import ch.epfl.ts.data.Order
+import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Currency
-import ch.epfl.ts.data.StrategyParameters
-import ch.epfl.ts.data.ParameterTrait
 import ch.epfl.ts.data.CurrencyPairParameter
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.Order
+import ch.epfl.ts.data.ParameterTrait
+import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.TimeParameter
 
 /**
@@ -61,11 +59,11 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
   // TODO: this initial order ID should be unique in the system
   var orderId = 4567
 
-  val initialDelay: FiniteDuration = parameters.getOrDefault(MadTrader.INITIAL_DELAY, TimeParameter)
-  val interval: FiniteDuration = parameters.get(MadTrader.INTERVAL)
-  val volume: Int = parameters.get(MadTrader.ORDER_VOLUME)
-  val volumeVariation: Double = parameters.get(MadTrader.ORDER_VOLUME_VARIATION)
-  val currencies: (Currency.Currency, Currency.Currency) = parameters.get(MadTrader.INTERVAL)
+  val initialDelay = parameters.getOrDefault[FiniteDuration](MadTrader.INITIAL_DELAY, TimeParameter)
+  val interval = parameters.get[FiniteDuration](MadTrader.INTERVAL)
+  val volume = parameters.get[Int](MadTrader.ORDER_VOLUME)
+  val volumeVariation = parameters.get[Double](MadTrader.ORDER_VOLUME_VARIATION)
+  val currencies = parameters.get[(Currency.Currency, Currency.Currency)](MadTrader.CURRENCY_PAIR)
 
   var alternate = 0
   val r = new Random

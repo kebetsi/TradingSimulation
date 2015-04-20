@@ -32,9 +32,10 @@ class StrategyParameters(params: (String, Parameter)*) {
 
   /**
    * Similar to what a map's `get` would do.
-   * We also perform type checking.
+   * We also perform type checking on the type of the value held by the parameter.
    */
   def getOption[V: ClassTag](key: Key): Option[V] = {
+    println(parameters)
     parameters.get(key) match {
       case Some(p) => p.value() match {
         case v: V => Some(v)
@@ -50,7 +51,10 @@ class StrategyParameters(params: (String, Parameter)*) {
    */
   def get[V: ClassTag](key: Key): V = getOption[V](key) match {
     case Some(v) => v
-    case _ => throw new IndexOutOfBoundsException("Key `" + key + "` was not found.")
+    case None => {
+      val desired = implicitly[ClassTag[V]].runtimeClass
+      throw new IndexOutOfBoundsException("Key `" + key + "` with desired type `" + desired + "` was not found.")
+    }
   }
   
   /**
@@ -214,7 +218,7 @@ object NaturalNumberParameter extends ParameterTrait {
 case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter("Time") {
   type T = FiniteDuration
   def this(duration: Long) = this(duration, MillisecondsUnit)
-	def this(duration: FiniteDuration) = this(duration.length, duration.unit)
+	def this(duration: FiniteDuration) = this(duration.length.toLong, duration.unit)
 
   def companion = TimeParameter
   def value(): FiniteDuration = FiniteDuration(duration, unit)
