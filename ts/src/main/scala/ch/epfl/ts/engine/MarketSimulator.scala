@@ -8,7 +8,6 @@ import ch.epfl.ts.data.Currency.Currency
  * Base class for all market simulators.
  * Defines the interface and common behaviors.
  */
-
 abstract class MarketSimulator(marketId: Long, rules: MarketRules) extends Component {
 
   /**
