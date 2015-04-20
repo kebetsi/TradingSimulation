@@ -48,7 +48,7 @@ class HistDataCSVFetcher(dataDir: String,
    * The centerpiece of this class, where we actually load the data.
    * It contains all quotes this fetcher reads from disk, ready to be fetch()ed
    */
-  val allQuotes = monthsBetweenStartAndEnd.flatMap(m => parse(bidPref+m+".csv", askPref+m+".csv"))
+  val allQuotes: List[Quote] = monthsBetweenStartAndEnd.flatMap(m => parse(bidPref+m+".csv", askPref+m+".csv")).sortBy { q => q.timestamp }
   
   /**
    * Index of the next quote to be fetched, incremented whenever a quote has been fetched
