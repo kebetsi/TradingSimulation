@@ -189,7 +189,7 @@ object CoefficientParameter extends ParameterTrait {
 
 
 /**
- * Parameter representing a floating point coefficient in range [0; 1]
+ * Parameter representing an integer number greater or equal to zero.
  */
 case class NaturalNumberParameter(natural: Int) extends Parameter("NaturalNumber") {
   type T = Int
