@@ -15,11 +15,14 @@ import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.component.ComponentBuilder
 
 /**
  * Required and optional parameters used by this strategy
  */
 object MadTrader extends TraderCompanion {
+  type ConcreteTrader = MadTrader
+  
   /** Interval between two random trades (in ms) */
 	val INTERVAL = "interval"
 
@@ -43,8 +46,6 @@ object MadTrader extends TraderCompanion {
       INITIAL_DELAY -> TimeParameter,
       ORDER_VOLUME_VARIATION -> CoefficientParameter
   	)
-
-  override protected def getConcreteInstance(uid: Long, parameters: StrategyParameters): MadTrader = new MadTrader(uid, parameters)
 }
 
 /**

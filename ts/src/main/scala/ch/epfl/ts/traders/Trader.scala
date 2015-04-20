@@ -1,8 +1,14 @@
 package ch.epfl.ts.traders
 
+import scala.reflect.ClassTag
+
+import akka.actor.Props
 import ch.epfl.ts.component.Component
+import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.component.ComponentRef
 import ch.epfl.ts.data.ParameterTrait
 import ch.epfl.ts.data.StrategyParameters
+import scala.reflect
 
 case class RequiredParameterMissingException(message: String) extends RuntimeException(message)
 
@@ -33,6 +39,12 @@ abstract class Trader(parameters: StrategyParameters) extends Component {
  */
 trait TraderCompanion {
   type Key = String
+  /**
+   * Abstract type which needs to be set by companions to the
+   * concrete Trader class they accompany
+   */
+  type ConcreteTrader <: Trader
+  //implicit def concreteTraderTag = reflect.classTag[ConcreteTrader]
   
   /**
    * Check that the given parameters are valid with respect to what is declared by this strategy,
@@ -41,9 +53,9 @@ trait TraderCompanion {
    * 
    * This is the preferred method to instantiate a Trader, as it will perform parameter checking first. 
    */
-  final def getInstance(uid: Long, parameters: StrategyParameters): Trader = {
+  final def getInstance(uid: Long, parameters: StrategyParameters, name: String = "")(implicit builder: ComponentBuilder): ComponentRef = {
     verifyParameters(parameters)
-    getConcreteInstance(uid, parameters)
+    getConcreteInstance(builder, uid, parameters, name)
   }
   
   /**
@@ -51,7 +63,12 @@ trait TraderCompanion {
    * To be overriden for each concrete TraderCompanion.
    */
   // TODO: need to use the implicit actor system, or the ComponentBuilder or something
-  protected def getConcreteInstance(uid: Long, parameters: StrategyParameters): Trader
+  protected def getConcreteInstance[T <: ConcreteTrader : ClassTag](builder: ComponentBuilder,
+                                    uid: Long, parameters: StrategyParameters,
+                                    name: String) = { // (implicit evidence: ClassTag[ConcreteTrader])
+    val evidence = implicitly[ClassTag[T]]
+    builder.createRef(Props(evidence.runtimeClass, uid, parameters), name)
+  }
   
   /**
    * Parameters for which the user of the strategy *must* provide a value.

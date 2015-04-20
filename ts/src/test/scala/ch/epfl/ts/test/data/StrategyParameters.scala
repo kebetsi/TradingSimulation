@@ -17,6 +17,7 @@ import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.traders.TraderCompanion
 import ch.epfl.ts.traders.MadTrader
 import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.component.ComponentBuilder
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -67,6 +68,8 @@ class StrategyParametersTests extends FunSuite {
    * behavior when instantiated with correct & incorrect parameters
    */
   def testConcreteStrategy(strategyCompanion: TraderCompanion) = {
+    implicit val builder = new ComponentBuilder("ConcreteStrategy test")
+    
     def make(p: StrategyParameters) = strategyCompanion.getInstance(42, p)
     val emptyParameters = new StrategyParameters()
     val required = strategyCompanion.requiredParameters
