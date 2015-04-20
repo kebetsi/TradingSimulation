@@ -70,7 +70,8 @@ class StrategyParametersTests extends FunSuite {
   def testConcreteStrategy(strategyCompanion: TraderCompanion) = {
     implicit val builder = new ComponentBuilder("ConcreteStrategyTest")
     
-    def make(p: StrategyParameters) = strategyCompanion.getInstance(42, p)
+    val traderId = 42L
+    def make(p: StrategyParameters) = strategyCompanion.getInstance(traderId, p, "TraderBeingTested")
     val emptyParameters = new StrategyParameters()
     val required = strategyCompanion.requiredParameters
     val optonal = strategyCompanion.optionalParameters

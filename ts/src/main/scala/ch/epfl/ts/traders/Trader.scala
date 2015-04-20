@@ -58,7 +58,7 @@ trait TraderCompanion {
    * 
    * This is the preferred method to instantiate a Trader, as it will perform parameter checking first. 
    */
-  final def getInstance(uid: Long, parameters: StrategyParameters, name: String = "")(implicit builder: ComponentBuilder): ComponentRef = {
+  final def getInstance(uid: Long, parameters: StrategyParameters, name: String)(implicit builder: ComponentBuilder): ComponentRef = {
     verifyParameters(parameters)
     getConcreteInstance(builder, uid, parameters, name)
   }
