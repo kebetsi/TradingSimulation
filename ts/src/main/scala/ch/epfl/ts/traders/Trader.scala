@@ -18,7 +18,7 @@ case class RequiredParameterMissingException(message: String) extends RuntimeExc
  * 
  * It factorizes parameter handling for concrete trading strategies.
  * 
- * It will throw a `RequiredParmaeterMissingException` on instantiation if any of the
+ * It will throw a `RequiredParameterMissingException` on instantiation if any of the
  * required parameters have not been provided (or have the wrong type).
  */
 abstract class Trader(parameters: StrategyParameters) extends Component {
@@ -99,6 +99,6 @@ trait TraderCompanion {
     p <- requiredParameters
     key = p._1
     theType = p._2
-    if(!parameters.hasWithType(key, theType))
+    if !parameters.hasWithType(key, theType)
   } yield throw new RequiredParameterMissingException("Trading strategy requires parameter " + key + " with type " + theType)
 }

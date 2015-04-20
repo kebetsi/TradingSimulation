@@ -74,9 +74,10 @@ class StrategyParametersTests extends FunSuite {
     def make(p: StrategyParameters) = strategyCompanion.getInstance(traderId, p, "TraderBeingTested")
     val emptyParameters = new StrategyParameters()
     val required = strategyCompanion.requiredParameters
-    val optonal = strategyCompanion.optionalParameters
+    val optional = strategyCompanion.optionalParameters
 
-
+    // TODO: test optional parameters
+    
     /**
      * Strategies not having any required parameter
      */

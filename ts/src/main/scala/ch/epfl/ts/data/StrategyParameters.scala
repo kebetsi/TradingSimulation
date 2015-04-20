@@ -28,24 +28,10 @@ class StrategyParameters(params: (String, Parameter)*) {
    *         AND it has the expected `Parameter` type
    */
   def hasWithType(key: Key, companion: ParameterTrait): Boolean =
-	  parameters.get(key) match {
-	    case Some(p) => (p.companion == companion)
-      case _ => false
-	  }
-
-  /**
-   * Get the value if it is there, otherwise throw an exception.
-   * Use it only if you are confident `params` contains the desired key.
-   */
-  def get[V: ClassTag](key: Key): V = {
     parameters.get(key) match {
-      case Some(p) => p.value() match {
-        case v: V => v
-        case _ => throw new IndexOutOfBoundsException("Key `" + key + "` was not found.")
-      }
-      case _ => throw new IndexOutOfBoundsException("Key `" + key + "` was not found.")
+      case Some(p) => (p.companion == companion)
+      case _ => false
     }
-  }
 
   /**
    * Similar to what a map's `get` would do.
@@ -60,7 +46,16 @@ class StrategyParameters(params: (String, Parameter)*) {
       case _ => None
     }
   }
-
+  
+  /**
+   * Get the value if it is there, otherwise throw an exception.
+   * Use it only if you are confident `params` contains the desired key.
+   */
+  def get[V: ClassTag](key: Key): V = getOption[V](key) match {
+    case Some(v) => v
+    case _ => throw new IndexOutOfBoundsException("Key `" + key + "` was not found.")
+  }
+  
   /**
    * Get the value for this key
    * or fallback on the provided default if:
@@ -111,7 +106,7 @@ abstract class Parameter(val name: String) { self =>
   def companion: ParameterTrait{ type T = self.T}
 
   /**
-   * Whether or not this particle instance has been
+   * Whether or not this particular instance has been
    * parameterized with a legal value.
    */
   def isValid: Boolean = companion.isValid(value())
@@ -267,14 +262,13 @@ object CurrencyPairParameter extends ParameterTrait {
 
 	/**
 	 * All currency pairs are acceptable as long as they're not twice the same.
-	 * @TODO: It would be great if we could enforce an order inside the pair, so that we avoid having to handle swapped currency pairs
+	 * @warning Note that (EUR, CHF) is *not* the same pair as (CHF, EUR)
 	 */
 	def isValid(v: T): Boolean = (v._1 != v._2)
 
 	def validValues: Iterable[T] = {
 		val allCurrencies = Currency.supportedCurrencies()
 
-		// TODO: this leads to "duplicate" pairs, e.g. (EUR, CHF) and (CHF, EUR). Is this desirable?
 		for {
 			c1 <- allCurrencies
 			c2 <- allCurrencies

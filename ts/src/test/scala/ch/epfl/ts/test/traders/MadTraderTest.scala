@@ -33,5 +33,6 @@ class MadTraderTest
   )
   
   
-  // TODO: refactor generic strategy testing from `StrategyParameter` test suite
+  // TODO: refactor generic strategy testing from `StrategyParameter` test suite?
+  // TODO: actual tests for the `MadTrader` strategy (check volume, interval, etc)
 }
