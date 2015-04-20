@@ -52,6 +52,12 @@ class PullFetchListComponent[T: ClassTag](f: PullFetch[T]) extends Component {
 }
 
 /* Actor implementation */
+/**
+ * To implement your own PushFetchComponent:
+ * 1. Create your class C, C extends PushFetchComponent
+ * 2. Inside your class use callback(what you want to send) 
+ *    to send data to components connected to your fetcher
+ */
 class PushFetchComponent[T: ClassTag] extends Component {
   override def receiver = {
     case _ =>
