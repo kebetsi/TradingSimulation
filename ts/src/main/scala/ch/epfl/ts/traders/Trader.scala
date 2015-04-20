@@ -1,14 +1,13 @@
 package ch.epfl.ts.traders
 
+import scala.reflect
 import scala.reflect.ClassTag
-
 import akka.actor.Props
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.ComponentRef
 import ch.epfl.ts.data.ParameterTrait
 import ch.epfl.ts.data.StrategyParameters
-import scala.reflect
 
 case class RequiredParameterMissingException(message: String) extends RuntimeException(message)
 

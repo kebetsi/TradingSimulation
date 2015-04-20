@@ -1,10 +1,7 @@
 package ch.epfl.ts.data
 
 import ch.epfl.ts.data.Currency.Currency
-import scala.concurrent.duration.TimeUnit
-import scala.concurrent.duration.{ MILLISECONDS => MillisecondsUnit }
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration.DurationLong
+import scala.concurrent.duration.{ TimeUnit, FiniteDuration, DurationLong, MILLISECONDS => MillisecondsUnit }
 import scala.reflect.ClassTag
 
 

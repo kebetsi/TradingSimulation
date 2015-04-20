@@ -2,10 +2,11 @@ package ch.epfl.ts.traders
 
 import scala.util.Random
 import scala.concurrent.duration.FiniteDuration
+import ch.epfl.ts.component.StartSignal
+import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.data.LimitAskOrder
 import ch.epfl.ts.data.LimitBidOrder
 import ch.epfl.ts.data.Order
-import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.ParameterTrait
@@ -15,7 +16,6 @@ import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.TimeParameter
-import ch.epfl.ts.component.ComponentBuilder
 
 /**
  * Required and optional parameters used by this strategy

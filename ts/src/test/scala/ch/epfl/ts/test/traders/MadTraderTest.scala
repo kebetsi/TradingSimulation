@@ -1,23 +1,19 @@
 package ch.epfl.ts.test.traders
 
+import scala.concurrent.duration.DurationLong
 import scala.language.postfixOps
-import scala.util.Try
 import org.junit.runner.RunWith
-import org.scalatest.FunSuiteLike
-import org.scalatest.WordSpecLike
 import org.scalatest.junit.JUnitRunner
-import akka.actor.ActorSystem
-import akka.actor.Props
+import org.scalatest.WordSpecLike
 import akka.testkit.TestKit
+import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.data.CurrencyPairParameter
 import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.test.TestHelpers
 import ch.epfl.ts.traders.MadTrader
-import ch.epfl.ts.data.TimeParameter
-import scala.concurrent.duration.DurationLong
-import ch.epfl.ts.component.ComponentBuilder
 
 @RunWith(classOf[JUnitRunner])
 class MadTraderTest

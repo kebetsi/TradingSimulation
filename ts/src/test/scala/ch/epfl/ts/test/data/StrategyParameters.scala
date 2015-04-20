@@ -1,23 +1,21 @@
 package ch.epfl.ts.test.data
 
 import scala.language.postfixOps
+import scala.concurrent.duration.DurationLong
 import scala.util.Try
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import scala.concurrent.duration.DurationLong
-import ch.epfl.ts.data.CoefficientParameter
-import ch.epfl.ts.data.Currency
-import ch.epfl.ts.data.CurrencyPairParameter
-import ch.epfl.ts.data.NaturalNumberParameter
-import ch.epfl.ts.data.Parameter
-import ch.epfl.ts.data.ParameterTrait
-import ch.epfl.ts.data.StrategyParameters
-import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.traders.TraderCompanion
 import ch.epfl.ts.traders.MadTrader
 import ch.epfl.ts.data.StrategyParameters
-import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.data.ParameterTrait
+import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.data.CoefficientParameter
+import ch.epfl.ts.data.Currency
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
