@@ -44,7 +44,7 @@ object MadTrader extends TraderCompanion {
       ORDER_VOLUME_VARIATION -> CoefficientParameter
   	)
 
-  def getInstance(uid: Long, parameters: StrategyParameters): MadTrader = new MadTrader(uid, parameters)
+  override protected def getConcreteInstance(uid: Long, parameters: StrategyParameters): MadTrader = new MadTrader(uid, parameters)
 }
 
 /**
