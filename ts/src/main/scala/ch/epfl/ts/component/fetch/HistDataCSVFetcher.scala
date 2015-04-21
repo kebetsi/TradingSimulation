@@ -40,18 +40,15 @@ import ch.epfl.ts.component.fetch.MarketNames._
  *                      you read at the same time, but in practice would probably mess up things.
  */
 
-class HistDataCSVFetcher(dataDir: String, 
-                         currencyPair: String, 
-                         start: Date, 
-                         end: Date,
-                         speed: Double = 1.0) 
-                        extends PushFetchComponent[Quote] {
+class HistDataCSVFetcher(dataDir: String, currencyPair: String, 
+                         start: Date, end: Date,
+                         speed: Double = 1.0)  extends PushFetchComponent[Quote] {
   
   val workingDir = dataDir + "/" + currencyPair.toUpperCase() + "/";
   val (whatC, withC) = Currency.pairFromString(currencyPair);
   
-  val bidPref = "DAT_NT_"+currencyPair.toUpperCase() + "_T_BID_"
-  val askPref = "DAT_NT_"+currencyPair.toUpperCase() + "_T_ASK_"
+  val bidPref = "DAT_NT_" + currencyPair.toUpperCase() + "_T_BID_"
+  val askPref = "DAT_NT_" + currencyPair.toUpperCase() + "_T_ASK_"
   
   /**
    * The centerpiece of this class, where we actually load the data.
@@ -59,7 +56,7 @@ class HistDataCSVFetcher(dataDir: String,
    */
   val allQuotes: List[Quote] = monthsBetweenStartAndEnd
                                 .flatMap(m => parse(bidPref + m + ".csv", askPref + m + ".csv"))
-                                .sortBy { q => q.timestamp }
+                                .sortBy(q => q.timestamp)
   
   /**
    * Index of the next quote to be fetched, incremented whenever a quote has been fetched
@@ -182,7 +179,7 @@ object CSVParser extends RegexParsers with java.io.Serializable {
   
   def toTime(datestamp: String, timestamp: String): Long = { 
     val stampFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss")    
-    val stamp = stampFormat.parse(datestamp+timestamp)
+    val stamp = stampFormat.parse(datestamp + timestamp)
     stamp.getTime
   }
 }
