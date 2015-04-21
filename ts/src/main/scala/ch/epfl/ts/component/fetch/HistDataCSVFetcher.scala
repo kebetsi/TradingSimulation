@@ -20,17 +20,24 @@ import ch.epfl.ts.component.fetch.MarketNames._
  * 
  * @param dataDir       A directory path containing data files the fetcher can read. Which files are
  *                      actually read is determined by the start and end arguments (see below).
- *                      The directory should contain substructures of the form <currency pair>/<xyz>.csv, e.g.: 
+ *                      The directory should contain substructures of the form <currency pair>/<filename>.csv, e.g.:
  *                      EURCHF/DAT_NT_EURCHF_T_ASK_201304.csv,
  *                      EURCHF/DAT_NT_EURCHF_T_BID_201304.csv,
  *                      ...
  *                      EURUSD/DAT_NT_EURUSD_T_BID_201305.csv, etc.
+ *
+ *                      <filename> is the same name the files have when freshly downloaded from our source,
+ *                      in general they take the form "DAT_NT_<currency pair>_T_<bid/ask>_<month>".
+ *
  * @param currencyPair  The currency pair to be read from the data directory, e.g. "eurchf", "USDCHF", etc.
+ *
  * @param start         From when to read. This can be any date, but will be reduced to its month. That means
  *                      if start is set to 2013-04-24 14:34 the fetcher will start reading the first quote available
  *                      in the data file for April 2013 (as if start was set to 2013-04-01 00:00).
+ *
  * @param end           Until when to read. Behaves analogous to start, i.e. if end is set to 2013-06-24 14:34
  *                      the fetcher will still read and send all data in June 2013, as if end was set to 2013-06-30 24:00 
+ *
  * @param speed         The speed at which the fetcher will fetch quotes. Defaults to 1 (which means quotes are replayed
  *                      as they were recorded). Can be set e.g. to 2 (time runs twice as fast) or 60 (one hour of historical
  *                      quotes is sent in one minute), etc. Time steps are dT = int(1/speed * dT_historical), in milliseconds.
