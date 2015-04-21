@@ -13,4 +13,15 @@ class CurrencyTestSuite extends FunSuite {
     val currencies = Currency.values;
     assert(currencies.forall { c => Currency.fromString(c.toString) == c })
   }
+
+  test("pairFromString handles different case input") {
+    val lowercase = "eurchf"
+    val uppercase = "EURCHF"
+    val mixedcase = "EurChf"
+    assert(
+        Currency.pairFromString(lowercase) == (Currency.EUR, Currency.CHF) &&
+        Currency.pairFromString(uppercase) == (Currency.EUR, Currency.CHF) &&
+        Currency.pairFromString(mixedcase) == (Currency.EUR, Currency.CHF)
+        )
+  }
 }
