@@ -30,4 +30,14 @@ object Currency extends Enumeration {
       }
     }
   }
+  
+  /**
+   * Creates a tuple of currencies given a string
+   *
+   * @param   s   Input string of length six, three characters for each currency. Case insensitive.
+   *              Example: "EURCHF" returns (Currency.EUR, Currency.CHF)
+   */
+  def pairFromString(s: String): (Currency, Currency) = {
+    ( Currency.fromString(s.slice(0, 3)), Currency.fromString(s.slice(3,6)) )
+  }
 }
