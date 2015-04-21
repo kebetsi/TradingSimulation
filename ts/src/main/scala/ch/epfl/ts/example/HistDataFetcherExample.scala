@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
  */
 object HistDataFetcherExample {
   def main(args: Array[String]) {
-    implicit val builder = new ComponentBuilder("histFetcherShowcase")
+    implicit val builder = new ComponentBuilder("HistFetcherExample")
 
     // variables for the fetcher
     val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
@@ -24,12 +24,12 @@ object HistDataFetcherExample {
     
     // Create Components
     // build fetcher
-    val builtFetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 60.0),"histFetcher1")    
+    val fetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 60.0),"HistFetcher")    
     // build printer
-    val builtPrinter = builder.createRef(Props(classOf[Printer], "printer1"), "printer1")
+    val printer = builder.createRef(Props(classOf[Printer], "Printer"), "Printer")
 
     // Create the connection
-    builtFetcher->(builtPrinter, classOf[Quote])
+    fetcher->(printer, classOf[Quote])
 
     // Start the system
     builder.start

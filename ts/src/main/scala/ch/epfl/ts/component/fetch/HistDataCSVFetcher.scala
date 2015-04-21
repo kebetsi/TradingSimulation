@@ -44,23 +44,22 @@ class HistDataCSVFetcher(dataDir: String,
                          currencyPair: String, 
                          start: Date, 
                          end: Date,
-                         speed: Double = 1.0
-                        ) 
-                         extends PushFetchComponent[Quote] {
+                         speed: Double = 1.0) 
+                        extends PushFetchComponent[Quote] {
   
   val workingDir = dataDir + "/" + currencyPair.toUpperCase() + "/";
   val (whatC, withC) = Currency.pairFromString(currencyPair);
   
-  val bidPref = "DAT_NT_"+currencyPair.toUpperCase()+"_T_BID_"
-  val askPref = "DAT_NT_"+currencyPair.toUpperCase()+"_T_ASK_"
+  val bidPref = "DAT_NT_"+currencyPair.toUpperCase() + "_T_BID_"
+  val askPref = "DAT_NT_"+currencyPair.toUpperCase() + "_T_ASK_"
   
   /**
    * The centerpiece of this class, where we actually load the data.
    * It contains all quotes this fetcher reads from disk, ready to be fetch()ed
    */
   val allQuotes: List[Quote] = monthsBetweenStartAndEnd
-                                  .flatMap(m => parse(bidPref+m+".csv", askPref+m+".csv"))
-                                  .sortBy { q => q.timestamp }
+                                .flatMap(m => parse(bidPref + m + ".csv", askPref + m + ".csv"))
+                                .sortBy { q => q.timestamp }
   
   /**
    * Index of the next quote to be fetched, incremented whenever a quote has been fetched
@@ -80,20 +79,22 @@ class HistDataCSVFetcher(dataDir: String,
       if (quoteIndex < allQuotes.length) {
         // Update the iterator variables
         var currQ = allQuotes( quoteIndex )
-        var nextQ = allQuotes( List(quoteIndex+1,allQuotes.length).min )
+        var nextQ = allQuotes( List(quoteIndex + 1, allQuotes.length).min )
         quoteIndex = quoteIndex + 1;
         
         // Send the quote and schedule next call
         callback(currQ)
-        timer.schedule(new SendQuotes(), (1/speed*(nextQ.timestamp - currQ.timestamp)).toInt)
+        timer.schedule(new SendQuotes(), (1 / speed * (nextQ.timestamp - currQ.timestamp)).toInt)
       } else {
         timer.cancel();
       }
     }
   }
   
-  //TODO
-  def loadInPersistor(filename: String) { throw new UnsupportedOperationException("loadInPersistor is not yet implemented."); }
+  // TODO
+  def loadInPersistor(filename: String) {
+    throw new UnsupportedOperationException("loadInPersistor is not yet implemented.");
+  }
   
   /**
    * Finds the months this HistDataCSVFetcher object should fetch, given the class 
@@ -106,11 +107,11 @@ class HistDataCSVFetcher(dataDir: String,
     
     cal.setTime(start)
     val startYear = cal.get(Calendar.YEAR)
-    val startMonth = cal.get(Calendar.MONTH)+1
+    val startMonth = cal.get(Calendar.MONTH) + 1
     
     cal.setTime(end)
     val endYear = cal.get(Calendar.YEAR)
-    val endMonth = cal.get(Calendar.MONTH)+1
+    val endMonth = cal.get(Calendar.MONTH) + 1
     
     List.range(startYear, endYear + 1)
       // For each of these years, extract the valid months
@@ -142,13 +143,14 @@ class HistDataCSVFetcher(dataDir: String,
    * @return                    An iterator of Quotes contained in those two files
    */
   def parse(bidCSVFilename: String, askCSVFilename: String): Iterator[Quote] = {
-    val bidlines = Source.fromFile(workingDir+bidCSVFilename).getLines
-    val asklines = Source.fromFile(workingDir+askCSVFilename).getLines
+    val bidlines = Source.fromFile(workingDir + bidCSVFilename).getLines
+    val asklines = Source.fromFile(workingDir + askCSVFilename).getLines
     bidlines.zip(asklines)
-      .map( l => l._1+" "+l._2 ) //combine bid and ask data into one line
+      // Combine bid and ask data into one line
+      .map( l => l._1 + " " + l._2 )
       .map( l => CSVParser.parse(CSVParser.csvcombo, l).get )
-      // withC and whatC are not available in the CVS  
-      // We add them after parsing (they are in the path to the file opened above)
+      // `withC` and `whatC` are not available in the CVS, we add them back
+      // after parsing (they are in the path to the file opened above)
       .map( q => Quote(q.marketId, q.timestamp, whatC, withC, q.bid, q.ask) );
   }
 }
@@ -166,16 +168,13 @@ object CSVParser extends RegexParsers with java.io.Serializable {
    * 20130331 235953;1.216450;0 20130331 235953;1.216570;0
    * <-bid------csv------part-> <-ask------csv------part->
    */
-  def csvcombo: Parser[Quote] = (
-    datestamp~timestamp~";"~floatingpoint~";0"~datestamp~timestamp~";"~floatingpoint~";0" ^^
-    { case d~t~_~bid~_~d2~t2~_~ask~_ => Quote(MarketNames.FOREX_ID,
-                                              toTime(d, t),
-                                              Currency.DEF,
-                                              Currency.DEF,
-                                              bid.toDouble,
-                                              ask.toDouble) 
+  def csvcombo: Parser[Quote] = {
+    datestamp~timestamp~";"~floatingpoint~";0"~datestamp~timestamp~";"~floatingpoint~";0" ^^ {
+      case d~t~_~bid~_~d2~t2~_~ask~_ => Quote(MarketNames.FOREX_ID, toTime(d, t),
+                                              Currency.DEF, Currency.DEF,
+                                              bid.toDouble, ask.toDouble) 
     }
-  )
+  }
   
   val datestamp: Parser[String] = """[0-9]{8}""".r
   val timestamp: Parser[String] = """[0-9]{6}""".r
