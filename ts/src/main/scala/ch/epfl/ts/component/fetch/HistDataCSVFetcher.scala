@@ -112,14 +112,23 @@ class HistDataCSVFetcher(dataDir: String,
     val endYear = cal.get(Calendar.YEAR)
     val endMonth = cal.get(Calendar.MONTH)+1
     
-    List.range(startYear, endYear+1)
-      .map( year => (year, List.range(1, 12+1)
-      .filter ( month => // Find the months between start and end
-        (startYear != endYear && 
-            ((year > startYear && year < endYear)   || 
-             (year == endYear && month <= endMonth) || 
-             (year == startYear && month >= startMonth)) ) ||
-        (startYear == endYear && month <= endMonth && month >= startMonth) )))
+    List.range(startYear, endYear + 1)
+      // For each of these years, extract the valid months
+      .map(year => {
+        def isMonthInsidePeriod(month: Int): Boolean = {
+          if (startYear != endYear) {
+            (year > startYear  && year < endYear)      || 
+            (year == startYear && month >= startMonth) ||
+            (year == endYear   && month <= endMonth) 
+          }
+          else {
+            (month >= startMonth) && (month <= endMonth)
+          }
+        }
+        
+        val validMonths = List.range(1, 12 + 1).filter(isMonthInsidePeriod)
+        (year, validMonths)
+      })
       // Create one string per month, outputs is e.g. List("201304", "201305", ...)
       .flatMap(l => l._2.map( l2 => l._1.toString + "%02d".format(l2) ))
   }
