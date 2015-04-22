@@ -16,6 +16,7 @@ import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Currency
+import ch.epfl.ts.traders.TransactionVwapTrader
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -198,5 +199,6 @@ class StrategyParametersTests extends FunSuite {
 
   /** Simple tests for strategy's parameterization */
   testConcreteStrategy(MadTrader)
+  testConcreteStrategy(TransactionVwapTrader)
 
 }
