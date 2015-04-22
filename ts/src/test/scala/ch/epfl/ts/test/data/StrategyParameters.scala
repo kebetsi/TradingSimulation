@@ -18,6 +18,7 @@ import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.traders.TransactionVwapTrader
 import ch.epfl.ts.traders.SimpleTraderWithBroker
+import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.data.RealNumberParameter
 
 @RunWith(classOf[JUnitRunner])
@@ -209,5 +210,6 @@ class StrategyParametersTests extends FunSuite {
   testConcreteStrategy(MadTrader)
   testConcreteStrategy(TransactionVwapTrader)
   testConcreteStrategy(SimpleTraderWithBroker)
+  testConcreteStrategy(Arbitrageur)
 
 }
