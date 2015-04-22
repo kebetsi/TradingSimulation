@@ -32,7 +32,7 @@ object TransactionVwapTrader extends TraderCompanion {
  */
 class TransactionVwapTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
   import context._
-  override def companion = MadTrader
+  override def companion = TransactionVwapTrader
   
   case object Tick
 

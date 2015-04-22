@@ -210,7 +210,7 @@ object NaturalNumberParameter extends ParameterTrait {
 /**
  * Parameter representing an real number greater of any sign.
  */
-case class RealNumberParameter(real: Double) extends Parameter("NaturalNumber") {
+case class RealNumberParameter(real: Double) extends Parameter("RealNumber") {
 	type T = Double
 	def companion = RealNumberParameter
 	def value(): Double = real

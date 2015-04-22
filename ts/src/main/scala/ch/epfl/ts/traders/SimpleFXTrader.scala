@@ -47,7 +47,7 @@ class SimpleFXTrader(val uid: Long, parameters: StrategyParameters) extends Trad
   val symbol = parameters.get[(Currency, Currency)](SimpleFXTrader.SYMBOL)
   val shortPeriod = parameters.get[FiniteDuration](SimpleFXTrader.SHORT_PERIOD)
   val longPeriod = parameters.get[FiniteDuration](SimpleFXTrader.LONG_PERIOD)
-  val volume = parameters.get[Double](SimpleFXTrader.VOLUME)
+  val volume = parameters.get[Int](SimpleFXTrader.VOLUME)
   
   /**
    * Boolean flag which indicates when enough indications have been
