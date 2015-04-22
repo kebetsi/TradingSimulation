@@ -1,20 +1,54 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.Component
-import ch.epfl.ts.indicators.MovingAverage
+import scala.concurrent.duration.FiniteDuration
+
 import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Quote }
 import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.indicators.MovingAverage
+
+/**
+ * SimpleFXTrader companion object
+ */
+object SimpleFXTrader extends TraderCompanion {
+  type ConcreteTrader = SimpleFXTrader
+  override protected val concreteTraderTag = scala.reflect.classTag[SimpleFXTrader]
+  
+  /** Currency pair to trade */
+  val SYMBOL = "Symbol"
+  /** Period for the shorter moving average **/
+  val SHORT_PERIOD = "ShortPeriod"
+  /** Period for the longer moving average **/
+  val LONG_PERIOD = "LongPeriod"
+  /** Volume to trade */
+  val VOLUME = "Volume"
+  
+  override def requiredParameters = Map(
+    SYMBOL -> CurrencyPairParameter,
+    SHORT_PERIOD -> TimeParameter,
+    LONG_PERIOD -> TimeParameter,
+    VOLUME -> NaturalNumberParameter
+  )
+}
 
 /**
  * This simple trader will use two moving average and send order when this two MA cross each other.
  * @param shortPeriod Length of the short Moving Average period
  * @param longPeriod Length of the long Moving Average period
  */
-class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
-                    val shortPeriod: Int, val longPeriod: Int,
-                    val volume: Double) extends Component {
-
+class SimpleFXTrader(val uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
+  override def companion = SimpleFXTrader
+  
+  val symbol = parameters.get[(Currency, Currency)](SimpleFXTrader.SYMBOL)
+  val shortPeriod = parameters.get[FiniteDuration](SimpleFXTrader.SHORT_PERIOD)
+  val longPeriod = parameters.get[FiniteDuration](SimpleFXTrader.LONG_PERIOD)
+  val volume = parameters.get[Double](SimpleFXTrader.VOLUME)
+  
   /**
    * Boolean flag which indicates when enough indications have been
    * received to start making decisions (like a buffering mechanism)
@@ -40,11 +74,11 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
 
     case ma: MovingAverage => {
       println("Trader receive MAs")
-      ma.value.get(shortPeriod) match {
+      ma.value.get(shortPeriod.length.toInt) match {
         case Some(x) => currentShort = x
         case None    => println("Missing indicator with period " + shortPeriod)
       }
-      ma.value.get(longPeriod) match {
+      ma.value.get(longPeriod.length.toInt) match {
         case Some(x) => currentLong = x
         case None    => println("Missing indicator with period " + longPeriod)
       }
