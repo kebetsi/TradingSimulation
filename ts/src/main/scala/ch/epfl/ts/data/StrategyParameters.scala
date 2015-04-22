@@ -35,7 +35,6 @@ class StrategyParameters(params: (String, Parameter)*) {
    * We also perform type checking on the type of the value held by the parameter.
    */
   def getOption[V: ClassTag](key: Key): Option[V] = {
-    println(parameters)
     parameters.get(key) match {
       case Some(p) => p.value() match {
         case v: V => Some(v)

@@ -52,9 +52,9 @@ object MadTrader extends TraderCompanion {
  */
 class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
   import context._
-  private case object SendMarketOrder
-
   override def companion = MadTrader
+
+  private case object SendMarketOrder
 
   // TODO: this initial order ID should be unique in the system
   var orderId = 4567
