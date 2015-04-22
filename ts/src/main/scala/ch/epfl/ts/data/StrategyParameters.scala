@@ -3,6 +3,9 @@ package ch.epfl.ts.data
 import ch.epfl.ts.data.Currency.Currency
 import scala.concurrent.duration.{ TimeUnit, FiniteDuration, DurationLong, MILLISECONDS => MillisecondsUnit }
 import scala.reflect.ClassTag
+import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.engine.ForexMarketRules
+import ch.epfl.ts.benchmark.marketSimulator.BenchmarkMarketRules
 
 
 /**
@@ -302,4 +305,25 @@ object CurrencyPairParameter extends ParameterTrait {
 	}
 
   def defaultValue = (Currency.EUR, Currency.CHF)
+}
+
+
+/**
+ * Parameter representing rules applied in a certain market.
+ */
+case class MarketRulesParameter(rules: MarketRules) extends Parameter("MarketRules") {
+  type T = MarketRules
+  def companion = MarketRulesParameter
+  def value(): MarketRules = rules
+}
+
+object MarketRulesParameter extends ParameterTrait {
+  type T = MarketRules
+  def getInstance(v: T) = new MarketRulesParameter(v)
+	
+	def isValid(v: T): Boolean = true
+	
+	def validValues: Iterable[T] = List(new MarketRules, new ForexMarketRules, new BenchmarkMarketRules)
+	
+	def defaultValue = new MarketRules
 }

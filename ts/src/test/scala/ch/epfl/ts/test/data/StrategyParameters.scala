@@ -21,6 +21,8 @@ import ch.epfl.ts.traders.SimpleTraderWithBroker
 import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.data.RealNumberParameter
 import ch.epfl.ts.traders.SimpleFXTrader
+import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.data.MarketRulesParameter
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -205,6 +207,12 @@ class StrategyParametersTests extends FunSuite {
       List(legalCurrencies1, legalCurrencies2),
       List(illegalCurrencies)
     )
+    
+  testConcreteParameter(
+      MarketRulesParameter,
+      List(new ForexMarketRules),
+      List()
+  	)
 
 
   /** Simple tests for strategy's parameterization */
