@@ -11,11 +11,11 @@ trait Streamable
 /**
  * Data Transfer Object representing a Transaction
  * @param mid market id
- * @param price 
+ * @param price
  * @param volume
  * @param timestamp
- * @param whatC
- * @param withC
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
  * @param buyerId buyer user id
  * @param buyOrderId buyer order id
  * @param sellerId seller user id
@@ -37,8 +37,8 @@ trait Chargeable {
  * @param oid
  * @param uid
  * @param timestamp
- * @param whatC
- * @param withC
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
  * @param volume
  * @param price
  */
@@ -55,34 +55,88 @@ abstract class Order() extends Streamable with Chargeable {
   override def chargedTraderId() = uid
 }
 
+/**
+ * Type of orders: You send a bid order if you want to buy a security at a given price.
+ *                 You send an ask order if you want to sell a security.
+ *
+ * Limit order:    Limit order are left open during a certain period of time and are matched if the currency
+ *                  reach the given price.
+ *
+ * Market order:   Those orders are immediately executed at the current price
+ *
+ * Note that the "price" of a currency is the value of 1 unit of whatC currency expressed in withC currency
+ *
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ */
 abstract class LimitOrder extends Order
 
+/**
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
+ */
 case class LimitBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends LimitOrder
 
+/**
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
+ */
 case class LimitAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends LimitOrder
 
 abstract class MarketOrder extends Order
 
+/**
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
+ */
 case class MarketBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends MarketOrder
 
+/**
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
+ */
 case class MarketAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends MarketOrder
 
+/**
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
+ */
 case class DelOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends Order
 
 
 /**
+ *
  * Represents an Open-High-Low-Close tick, with volume and timestamp (beginning of the tick)
+ *
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
  */
 case class OHLC(marketId: Long, open: Double, high: Double, low: Double, close: Double, volume: Double, timestamp: Long, duration: Long) extends Streamable
 
 /**
  * Forex-style data
- * @TODO: we also have access to 'bid points' and 'offer points'. Do we need those?
+ *
+ * @param whatC Which currency we are buying
+ * @param withC The currency with which we are buying
+ *
+ * @see LimitOrder
  */
 case class Quote(marketId: Long, timestamp: Long, whatC: Currency, withC: Currency, bid: Double, ask: Double) {
   override def toString() = "(" + whatC.toString().toUpperCase() + "/" + withC.toString().toUpperCase() + ") = (" + bid + ", " + ask + ")";
