@@ -207,6 +207,31 @@ object NaturalNumberParameter extends ParameterTrait {
 }
 
 
+/**
+ * Parameter representing an real number greater of any sign.
+ */
+case class RealNumberParameter(real: Double) extends Parameter("NaturalNumber") {
+	type T = Double
+	def companion = RealNumberParameter
+	def value(): Double = real
+}
+
+object RealNumberParameter extends ParameterTrait {
+	type T = Double
+	def getInstance(v: Double) = new RealNumberParameter(v)
+	
+	/**
+	 * Any floating point number is valid
+	 */
+	def isValid(v: Double): Boolean = true
+	
+  // TODO: how should we enumerate all Reals?
+	def validValues: Iterable[Double] = Stream.from(0).map(x => x / 100.0)
+	
+	def defaultValue = 0.0
+}
+
+
 
 /**
  * Parameter representing a duration.
