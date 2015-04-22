@@ -45,7 +45,6 @@ class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new Str
   
   override def companion = SimpleTraderWithBroker
   
-  val l = context.system.log
   var broker: ActorRef = null
   var registered = false
   var oid = 1L
