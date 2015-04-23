@@ -1,7 +1,8 @@
 package ch.epfl.ts.traders
 
+import scala.language.postfixOps
 import scala.collection.mutable.{Map => MMap, MutableList => MList}
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, DurationLong}
 import akka.actor.Cancellable
 import ch.epfl.ts.component.{Component, ComponentRef}
 import ch.epfl.ts.data._
@@ -20,15 +21,18 @@ import ch.epfl.ts.data.Currency._
   * @param period the period in milliseconds to compute performance
  */
 class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: Long) extends Component {
+  // for usage of scheduler
+  import context._
+
   private var schedule: Cancellable = null
-  private val wallet = MMap[Currency, Double](initial)
+  private val wallet = MMap[Currency, Double](currency -> initial)
   private val returns = MList[Double]()
 
-  private val lastValue = initial
-  private val maxProfit = 0.0
-  private val maxLoss = 0.0
+  private var lastValue = initial
+  private var maxProfit = 0.0
+  private var maxLoss = 0.0
 
-  def totalReturns: Double = (value - initial) * 100
+  def totalReturns: Double = (value() - initial) * 100
   def volatility: Double = computeVolatility
   def drawdown: Double = maxLoss
   def sharp: Double = totalReturns / volatility
@@ -56,25 +60,25 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
 
   // updates the wallet and statistics after a sell contraction
   private def sell(t: Transaction): Unit = {
-    wallet[t.whatC] -= t.volume
-    wallet[t.withC] += t.volume * t.price
+    wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) - t.volume)
+    wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) + t.volume * t.price)
   }
 
   // updates the wallet and statistics after a buy contraction
   private def buy(t: Transaction): Unit = {
-    wallet[t.whatC] += t.volume
-    wallet[t.withC] -= t.volume * t.price
+    wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) + t.volume)
+    wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) - t.volume * t.price)
   }
 
   // compute volatility, which is the variance of returns
   private def computeVolatility = {
-    val mean = (returns :\ 0)(_ + _) / returns.length
-      (returns :\ 0) { (r, acc) => (r - mean) * (r - mean) + acc } / returns.length
+    val mean = (returns :\ 0.0)(_ + _) / returns.length
+    (returns :\ 0.0) { (r, acc) => (r - mean) * (r - mean) + acc } / returns.length
   }
 
   // updates the statistics
   private def updateStatistic = {
-    val curVal = value
+    val curVal = value()
 
     val profit = curVal - initial
     if (profit > maxProfit) maxProfit = profit
@@ -87,7 +91,7 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
   }
 
   override def start = {
-    schedule = system.scheduler.schedule(10 milliseconds, period milliseconds, self, 'UpdateStatistics)
+    schedule = context.system.scheduler.schedule(10.milliseconds, period.milliseconds, self, 'UpdateStatistics)
   }
 
   override def stop = schedule.cancel()
