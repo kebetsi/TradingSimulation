@@ -1,20 +1,32 @@
 package ch.epfl.ts.example
 
+import scala.reflect.ClassTag
 import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.component.fetch.{ BitstampOrderPullFetcher, BitstampTransactionPullFetcher, BtceOrderPullFetcher, BtceTransactionPullFetcher, MarketNames, PullFetchComponent }
+import ch.epfl.ts.component.fetch.BitstampOrderPullFetcher
+import ch.epfl.ts.component.fetch.BitstampTransactionPullFetcher
+import ch.epfl.ts.component.fetch.BtceOrderPullFetcher
+import ch.epfl.ts.component.fetch.BtceTransactionPullFetcher
+import ch.epfl.ts.component.fetch.MarketNames
+import ch.epfl.ts.component.fetch.PullFetchComponent
 import ch.epfl.ts.component.persist.TransactionPersistor
-import ch.epfl.ts.component.utils.{ BackLoop, Printer }
-import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, OHLC, Order, Transaction, MarketAskOrder, MarketBidOrder }
-import ch.epfl.ts.engine.{ MarketRules, OrderBookMarketSimulator }
-import ch.epfl.ts.indicators.OhlcIndicator
-import ch.epfl.ts.traders.Arbitrageur
-import scala.reflect.ClassTag
-import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.component.utils.BackLoop
+import ch.epfl.ts.component.utils.Printer
+import ch.epfl.ts.data.DelOrder
+import ch.epfl.ts.data.LimitAskOrder
+import ch.epfl.ts.data.LimitBidOrder
 import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.OHLC
+import ch.epfl.ts.data.Order
 import ch.epfl.ts.data.RealNumberParameter
 import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.engine.OrderBookMarketSimulator
+import ch.epfl.ts.indicators.OhlcIndicator
+import ch.epfl.ts.traders.Arbitrageur
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
 
 /**
  * in this system, two fetchers gather orders and transaction
@@ -27,7 +39,7 @@ import ch.epfl.ts.data.StrategyParameters
 object BTCArbitrage {
 
   def main(args: Array[String]) {
-    val builder = new ComponentBuilder("ArbitrageSystem")
+    implicit val builder = new ComponentBuilder("ArbitrageSystem")
 
     // Initialize the Interfaces to the DBs
     val btceXactPersit = new TransactionPersistor("btce-transaction-db2")
@@ -56,7 +68,7 @@ object BTCArbitrage {
       Arbitrageur.VOLUME -> NaturalNumberParameter(50),
       Arbitrageur.PRICE_DELTA -> RealNumberParameter(1.0)
     )    
-    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, parameters), "arbitrageur")
+    val arbitrageur = Arbitrageur.getInstance(arbitrageurId, parameters, "Arbitrageur")
     // markets
     val rules = new MarketRules()
     val btceMarket = builder.createRef(Props(classOf[OrderBookMarketSimulator], btceMarketId, rules), MarketNames.BTCE_NAME)

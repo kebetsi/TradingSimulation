@@ -33,7 +33,7 @@ import ch.epfl.ts.indicators.SMA
 
 object SimpleExampleFX {
   def main(args: Array[String]): Unit = {
-    val builder = new ComponentBuilder("simpleFX")
+    implicit val builder = new ComponentBuilder("simpleFX")
     val marketForexId = MarketNames.FOREX_ID
 
     // ----- Creating actors
@@ -55,8 +55,8 @@ object SimpleExampleFX {
       SimpleFXTrader.SHORT_PERIOD -> new TimeParameter(periods(0) seconds),
       SimpleFXTrader.LONG_PERIOD -> new TimeParameter(periods(1) seconds)
     )
-    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId, parameters), "simpleTrader")
-   
+    val trader = SimpleFXTrader.getInstance(traderId, parameters, "SimpleFXTrader")
+
     // Indicator
     // specify period over which we build the OHLC (from quotes)
     // TODO: indicators should be instantiated by the trader that needs them
