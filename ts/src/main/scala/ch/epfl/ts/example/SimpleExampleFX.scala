@@ -48,7 +48,7 @@ object SimpleExampleFX {
     // Trader: cross moving average
     val traderId : Long = 123L
     val periods = List(3, 10)
-    val symbol = (Currency.EUR, Currency.USD)
+    val symbol = (Currency.EUR, Currency.CHF)
     val parameters = new StrategyParameters(
       SimpleFXTrader.SYMBOL -> CurrencyPairParameter(symbol),
       SimpleFXTrader.VOLUME -> NaturalNumberParameter(10),
@@ -60,7 +60,7 @@ object SimpleExampleFX {
     // Indicator
     // specify period over which we build the OHLC (from quotes)
     // TODO: indicators should be instantiated by the trader that needs them
-    val period = 20000L //OHLC of 20 seconds
+    val period = 20000L // OHLC of 20 seconds
     val maCross = builder.createRef(Props(classOf[SmaIndicator], periods), "maCross")
     val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId, symbol, period), "ohlcIndicator")
     
