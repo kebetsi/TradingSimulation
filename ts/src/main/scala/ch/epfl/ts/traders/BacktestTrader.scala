@@ -19,7 +19,7 @@ import ch.epfl.ts.data.Currency._
   * @param initial the initial seed money
   * @param currency currency of the intial seed money
   * @param period the period in milliseconds to compute performance
- */
+  */
 class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: Long) extends Component {
   // for usage of scheduler
   import context._
@@ -32,7 +32,7 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
   private var maxProfit = 0.0
   private var maxLoss = 0.0
 
-  def totalReturns: Double = (value() - initial) * 100
+  def totalReturns: Double = value() / initial * 100
   def volatility: Double = computeVolatility
   def drawdown: Double = maxLoss
   def sharp: Double = totalReturns / volatility
@@ -83,7 +83,6 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
     val profit = curVal - initial
     if (profit > maxProfit) maxProfit = profit
     else if (profit < maxLoss) maxLoss = profit
-    else ()
 
     returns += (curVal - lastValue) / lastValue
 
@@ -94,5 +93,13 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
     schedule = context.system.scheduler.schedule(10.milliseconds, period.milliseconds, self, 'UpdateStatistics)
   }
 
-  override def stop = schedule.cancel()
+  override def stop = {
+    schedule.cancel()
+
+    println(s"########### trader Id: $traderId ############")
+    println(s"total returns: $totalReturns")
+    println(s"volatility: $volatility")
+    println(s"draw down: $drawdown")
+    println(s"sharp: $sharp")
+  }
 }
