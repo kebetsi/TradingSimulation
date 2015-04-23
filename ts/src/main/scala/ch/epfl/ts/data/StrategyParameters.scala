@@ -46,7 +46,7 @@ class StrategyParameters(params: (String, Parameter)*) {
       case _ => None
     }
   }
-  
+
   /**
    * Get the value if it is there, otherwise throw an exception.
    * Use it only if you are confident `params` contains the desired key.
@@ -58,7 +58,7 @@ class StrategyParameters(params: (String, Parameter)*) {
       throw new IndexOutOfBoundsException("Key `" + key + "` with desired type `" + desired + "` was not found.")
     }
   }
-  
+
   /**
    * Get the value for this key
    * or fallback on the provided default if:
@@ -214,24 +214,24 @@ object NaturalNumberParameter extends ParameterTrait {
  * Parameter representing an real number greater of any sign.
  */
 case class RealNumberParameter(real: Double) extends Parameter("RealNumber") {
-	type T = Double
-	def companion = RealNumberParameter
-	def value(): Double = real
+  type T = Double
+  def companion = RealNumberParameter
+  def value(): Double = real
 }
 
 object RealNumberParameter extends ParameterTrait {
-	type T = Double
-	def getInstance(v: Double) = new RealNumberParameter(v)
-	
-	/**
-	 * Any floating point number is valid
-	 */
-	def isValid(v: Double): Boolean = true
-	
+  type T = Double
+  def getInstance(v: Double) = new RealNumberParameter(v)
+
+  /**
+   * Any floating point number is valid
+   */
+  def isValid(v: Double): Boolean = true
+
   // TODO: how should we enumerate all Reals?
-	def validValues: Iterable[Double] = Stream.from(0).map(x => x / 100.0)
-	
-	def defaultValue = 0.0
+  def validValues: Iterable[Double] = Stream.from(0).map(x => x / 100.0)
+
+  def defaultValue = 0.0
 }
 
 
@@ -245,7 +245,7 @@ object RealNumberParameter extends ParameterTrait {
 case class TimeParameter(duration: Long, unit: TimeUnit) extends Parameter("Time") {
   type T = FiniteDuration
   def this(duration: Long) = this(duration, MillisecondsUnit)
-	def this(duration: FiniteDuration) = this(duration.length.toLong, duration.unit)
+  def this(duration: FiniteDuration) = this(duration.length.toLong, duration.unit)
 
   def companion = TimeParameter
   def value(): FiniteDuration = FiniteDuration(duration, unit)
@@ -280,29 +280,29 @@ object TimeParameter extends ParameterTrait {
  */
 case class CurrencyPairParameter(currencies: (Currency, Currency)) extends Parameter("CurrencyPair") {
   type T = (Currency, Currency)
-	def companion = CurrencyPairParameter
-	def value(): (Currency, Currency) = currencies
+  def companion = CurrencyPairParameter
+  def value(): (Currency, Currency) = currencies
 }
 
 object CurrencyPairParameter extends ParameterTrait {
-	type T = (Currency, Currency)
-	def getInstance(v: T) = new CurrencyPairParameter(v)
+  type T = (Currency, Currency)
+  def getInstance(v: T) = new CurrencyPairParameter(v)
 
-	/**
-	 * All currency pairs are acceptable as long as they're not twice the same.
-	 * @warning Note that (EUR, CHF) is *not* the same pair as (CHF, EUR)
-	 */
-	def isValid(v: T): Boolean = (v._1 != v._2)
+  /**
+   * All currency pairs are acceptable as long as they're not twice the same.
+   * @warning Note that (EUR, CHF) is *not* the same pair as (CHF, EUR)
+   */
+  def isValid(v: T): Boolean = (v._1 != v._2)
 
-	def validValues: Iterable[T] = {
-		val allCurrencies = Currency.supportedCurrencies()
+  def validValues: Iterable[T] = {
+    val allCurrencies = Currency.supportedCurrencies()
 
-		for {
-			c1 <- allCurrencies
-			c2 <- allCurrencies
-			if c1 != c2
-		} yield (c1, c2)
-	}
+    for {
+      c1 <- allCurrencies
+      c2 <- allCurrencies
+      if c1 != c2
+    } yield (c1, c2)
+  }
 
   def defaultValue = (Currency.EUR, Currency.CHF)
 }
@@ -320,10 +320,10 @@ case class MarketRulesParameter(rules: MarketRules) extends Parameter("MarketRul
 object MarketRulesParameter extends ParameterTrait {
   type T = MarketRules
   def getInstance(v: T) = new MarketRulesParameter(v)
-	
-	def isValid(v: T): Boolean = true
-	
-	def validValues: Iterable[T] = List(new MarketRules, new ForexMarketRules, new BenchmarkMarketRules)
-	
-	def defaultValue = new MarketRules
+
+  def isValid(v: T): Boolean = true
+
+  def validValues: Iterable[T] = List(new MarketRules, new ForexMarketRules, new BenchmarkMarketRules)
+
+  def defaultValue = new MarketRules
 }

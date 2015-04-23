@@ -64,8 +64,8 @@ class StrategyParametersTests extends FunSuite {
     }
 
     test(parameterTrait + " should have a default value which is valid") {
-    	val attempt = Try(parameterTrait.getInstance(parameterTrait.defaultValue))
-    	assert(attempt.isSuccess, "Should accept " + parameterTrait.defaultValue)
+      val attempt = Try(parameterTrait.getInstance(parameterTrait.defaultValue))
+      assert(attempt.isSuccess, "Should accept " + parameterTrait.defaultValue)
     }
   }
 
@@ -76,7 +76,7 @@ class StrategyParametersTests extends FunSuite {
    */
   def testConcreteStrategy(strategyCompanion: TraderCompanion) = {
     implicit val builder = new ComponentBuilder("ConcreteStrategyTest")
-    
+
     val traderId = 42L
     def make(p: StrategyParameters) = strategyCompanion.getInstance(traderId, p, "TraderBeingTested")
     val emptyParameters = new StrategyParameters()
@@ -84,7 +84,7 @@ class StrategyParametersTests extends FunSuite {
     val optional = strategyCompanion.optionalParameters
 
     // TODO: test optional parameters
-    
+
     /**
      * Strategies not having any required parameter
      */
@@ -98,10 +98,10 @@ class StrategyParametersTests extends FunSuite {
      * Strategies with required parameters
      */
     else {
-    	test(strategyCompanion + " should not allow instantiation with no parameters") {
-    		val attempt = Try(make(emptyParameters))
-    		assert(attempt.isFailure)
-    	}
+      test(strategyCompanion + " should not allow instantiation with no parameters") {
+        val attempt = Try(make(emptyParameters))
+        assert(attempt.isFailure)
+      }
 
       test(strategyCompanion + " should allow instantiation with parameters' default values") {
         val parameters = for {
@@ -138,7 +138,7 @@ class StrategyParametersTests extends FunSuite {
   }
 
   test("Should fail at instantiation with illegal parameters") {
-	  val attempt = Try(new StrategyParameters("someCoefficient" -> CoefficientParameter(illegalCoefficient)))
+    val attempt = Try(new StrategyParameters("someCoefficient" -> CoefficientParameter(illegalCoefficient)))
     assert(attempt.isFailure, "Should fail to instantiate a coefficient with value " + illegalCoefficient)
   }
 
@@ -160,10 +160,10 @@ class StrategyParametersTests extends FunSuite {
   }
 
   test("Should not yield a value if it doesn't have the expected type") {
-	  val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(legalCoefficient))
+    val myParameters = new StrategyParameters("tradedCurrencies" -> CoefficientParameter(legalCoefficient))
 
-	  val got = myParameters.getOption[CurrencyPair]("tradedCurrencies")
-	  assert(got == None, "Should not allow for the wrong type to be retrieved")
+    val got = myParameters.getOption[CurrencyPair]("tradedCurrencies")
+    assert(got == None, "Should not allow for the wrong type to be retrieved")
   }
 
   test("Should say it has a value if we don't care about the type") {
@@ -172,12 +172,12 @@ class StrategyParametersTests extends FunSuite {
   }
 
   test("Should fallback on default if allowed") {
-	  val myParameters = new StrategyParameters()
+    val myParameters = new StrategyParameters()
 
-	  val got1 = myParameters.getOrDefault("tradedCurrencies", CurrencyPairParameter)
-	  val got2 = myParameters.getOrDefault("someCoefficient", CoefficientParameter)
-	  assert(got1 == CurrencyPairParameter.defaultValue)
-	  assert(got2 == CoefficientParameter.defaultValue)
+    val got1 = myParameters.getOrDefault("tradedCurrencies", CurrencyPairParameter)
+    val got2 = myParameters.getOrDefault("someCoefficient", CoefficientParameter)
+    assert(got1 == CurrencyPairParameter.defaultValue)
+    assert(got2 == CoefficientParameter.defaultValue)
   }
 
   testConcreteParameter(
@@ -191,30 +191,30 @@ class StrategyParametersTests extends FunSuite {
       List(0, 10, 1000, 1337),
       List(-1, -10, -1337)
     )
-  
-  testConcreteParameter(
-  		RealNumberParameter,
-  		List(0.0, 10, -100.0, 1337),
-  		List()
-  		)
 
   testConcreteParameter(
-  		TimeParameter,
-  		List(0L hours, 10L seconds, 1L milliseconds, 1337L milliseconds),
-  		List(-1L seconds, -1000L milliseconds)
-  	)
+      RealNumberParameter,
+      List(0.0, 10, -100.0, 1337),
+      List()
+      )
+
+  testConcreteParameter(
+      TimeParameter,
+      List(0L hours, 10L seconds, 1L milliseconds, 1337L milliseconds),
+      List(-1L seconds, -1000L milliseconds)
+    )
 
   testConcreteParameter(
       CurrencyPairParameter,
       List(legalCurrencies1, legalCurrencies2),
       List(illegalCurrencies)
     )
-    
+
   testConcreteParameter(
       MarketRulesParameter,
       List(new ForexMarketRules),
       List()
-  	)
+    )
 
 
   /** Simple tests for strategy's parameterization */
