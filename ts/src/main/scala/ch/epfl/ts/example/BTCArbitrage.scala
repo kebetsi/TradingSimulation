@@ -12,6 +12,9 @@ import ch.epfl.ts.traders.Arbitrageur
 import scala.reflect.ClassTag
 import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.data.StrategyParameters
 
 /**
  * in this system, two fetchers gather orders and transaction
@@ -49,9 +52,11 @@ object BTCArbitrage {
     val bitstampOrderFetcher = builder.createRef(Props(classOf[PullFetchComponent[Order]], bitstampOrderPullFetcher, implicitly[ClassTag[Order]]), "bitstampOrderFetcher")
     // trading agents
     val arbitrageurId = 111L
-    val tradingPriceDelta = 1.0
-    val volume = 50.0
-    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, tradingPriceDelta, volume), "arbitrageur")
+    val parameters = new StrategyParameters(
+      Arbitrageur.VOLUME -> NaturalNumberParameter(50),
+      Arbitrageur.PRICE_DELTA -> RealNumberParameter(1.0)
+    )    
+    val arbitrageur = builder.createRef(Props(classOf[Arbitrageur], 111L, parameters), "arbitrageur")
     // markets
     val rules = new MarketRules()
     val btceMarket = builder.createRef(Props(classOf[OrderBookMarketSimulator], btceMarketId, rules), MarketNames.BTCE_NAME)

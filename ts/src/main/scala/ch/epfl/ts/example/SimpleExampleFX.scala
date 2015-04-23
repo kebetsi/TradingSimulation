@@ -1,25 +1,34 @@
 package ch.epfl.ts.example
 
+import scala.language.postfixOps
+import scala.reflect.ClassTag
+import scala.concurrent.duration.{ DurationLong }
+import akka.actor.Props
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.engine.ForexMarketRules
+import ch.epfl.ts.component.fetch.MarketNames
+import ch.epfl.ts.component.fetch.PullFetchComponent
 import ch.epfl.ts.component.fetch.TrueFxFetcher
 import ch.epfl.ts.component.persist.DummyPersistor
-import ch.epfl.ts.component.fetch.MarketNames
-import ch.epfl.ts.engine.MarketFXSimulator
-import akka.actor.Props
-import ch.epfl.ts.traders.SimpleFXTrader
 import ch.epfl.ts.component.utils.BackLoop
-import ch.epfl.ts.indicators.SmaIndicator
-import scala.reflect.ClassTag
-import ch.epfl.ts.component.fetch.PullFetchComponent
+import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.engine.ForexMarketRules
+import ch.epfl.ts.engine.MarketFXSimulator
+import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.engine.RevenueComputeFX
-import ch.epfl.ts.data.{ Quote, OHLC }
+import ch.epfl.ts.indicators.MovingAverage
+import ch.epfl.ts.indicators.OhlcIndicator
+import ch.epfl.ts.traders.SimpleFXTrader
+import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
-import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
-import ch.epfl.ts.data.Currency
-import ch.epfl.ts.engine.RevenueCompute
+import ch.epfl.ts.indicators.SmaIndicator
+import ch.epfl.ts.data.OHLC
+import ch.epfl.ts.indicators.SMA
 
 
 object SimpleExampleFX {
@@ -38,18 +47,22 @@ object SimpleExampleFX {
     
     // Trader: cross moving average
     val traderId : Long = 123L
-    val symbol = (Currency.EUR,Currency.USD)
-    val volume = 10.0
-    val shortPeriod = 3
-    val longPeriod = 10
-    val periods=List(3,10)
-    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId,symbol, shortPeriod, longPeriod, volume), "simpleTrader")
+    val periods = List(3, 10)
+    val symbol = (Currency.EUR, Currency.USD)
+    val parameters = new StrategyParameters(
+      SimpleFXTrader.SYMBOL -> CurrencyPairParameter(symbol),
+      SimpleFXTrader.VOLUME -> NaturalNumberParameter(10),
+      SimpleFXTrader.SHORT_PERIOD -> new TimeParameter(periods(0) seconds),
+      SimpleFXTrader.LONG_PERIOD -> new TimeParameter(periods(1) seconds)
+    )
+    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId, parameters), "simpleTrader")
    
     // Indicator
     // specify period over which we build the OHLC (from quotes)
-    val period : Long = 20000 //OHLC of 20 seconds 
+    // TODO: indicators should be instantiated by the trader that needs them
+    val period = 20000L //OHLC of 20 seconds
     val maCross = builder.createRef(Props(classOf[SmaIndicator], periods), "maCross")
-    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId,symbol, period), "ohlcIndicator")
+    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId, symbol, period), "ohlcIndicator")
     
     // Display
     val traderNames = Map(traderId -> "MovingAverageFXTrader")
