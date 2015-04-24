@@ -1,4 +1,4 @@
-package ch.epfl.ts.traders
+package ch.epfl.ts.evaluation
 
 import scala.language.postfixOps
 import scala.collection.mutable.{Map => MMap, MutableList => MList}
@@ -21,7 +21,7 @@ import ch.epfl.ts.data.Currency._
   * @param currency currency of the intial seed money
   * @param period the time period to compute performance
   */
-class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
+class EvaluationTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._
 
