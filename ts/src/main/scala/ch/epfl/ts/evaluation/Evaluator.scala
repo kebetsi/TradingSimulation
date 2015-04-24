@@ -10,7 +10,7 @@ import ch.epfl.ts.data._
 import ch.epfl.ts.data.Currency._
 
 /**
-  * Evaluates the performance of traders
+  * Evaluates the performance of traders by total returns, volatility, draw down and sharp
   *
   * To use this class, redirect all previous connections into trader to instances
   * of this class.
@@ -88,7 +88,9 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) - t.volume * t.price)
   }
 
-  // compute volatility, which is the variance of returns
+  /**
+   * Computes volatility, which is the variance of returns
+   * */
   private def computeVolatility = {
     val mean = (returnsList :\ 0.0)(_ + _) / returnsList.length
     (returnsList :\ 0.0) { (r, acc) => (r - mean) * (r - mean) + acc } / returnsList.length
