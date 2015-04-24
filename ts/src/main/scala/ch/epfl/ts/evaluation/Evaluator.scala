@@ -10,7 +10,7 @@ import ch.epfl.ts.data._
 import ch.epfl.ts.data.Currency._
 
 /**
-  * Evaluates the performance of traders by total returns, volatility, draw down and sharp
+  * Evaluates the performance of traders by total returns, volatility, draw down and sharpe ratio
   *
   * To use this class, redirect all previous connections into and out of the trader to
   * instances of this class.
