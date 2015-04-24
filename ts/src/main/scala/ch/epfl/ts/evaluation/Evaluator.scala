@@ -12,13 +12,13 @@ import ch.epfl.ts.data.Currency._
 /**
   * Evaluates the performance of traders by total returns, volatility, draw down and sharp
   *
-  * To use this class, redirect all previous connections into trader to instances
-  * of this class.
+  * To use this class, redirect all previous connections into and out of the trader to
+  * instances of this class.
   *
-  * @param trader the reference to the real trader component
+  * @param trader the reference to the trader component
   * @param traderId the id of the trader
   * @param initial the initial seed money
-  * @param currency currency of the intial seed money
+  * @param currency currency of the initial seed money
   * @param period the time period to compute performance
   */
 class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
@@ -36,7 +36,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   def totalReturns: Double = value() / initial
   def volatility: Double = computeVolatility
   def drawdown: Double = maxLoss
-  def sharp: Double = totalReturns / volatility
+  def sharpeRatio: Double = totalReturns / volatility
 
   /**
    * Redirects out-going connections to the trader
@@ -130,6 +130,6 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     println(s"total returns: $totalReturns")
     println(s"volatility: $volatility")
     println(s"draw down: $drawdown")
-    println(s"sharp: $sharp")
+    println(s"sharp: $sharpeRatio")
   }
 }
