@@ -52,9 +52,9 @@ object MadTrader extends TraderCompanion {
  */
 class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
   import context._
-  private case object SendMarketOrder
+  override def companion = MadTrader
 
-  def companion = MadTrader
+  private case object SendMarketOrder
 
   // TODO: this initial order ID should be unique in the system
   var orderId = 4567
@@ -62,7 +62,7 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
   val initialDelay = parameters.getOrDefault[FiniteDuration](MadTrader.INITIAL_DELAY, TimeParameter)
   val interval = parameters.get[FiniteDuration](MadTrader.INTERVAL)
   val volume = parameters.get[Int](MadTrader.ORDER_VOLUME)
-  val volumeVariation = parameters.get[Double](MadTrader.ORDER_VOLUME_VARIATION)
+  val volumeVariation = parameters.getOrElse[Double](MadTrader.ORDER_VOLUME_VARIATION, 0.1)
   val currencies = parameters.get[(Currency.Currency, Currency.Currency)](MadTrader.CURRENCY_PAIR)
 
   var alternate = 0

@@ -1,27 +1,54 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.Component
-import ch.epfl.ts.data._
-import akka.actor.{ActorLogging, ActorRef}
-import ch.epfl.ts.data.Currency._
-import scala.concurrent.duration._
+import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+
+import akka.actor.ActorLogging
+import akka.actor.ActorRef
 import akka.pattern.ask
-import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedOrder, AcceptedOrder, RejectedOrder}
+import akka.util.Timeout
+import ch.epfl.ts.data.ConfirmRegistration
+import ch.epfl.ts.data.Currency.CHF
+import ch.epfl.ts.data.Currency.Currency
+import ch.epfl.ts.data.Currency.USD
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.MarketOrder
+import ch.epfl.ts.data.Order
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Register
-import ch.epfl.ts.data.ConfirmRegistration
-import akka.util.Timeout
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.engine.AcceptedOrder
+import ch.epfl.ts.engine.ExecutedOrder
+import ch.epfl.ts.engine.FundWallet
+import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.engine.RejectedOrder
+import ch.epfl.ts.engine.WalletConfirm
+import ch.epfl.ts.engine.WalletFunds
+
+/**
+ * SimpleTraderWithBroker companion object
+ */
+object SimpleTraderWithBroker extends TraderCompanion {
+  type ConcreteTrader = SimpleTraderWithBroker
+  override protected val concreteTraderTag = scala.reflect.classTag[SimpleTraderWithBroker]
+  
+  override def requiredParameters = Map()
+}
 
 /**
  * Dummy broker-aware trader.
  */
-class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
-  import context.dispatcher //allows the usage of ask pattern in an Actor
-  val l = context.system.log
+class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new StrategyParameters())
+    extends Trader(parameters) with ActorLogging {
+  // Allows the usage of ask pattern in an Actor
+  import context.dispatcher
+  
+  override def companion = SimpleTraderWithBroker
+  
   var broker: ActorRef = null
   var registered = false
   var oid = 1L
+  
   override def receiver = {
     case q: Quote => {
       log.debug("TraderWithB receided a quote: " + q)

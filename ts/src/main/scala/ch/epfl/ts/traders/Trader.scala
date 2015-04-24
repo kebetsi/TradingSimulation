@@ -26,6 +26,8 @@ abstract class Trader(parameters: StrategyParameters) extends Component {
   
   // On instantiation, check that all mandatory parameters have been provided
   companion.verifyParameters(parameters)
+  
+  // TODO: warn if parameters are unused
 }
 
 /**
