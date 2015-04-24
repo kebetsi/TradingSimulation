@@ -10,7 +10,7 @@ import ch.epfl.ts.data._
 import ch.epfl.ts.data.Currency._
 
 /**
-  * Implements back testing for traders.
+  * Evaluates the performance of traders
   *
   * To use this class, redirect all previous connections into trader to instances
   * of this class.
@@ -21,7 +21,7 @@ import ch.epfl.ts.data.Currency._
   * @param currency currency of the intial seed money
   * @param period the time period to compute performance
   */
-class EvaluationTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
+class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._
 
