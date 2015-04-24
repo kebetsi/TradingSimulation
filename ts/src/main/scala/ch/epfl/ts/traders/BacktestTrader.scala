@@ -3,8 +3,9 @@ package ch.epfl.ts.traders
 import scala.language.postfixOps
 import scala.collection.mutable.{Map => MMap, MutableList => MList}
 import scala.concurrent.duration.{DurationInt, DurationLong}
-import akka.actor.Cancellable
-import ch.epfl.ts.component.{Component, ComponentRef}
+import scala.concurrent.duration.FiniteDuration
+import akka.actor.{ActorRef, Cancellable}
+import ch.epfl.ts.component.{ComponentRegistration, Component, ComponentRef, StartSignal, StopSignal}
 import ch.epfl.ts.data._
 import ch.epfl.ts.data.Currency._
 
@@ -12,32 +13,41 @@ import ch.epfl.ts.data.Currency._
   * Implements back testing for traders.
   *
   * To use this class, redirect all previous connections into trader to instances
-  * of this class. Connections out of the original trader should remain unchanged.
+  * of this class.
   *
   * @param trader the reference to the real trader component
   * @param traderId the id of the trader
   * @param initial the initial seed money
   * @param currency currency of the intial seed money
-  * @param period the period in milliseconds to compute performance
+  * @param period the time period to compute performance
   */
-class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: Long) extends Component {
+class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._
 
   private var schedule: Cancellable = null
   private val wallet = MMap[Currency, Double](currency -> initial)
-  private val returns = MList[Double]()
+  private val returnsList = MList[Double]()
 
   private var lastValue = initial
   private var maxProfit = 0.0
   private var maxLoss = 0.0
 
-  def totalReturns: Double = value() / initial * 100
+  def totalReturns: Double = value() / initial
   def volatility: Double = computeVolatility
   def drawdown: Double = maxLoss
   def sharp: Double = totalReturns / volatility
 
-  // handle interested messages and forward all messages to the trader
+  /**
+   * Redirects out-going connections to the trader
+   * */
+  override def connect(ar: ActorRef, ct: Class[_], name: String) = {
+    trader.ar ! ComponentRegistration(ar, ct, name)
+  }
+
+  /**
+   * Handles interested messages and forward all messages to the trader
+   */
   override def receiver = {
     case t: Transaction if t.buyerId == traderId =>  // buy
       trader.ar ! t
@@ -50,21 +60,29 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
     case m => trader.ar ! m
   }
 
-  // returns the exchange ratio between two currency
+  /**
+   *  Returns the exchange ratio between two currency
+   * */
   private def ratio(from: Currency, to: Currency): Double = ???
 
-  // returns the total money of the wallet converted to the given currency
+  /**
+   *  Returns the total money of the wallet converted to the given currency
+   * */
   private def value(in: Currency = currency): Double = {
     (wallet :\ 0.0) { case ((c, amount), acc) => acc + ratio(c, in) * amount }
   }
 
-  // updates the wallet and statistics after a sell contraction
+  /**
+   *  Updates the wallet and statistics after a sell contraction
+   * */
   private def sell(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) - t.volume)
     wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) + t.volume * t.price)
   }
 
-  // updates the wallet and statistics after a buy contraction
+  /**
+   * Updates the wallet and statistics after a buy contraction
+   * */
   private def buy(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) + t.volume)
     wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) - t.volume * t.price)
@@ -72,11 +90,13 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
 
   // compute volatility, which is the variance of returns
   private def computeVolatility = {
-    val mean = (returns :\ 0.0)(_ + _) / returns.length
-    (returns :\ 0.0) { (r, acc) => (r - mean) * (r - mean) + acc } / returns.length
+    val mean = (returnsList :\ 0.0)(_ + _) / returnsList.length
+    (returnsList :\ 0.0) { (r, acc) => (r - mean) * (r - mean) + acc } / returnsList.length
   }
 
-  // updates the statistics
+  /**
+   * Updates the statistics
+   * */
   private def updateStatistic = {
     val curVal = value()
 
@@ -84,16 +104,24 @@ class BacktestTrader(trader: ComponentRef, traderId: Long, initial: Double, curr
     if (profit > maxProfit) maxProfit = profit
     else if (profit < maxLoss) maxLoss = profit
 
-    returns += (curVal - lastValue) / lastValue
+    returnsList += (curVal - lastValue) / lastValue
 
     lastValue = curVal
   }
 
+  /**
+   * Starts the scheduler and trader
+   * */
   override def start = {
-    schedule = context.system.scheduler.schedule(10.milliseconds, period.milliseconds, self, 'UpdateStatistics)
+    trader.ar ! StartSignal
+    schedule = context.system.scheduler.schedule(10.milliseconds, period, self, 'UpdateStatistics)
   }
 
+  /**
+   * Stops the scheduler and trader
+   * */
   override def stop = {
+    trader.ar ! StopSignal
     schedule.cancel()
 
     println(s"########### trader Id: $traderId ############")
