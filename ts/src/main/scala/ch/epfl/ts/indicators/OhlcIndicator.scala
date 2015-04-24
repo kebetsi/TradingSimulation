@@ -12,7 +12,7 @@ import scala.collection.mutable.MutableList
 class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis: Long) extends Component {
 
   /**
-   * Store transactions' price values
+   * Stores transactions' price values
    */
   var values: MutableList[Double] = MutableList[Double]()
   var volume: Double = 0.0
