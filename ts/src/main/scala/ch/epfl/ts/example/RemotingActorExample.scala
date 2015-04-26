@@ -24,12 +24,11 @@ class MyRemoteActor(hostActor: ActorRef) extends Actor {
 object RemotingActorExample {
   def main(args: Array[String]): Unit = {
     
+    // Hostname is specified on a per-machine basis in the `application.conf` file
     val remotingConfig = ConfigFactory.parseString(
 """
 akka.actor.provider = "akka.remote.RemoteActorRefProvider"
 akka.remote.enabled-transports = ["akka.remote.netty.tcp"]
-akka.remote.netty.tcp.hostname = "ts-1-021qv44y.cloudapp.net"
-akka.remote.netty.tcp.bind-hostname = "0.0.0.0"
 akka.remote.netty.tcp.port = 3333
 """).withFallback(ConfigFactory.load());
     
