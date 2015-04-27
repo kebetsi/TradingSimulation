@@ -27,7 +27,7 @@ involving current wallet state. ( example : buy order with 10% of total availabl
     currentTradingPrice = t.price
     if (traderNames.contains(t.buyerId)) {
       val traderId = t.buyerId
-      val buyerWallet = wallets.getOrElse(t.buyerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
+      val buyerWallet = wallets.getOrElse(t.buyerId, Wallet(Map(Currency.USD -> 0, Currency.CHF -> 5000)))
       buyerWallet.funds.get(t.withC) match {
         case Some(v) =>
           val newFund = v - t.volume * t.price
@@ -48,7 +48,7 @@ involving current wallet state. ( example : buy order with 10% of total availabl
 
     } else {
       val traderId = t.sellerId
-      val sellerWallet = wallets.getOrElse(t.sellerId, Wallet(Map(Currency.USD -> 5000, Currency.EUR -> 0)))
+      val sellerWallet = wallets.getOrElse(t.sellerId, Wallet(Map(Currency.USD -> 0, Currency.CHF -> 5000)))
       sellerWallet.funds.get(t.withC) match {
         case Some(v) =>
           val newFund = v + t.volume * t.price

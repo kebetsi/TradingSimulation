@@ -17,8 +17,6 @@ case class CommissionFX(limitOrderFee: Double, marketOrderFee: Double)
  *
  */
 class ForexMarketRules extends MarketRules {
-  // TODO: there should be a nonzero commission, right?
-  // override val commission = Commission(0, 0)
 
   def matchingFunction(marketId: Long,
                        newOrder: Order,

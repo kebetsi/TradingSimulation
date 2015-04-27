@@ -42,35 +42,34 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
       println("Trader receive MAs")
       ma.value.get(shortPeriod) match {
         case Some(x) => currentShort = x
-        case None    => println("Missing indicator with period " + shortPeriod)
+        case None    => println("Error: Missing indicator with period " + shortPeriod)
       }
       ma.value.get(longPeriod) match {
         case Some(x) => currentLong = x
-        case None    => println("Missing indicator with period " + longPeriod)
+        case None    => println("Error: Missing indicator with period " + longPeriod)
       }
+      decideOrder()
     }
 
     case _ => println("SimpleTrader: received unknown")
   }
   
   def decideOrder() = {
-    
+
     //BUY signal
-    if (currentShort > currentLong * (1 + tolerance) && holdings == 0 ) {
-      
+    if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0 ) {
+      println("buy signal")
       send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       oid += 1
       holdings = volume 
-      println("simple trader : buying")
     }
     
     //SELL signal
-    else if (currentShort < currentLong && holdings > 0) {
-      
+    else if (currentShort < currentLong && holdings > 0.0) {
+      println("sell signal")
       send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       oid += 1
-      holdings = 0
-      println("simple trader : selling")
+      holdings = 0.0
     }
   }
 }
