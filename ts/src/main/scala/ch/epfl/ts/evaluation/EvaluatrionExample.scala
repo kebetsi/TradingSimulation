@@ -35,7 +35,7 @@ object EvaluationExample {
     val forexMarket = builder.createRef(Props(classOf[MarketFXSimulator], marketForexId, rules), MarketNames.FOREX_NAME)
 
     // Evaluator
-    val period = 100 milliseconds
+    val period = 2000 milliseconds
     val initial = 1000000.0
     val currency = CHF
     val evaluator = builder.createRef(Props(classOf[Evaluator], trader, traderId, initial, currency, period), "evaluator")

@@ -143,7 +143,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     trader.ar ! StopSignal
     schedule.cancel()
 
-    println(s"########### trader Id: $traderId ############")
+    println(s"============== Performance of ${trader.name} ===============")
     println(s"total returns: $totalReturns")
     println(s"volatility: $volatility")
     println(s"draw down: $drawdown")
