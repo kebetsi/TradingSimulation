@@ -20,7 +20,8 @@ object Dependencies {
     "org.webjars" % "highstock" % "2.0.4",
     "org.webjars" % "bootstrap" % "3.2.0" exclude ("org.webjars", "jquery"),
     "org.webjars" % "bootswatch-yeti" % "3.2.0" exclude ("org.webjars", "jquery"),
-    "org.webjars" % "angularjs" % "1.2.16-2" exclude ("org.webjars", "jquery")
+    "org.webjars" % "angularjs" % "1.2.16-2" exclude ("org.webjars", "jquery"),
+    "org.webjars" % "highcharts-ng" % "0.0.8"
   )
 
   val tradingsimulation = Seq(

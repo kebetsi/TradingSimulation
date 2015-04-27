@@ -1,6 +1,9 @@
 @(message: String)
 
 @main("Welcome to Play") {
-	Check the console to see the messages from the server
-
+<div data-ng-controller="MyController">
+  {{ greeting }}
+  <highchart class="chart" config="chartConfig" class="span9" ></highchart>
+    <button class="btn" data-ng-click="addPoints()">add points</button>
+</div>
 }
