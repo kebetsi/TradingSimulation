@@ -3,7 +3,9 @@
 @main("Welcome to Play") {
 <div data-ng-controller="MyController">
   {{ greeting }}
-  <highchart class="chart" config="chartConfig" class="span9" ></highchart>
+  <li data-ng-repeat="symbol in currencies">{{ symbol }}</li>
+  <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  <!-- <highchart class="chart" config="chartConfig" class="span9" ></highchart> -->
     <button class="btn" data-ng-click="addPoints()">add points</button>
 </div>
 }
