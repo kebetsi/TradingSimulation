@@ -69,7 +69,9 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   /**
    *  Returns the exchange ratio between two currency
    * */
-  private def ratio(from: Currency, to: Currency): Double = priceTable(from -> to)
+  private def ratio(from: Currency, to: Currency): Double = {
+    if (from == to) 1.0 else priceTable(from -> to)
+  }
 
   /**
    *  Returns the total money of the wallet converted to the given currency
@@ -131,7 +133,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    * */
   override def start = {
     trader.ar ! StartSignal
-    schedule = context.system.scheduler.schedule(10.milliseconds, period, self, 'UpdateStatistics)
+    schedule = context.system.scheduler.schedule(2000.milliseconds, period, self, 'UpdateStatistics)
   }
 
   /**
