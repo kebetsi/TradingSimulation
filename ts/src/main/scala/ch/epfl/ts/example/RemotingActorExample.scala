@@ -7,20 +7,6 @@ import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.ActorRef
 
-class MyRemoteActor(hostActor: ActorRef) extends Actor {
-  
-  hostActor ! "I am alive!"
-  
-  override def receive = {
-    case s: String => {
-      println("MyRemoteActor received: " + s)
-      hostActor ! "Hi there!"
-    }
-    case m => println("Remote received weird: " + m)
-  }
-  
-}
-
 object RemotingActorExample {
   def main(args: Array[String]): Unit = {
     
