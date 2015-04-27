@@ -15,6 +15,9 @@ import ch.epfl.ts.data.Currency._
   * To use this class, redirect all previous connections into and out of the trader to
   * instances of this class.
   *
+  * Note that a component providing Quote data must be connected to this component in order for
+  * it to maintain a price table and calculate profit/loss correctly.
+  *
   * @param trader the reference to the trader component
   * @param traderId the id of the trader
   * @param initial the initial seed money
@@ -28,6 +31,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   private var schedule: Cancellable = null
   private val wallet = MMap[Currency, Double](currency -> initial)
   private val returnsList = MList[Double]()
+  private val priceTable = MMap[(Currency, Currency), Double]()
 
   private var lastValue = initial
   private var maxProfit = 0.0
@@ -55,6 +59,8 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     case t: Transaction if t.sellerId == traderId =>  // sell
       trader.ar ! t
       sell(t)
+    case q: Quote =>
+      updatePrice(q)
     case 'UpdateStatistics =>
       updateStatistic
     case m => trader.ar ! m
@@ -63,7 +69,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   /**
    *  Returns the exchange ratio between two currency
    * */
-  private def ratio(from: Currency, to: Currency): Double = ???
+  private def ratio(from: Currency, to: Currency): Double = priceTable(from -> to)
 
   /**
    *  Returns the total money of the wallet converted to the given currency
@@ -86,6 +92,15 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   private def buy(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) + t.volume)
     wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) - t.volume * t.price)
+  }
+
+  /**
+   * Updates the price table
+   * */
+  private def updatePrice(q: Quote) = {
+    val Quote(_, _, whatC, withC, bid, ask) = q
+    priceTable.put(whatC -> withC, (bid + ask) / 2.0)
+    priceTable.put(withC -> whatC, (1.0/bid + 1.0/ask) / 2.0)
   }
 
   /**
