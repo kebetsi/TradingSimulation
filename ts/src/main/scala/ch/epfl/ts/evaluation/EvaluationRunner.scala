@@ -13,9 +13,9 @@ import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
 /**
- *
+ * Evaluates the performance of trading strategies
  */
-object EvaluationExample {
+object EvaluationRunner {
   val builder = new ComponentBuilder("evaluation")
 
   def test(trader: ComponentRef, traderId: Long) = {
