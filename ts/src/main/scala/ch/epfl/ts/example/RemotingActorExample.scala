@@ -20,6 +20,5 @@ akka.remote.netty.tcp.port = 3333
 """).withFallback(ConfigFactory.load());
     
     implicit val system = ActorSystem("remote", remotingConfig)
-    
   }
 }

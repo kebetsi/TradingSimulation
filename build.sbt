@@ -24,6 +24,8 @@ lazy val frontend = (project in file("frontend"))
 lazy val ts = (project in file("ts"))
     .settings(
         name := "ts",
-        libraryDependencies ++= Dependencies.ts
+        libraryDependencies ++= Dependencies.ts,
+        // Add res directory to runtime classpath
+        unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "src/main/resources") }
     )
 
