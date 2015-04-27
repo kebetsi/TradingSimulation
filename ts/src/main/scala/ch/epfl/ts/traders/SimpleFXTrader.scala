@@ -68,14 +68,14 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
     // The two MA cross and short moving average is above long average: BUY signal
     if (previousShort < currentLong && currentShort > currentLong) {
       // Price needs to be specified only for limit orders
-      send(MarketBidOrder(oid, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, volume, -1))
+      send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       println("simple trader : buying")
       oid += 1
     }
     // The two MA cross and short moving average is below long average: SELL signal
     else if (previousShort > currentLong && currentShort < currentLong) {
       // Price needs to be specified only for limit orders
-      send(MarketAskOrder(oid, uid, System.currentTimeMillis(), Currency.EUR, Currency.USD, volume, -1))
+      send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       println("simple trader : selling")
       oid += 1
     }
