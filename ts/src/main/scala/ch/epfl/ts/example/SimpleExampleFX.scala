@@ -40,10 +40,11 @@ object SimpleExampleFX {
     val traderId : Long = 123L
     val symbol = (Currency.EUR,Currency.USD)
     val volume = 10.0
-    val shortPeriod = 3
-    val longPeriod = 10
-    val periods=List(3,10)
-    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId,symbol, shortPeriod, longPeriod, volume), "simpleTrader")
+    val shortPeriod = 2
+    val longPeriod = 6
+    val periods=List(2,6)
+    val tolerance = 0.00001
+    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId,symbol, shortPeriod, longPeriod, volume, tolerance), "simpleTrader")
    
     // Indicator
     // specify period over which we build the OHLC (from quotes)

@@ -6,25 +6,20 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Quote }
 import ch.epfl.ts.data.Currency
 
-/* This simple trader will use two moving average and send order when this two MA cross each other.
- * @ Param the length of the two moving average period.
+/**
+ * Simple momentum strategy. 
+ * @param symbol the pair of currency we are trading with
+ * @param shortPeriod the size of the rolling window of the short moving average
+ * @param longPeriod the size of the rolling window of the long moving average 
+ * @param volume the amount that we want to buy when buy signal
+ * @param tolerance is required to avoid fake buy signal  
  */
-
-//symbol format  EUR/CHF , CHF/USD .. , as string => easier for user. 
 class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
                     val shortPeriod: Int, val longPeriod: Int,
-                    val volume: Double) extends Component {
+                    val volume: Double, val tolerance : Double) extends Component {
 
-  /**
-   * Boolean flag which indicates when enough indications have been
-   * received to start making decisions (like a buffering mechanism)
-   */
-  var hasStarted = false
-  /**
-   * Moving average of the previous period (used to detect the point when the two MA cross)
-   */
-  var previousShort: Double = 0.0
-  var previousLong: Double = 0.0
+
+
   /**
    * Moving average of the current period
    */
@@ -33,6 +28,11 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
 
   // TODO: Need to ensure unique order ids
   var oid = 12345
+  
+  /**
+   * 
+   */
+  var holdings: Double = 0.0
 
   val (whatC, withC) = symbol
 
@@ -48,38 +48,29 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
         case Some(x) => currentLong = x
         case None    => println("Missing indicator with period " + longPeriod)
       }
-      
-      // We can't take decisions before knowing at least one `previousShort`, `previousLong`
-      if (hasStarted){
-        decideOrder()
-      }
-      else{
-       previousShort = currentShort
-       previousLong = currentLong
-       hasStarted = true
-      }
-
     }
 
     case _ => println("SimpleTrader: received unknown")
   }
   
   def decideOrder() = {
-    // The two MA cross and short moving average is above long average: BUY signal
-    if (previousShort < currentLong && currentShort > currentLong) {
-      // Price needs to be specified only for limit orders
+    
+    //BUY signal
+    if (currentShort > currentLong * (1 + tolerance) && holdings == 0 ) {
+      
       send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+      oid += 1
+      holdings = volume 
       println("simple trader : buying")
-      oid += 1
     }
-    // The two MA cross and short moving average is below long average: SELL signal
-    else if (previousShort > currentLong && currentShort < currentLong) {
-      // Price needs to be specified only for limit orders
+    
+    //SELL signal
+    else if (currentShort < currentLong && holdings > 0) {
+      
       send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
-      println("simple trader : selling")
       oid += 1
+      holdings = 0
+      println("simple trader : selling")
     }
-    previousShort = currentShort
-    previousLong = currentLong
   }
 }
