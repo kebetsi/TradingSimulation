@@ -7,7 +7,8 @@ import play.api.libs.iteratee.Iteratee
 import play.api.mvc._
 import play.api.libs.json.JsValue
 import akka.actor.Props
-import actors.OhlcDemo
+import actors.TsMsgToJson
+import ch.epfl.ts.data.OHLC
 
 object Application extends Controller {
 
@@ -15,8 +16,8 @@ object Application extends Controller {
     Ok(views.html.index("hello"))
   }
 
-  def traderList = WebSocket.acceptWithActor[String, JsValue] { request =>
-    out => Props(classOf[OhlcDemo], out)
+  def traderList = WebSocket.acceptWithActor[String, String] { request =>
+    out => Props(classOf[TsMsgToJson[OHLC]], out)
   }
 
   /**

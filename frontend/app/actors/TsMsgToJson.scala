@@ -10,21 +10,33 @@ import play.libs.Akka
 import ch.epfl.ts.data.OHLC
 import scala.concurrent.ExecutionContext.Implicits.global
 import ch.epfl.ts.component.ComponentRegistration
-import play.api.libs.json._
+import scala.reflect.ClassTag
+import net.liftweb.json._
+import net.liftweb.json.Serialization.write
 
+/**
+ * Receives Messages of a given Class Tag from the Trading Simulation backend (ts)
+ * and converts them to JSON in order to be passed to the client through a web socket
+ *
+ * Note: we are using lift-json since there is no easy way to use Play's json
+ * library with generic type parameters.
+ */
+class TsMsgToJson[T <: AnyRef: ClassTag](out: ActorRef) extends Actor {
+  val clazz = implicitly[ClassTag[T]].runtimeClass
+  implicit val formats = DefaultFormats
 
-class OhlcDemo(out: ActorRef) extends Actor {
-  implicit val ohlcFormat = Json.format[OHLC]
-
+  // TODO we should be able to read all parameters except the actor system name 
+  // from the application.conf file of the backend
+  // TODO we could expose the actor system name in the frontend
   val actors = context.actorSelection("akka.tcp://simpleFX@127.0.0.1:2552/user/*")
-  
-  actors ! ComponentRegistration(self, classOf[OHLC], "frontendOhlc")
-  
+
+  actors ! ComponentRegistration(self, clazz, "frontend" + clazz)
+
   def receive() = {
-    case o: OHLC =>
-      println(o)
-      out ! Json.obj("Ohlc" -> o)
+    case msg: T =>
+      out ! write(msg)
     case _ =>
   }
+
 }
 
