@@ -5,7 +5,7 @@ import scala.collection.mutable.{Map => MMap, MutableList => MList}
 import scala.concurrent.duration.{DurationInt, DurationLong}
 import scala.concurrent.duration.FiniteDuration
 import akka.actor.{ActorRef, Cancellable}
-import ch.epfl.ts.component.{ComponentRegistration, Component, ComponentRef, StartSignal, StopSignal}
+import ch.epfl.ts.component.{ComponentRegistration, Component, ComponentRef}
 import ch.epfl.ts.data._
 import ch.epfl.ts.data.Currency._
 
@@ -132,7 +132,6 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    * Starts the scheduler and trader
    * */
   override def start = {
-    trader.ar ! StartSignal
     schedule = context.system.scheduler.schedule(2000.milliseconds, period, self, 'UpdateStatistics)
   }
 
@@ -140,7 +139,6 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    * Stops the scheduler and trader
    * */
   override def stop = {
-    trader.ar ! StopSignal
     schedule.cancel()
 
     println(s"============== Performance of ${trader.name} ===============")
