@@ -4,9 +4,35 @@
 <div data-ng-controller="MyController">
   {{ greeting }}
 
-  <li data-ng-repeat="symbol in currencies">{{ symbol }}</li>
+  <ol> 
+    <li data-ng-repeat="i in currencies">{{ i }}</li>
+  </ol>
   <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
   <!-- <highchart class="chart" config="chartConfig" class="span9" ></highchart> -->
-    <button class="btn" data-ng-click="addPoints()">add points</button>
+  <button class="btn" data-ng-click="addPoints()">add points</button>
 </div>
+
+<br/>
+
+<section class="tab" data-ng-controller="TabController as panel">
+  <ul class="nav nav-tabs">
+    <li data-ng-class="{active:panel.isSelected(1) }">
+      <a href data-ng-click="panel.selectTab(1)">Statistics</a>
+    </li>
+    <li data-ng-class="{active:panel.isSelected(2)  }">
+      <a href data-ng-click="panel.selectTab(2)">Traders</a>
+    </li>
+  </ul>
+    
+  <div data-ng-show="panel.isSelected(1)">
+    <p class="longDescription">Ahoi<!-- {{guitarVariable[whichGuitar].longDescription}} --></p>
+  </div>
+  <div data-ng-show="panel.isSelected(2)">
+    <p class="longDescription">Salut<!-- {{guitarVariable[whichGuitar].specifications}}{{guitarVariable[whichGuitar].name}} --></p>
+  </div>
+  <div data-ng-show="panel.isSelected(3)">
+    <p class="longDescription">Servus<!-- {{guitarVariable[whichGuitar].price}} --></p>
+  </div><br />
+ 
+</section>
 }
