@@ -37,10 +37,12 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   private var maxProfit = 0.0
   private var maxLoss = 0.0
 
+  //TODO find appropriate value for risk free rate
+  val riskFreeRate = 0.03
   def totalReturns: Double = value() / initial
   def volatility: Double = computeVolatility
-  def drawdown: Double = maxLoss
-  def sharpeRatio: Double = totalReturns / volatility
+  def drawdown: Double = maxLoss / initial
+  def sharpeRatio: Double = (totalReturns - riskFreeRate) / volatility
 
   /**
    * Redirects out-going connections to the trader
