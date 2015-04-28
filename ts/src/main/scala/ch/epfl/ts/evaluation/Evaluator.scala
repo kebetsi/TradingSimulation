@@ -10,6 +10,11 @@ import ch.epfl.ts.data._
 import ch.epfl.ts.data.Currency._
 
 /**
+ * Represents metrics of a strategy
+ * */
+case class EvaluationReport(totalReturns: Double, volatility: Double, drawdown: Double, sharpeRatio: Double)
+
+/**
   * Evaluates the performance of traders by total returns, volatility, draw down and sharpe ratio
   *
   * To use this class, redirect all previous connections into and out of the trader to
@@ -22,7 +27,7 @@ import ch.epfl.ts.data.Currency._
   * @param traderId the id of the trader
   * @param initial the initial seed money
   * @param currency currency of the initial seed money
-  * @param period the time period to compute performance
+  * @param period the time period to send evaluation report
   */
 class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
@@ -35,20 +40,19 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
 
   private var lastValue = initial
   private var maxProfit = 0.0
-  private var maxLoss = 0.0
 
-  //TODO find appropriate value for risk free rate
-  val riskFreeRate = 0.03
-  def totalReturns: Double = value() / initial
-  def volatility: Double = computeVolatility
-  def drawdown: Double = maxLoss / initial
-  def sharpeRatio: Double = (totalReturns - riskFreeRate) / volatility
+  /** Max loss as a positive value
+   * */
+  private var maxLoss = 0.0
 
   /**
    * Redirects out-going connections to the trader
    * */
   override def connect(ar: ActorRef, ct: Class[_], name: String) = {
-    trader.ar ! ComponentRegistration(ar, ct, name)
+    if (ct.equals(classOf[EvaluationReport]))
+      dest += (ct -> (ar :: dest.getOrElse(ct, List())))
+    else
+      trader.ar ! ComponentRegistration(ar, ct, name)
   }
 
   /**
@@ -63,13 +67,15 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
       sell(t)
     case q: Quote =>
       updatePrice(q)
-    case 'UpdateStatistics =>
-      updateStatistic
+    case 'Report =>
+      if (canReport) report
     case m => trader.ar ! m
   }
 
   /**
    *  Returns the exchange ratio between two currency
+   *
+   *  1 unit of currency *from* can buy *ratio* units of currency *to*
    * */
   private def ratio(from: Currency, to: Currency): Double = {
     if (from == to) 1.0 else priceTable(from -> to)
@@ -118,23 +124,43 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   /**
    * Updates the statistics
    * */
-  private def updateStatistic = {
+  private def report: Unit = {
     val curVal = value()
 
     val profit = curVal - initial
     if (profit > maxProfit) maxProfit = profit
-    else if (profit < maxLoss) maxLoss = profit
+    else if (profit < 0 && 0 - profit > maxLoss) maxLoss = 0 - profit
 
     returnsList += (curVal - lastValue) / lastValue
 
     lastValue = curVal
+
+    // generate report
+    //TODO find appropriate value for risk free rate
+    val riskFreeRate = 0.03
+    val volatility = computeVolatility
+    val totalReturns = value() / initial
+    val drawdown = maxLoss / initial
+    val sharpeRatio = (totalReturns - riskFreeRate) / volatility
+
+    EvaluationReport(value() / initial, volatility, drawdown, sharpeRatio)
+  }
+
+  /**
+   * Tells whether it's OK to report
+   *
+   * It's only OK to report if the currencies appear in the wallet also appear in the price table.
+   * */
+  private def canReport: Boolean = {
+    if (priceTable.size == 0) false
+    else wallet.keys.forall(c => c == currency || priceTable.contains(c -> currency))
   }
 
   /**
    * Starts the scheduler and trader
    * */
   override def start = {
-    schedule = context.system.scheduler.schedule(2000.milliseconds, period, self, 'UpdateStatistics)
+    schedule = context.system.scheduler.schedule(2000.milliseconds, period, self, 'Report)
   }
 
   /**
@@ -143,10 +169,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   override def stop = {
     schedule.cancel()
 
-    println(s"============== Performance of ${trader.name} ===============")
-    println(s"total returns: $totalReturns")
-    println(s"volatility: $volatility")
-    println(s"draw down: $drawdown")
-    println(s"sharp: $sharpeRatio")
+    // last report
+    if (canReport) report
   }
 }
