@@ -2,6 +2,8 @@ package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Currency
+import ch.epfl.ts.component.persist.QuotePersistor
+import ch.epfl.ts.component.fetch.MarketNames._
 import scala.util.parsing.combinator._
 import scala.io.Source
 import scala.concurrent.duration._
@@ -9,7 +11,6 @@ import java.util.Date
 import java.util.Calendar
 import java.util.Timer
 import java.util.TimerTask
-import ch.epfl.ts.component.fetch.MarketNames._
 
 /**
  * HistDataCSVFetcher class reads data from csv source and converts it to Quotes.
@@ -63,7 +64,7 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
    */
   val allQuotes: List[Quote] = monthsBetweenStartAndEnd
                                 .flatMap(m => parse(bidPref + m + ".csv", askPref + m + ".csv"))
-                                .sortBy(q => q.timestamp)
+                                .sortBy(q => q.timestamp);
   
   /**
    * Index of the next quote to be fetched, incremented whenever a quote has been fetched
@@ -95,9 +96,16 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
     }
   }
   
-  // TODO
+  /**
+   * Saves the quotes this fetcher has fetched (i.e. quotes that are stored in val allQuotes)
+   * in an sqlite database of a given name.
+   * 
+   * @param   filename    Name of the DB file the quotes will be saved to, the final file
+   *                      will be called <filename>.db
+   */
   def loadInPersistor(filename: String) {
-    throw new UnsupportedOperationException("loadInPersistor is not yet implemented.");
+    val persistor = new QuotePersistor(filename);
+    persistor.save(allQuotes);
   }
   
   /**

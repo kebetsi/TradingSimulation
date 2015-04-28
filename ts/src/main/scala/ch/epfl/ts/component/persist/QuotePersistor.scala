@@ -24,7 +24,7 @@ class QuotePersistor(dbFilename: String) extends Persistance[Quote]{
   // Open DB session and query handler on the QUOTES table
   val db = Database.forURL("jdbc:sqlite:" + dbFilename + ".db", driver = "org.sqlite.JDBC")
   lazy val QuotesTable = TableQuery[Quotes]
-  def init() = db.withDynSession { if (MTable.getTables("QUOTES").list.isEmpty) { QuotesTable.ddl.create } }
+  db.withDynSession { if (MTable.getTables("QUOTES").list.isEmpty) { QuotesTable.ddl.create } }
   
   
   override def loadBatch(startTime: Long, endTime: Long): List[Quote] = db.withDynSession {
