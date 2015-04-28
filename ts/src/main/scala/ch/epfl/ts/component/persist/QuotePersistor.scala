@@ -48,7 +48,10 @@ class QuotePersistor(dbFilename: String) extends Persistance[Quote]{
   //TODO
   def loadSingle(id: Int): ch.epfl.ts.data.Quote = ???
   
-  //TODO
-  def save(t: ch.epfl.ts.data.Quote): Unit = ???
+  def save(q: ch.epfl.ts.data.Quote): Unit = db.withDynSession {
+    // The first field of the quote (QUOTE_ID) is set to -1 but this will be 
+    // ignored and auto incremented by jdbc:sqlite in the actual DB table.
+    QuotesTable += (-1, q.timestamp, q.whatC.toString, q.withC.toString, q.bid, q.ask)
+  }
 
 }
