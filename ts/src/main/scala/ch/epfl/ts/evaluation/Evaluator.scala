@@ -143,7 +143,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     val drawdown = maxLoss / initial
     val sharpeRatio = (totalReturns - riskFreeRate) / volatility
 
-    EvaluationReport(value() / initial, volatility, drawdown, sharpeRatio)
+    send(EvaluationReport(value() / initial, volatility, drawdown, sharpeRatio))
   }
 
   /**
