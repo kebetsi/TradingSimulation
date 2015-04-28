@@ -46,11 +46,15 @@ import java.util.TimerTask
  *                      between dT_historical=4200 and dT_historical=4900, they will be both sent after 4ms in the simulation.
  *                      If we go even higher, dT will become < 1 and thus 0, which in theory would mean send all the quotes
  *                      you read at the same time, but in practice would probably mess up things.
+ *                      
+ * @param saveTo        Defaults to empty string. If something other than empty string is set here, loadInPersistor will be
+ *                      called and the data this fetcher loaded will be saved into an sqlite database in data/<saveTo>.db
  */
 
 class HistDataCSVFetcher(dataDir: String, currencyPair: String, 
                          start: Date, end: Date,
-                         speed: Double = 1.0)  extends PushFetchComponent[Quote] {
+                         speed: Double = 1.0,
+                         saveTo: String = "")  extends PushFetchComponent[Quote] {
   
   val workingDir = dataDir + "/" + currencyPair.toUpperCase() + "/";
   val (whatC, withC) = Currency.pairFromString(currencyPair);
@@ -64,7 +68,12 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
    */
   val allQuotes: List[Quote] = monthsBetweenStartAndEnd
                                 .flatMap(m => parse(bidPref + m + ".csv", askPref + m + ".csv"))
-                                .sortBy(q => q.timestamp);
+                                .sortBy(q => q.timestamp)
+  
+  /**
+   * Saving to a DB if the respective parameter is set
+   */
+  if(saveTo != "") loadInPersistor(saveTo)
   
   /**
    * Index of the next quote to be fetched, incremented whenever a quote has been fetched
