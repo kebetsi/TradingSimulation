@@ -3,5 +3,102 @@
 @main("Welcome to Play") {
 <div data-ng-controller="MyController">
   {{ greeting }}
+
+  <ol> 
+    <li data-ng-repeat="i in currencies">{{ i }}</li>
+  </ol>
+  <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  <!-- <highchart class="chart" config="chartConfig" class="span9" ></highchart> -->
+  <button class="btn" data-ng-click="addPoints()">add points</button>
 </div>
+
+<br/>
+
+<section class="tab" data-ng-controller="TabController">
+  <ul class="nav nav-tabs">
+    <li data-ng-class="{active:isSelected(1) }">
+      <a href data-ng-click="selectTab(1)">Statistics</a>
+    </li>
+    <li data-ng-class="{active:isSelected(2)  }">
+      <a href data-ng-click="selectTab(2)">Traders</a>
+    </li>
+  </ul>
+    
+  <div data-ng-show="isSelected(1)">
+    <!-- STATISTICS TABLE -->
+    <table>
+      <tr>
+        <th>Trader</th>
+        <th>Strategy Used</th>
+        <th>Initial Money</th>
+        <th>Current Money</th>
+        <th>Transactions</th>
+        <th>Earnings</th> 
+      </tr>
+      <tr data-ng-repeat="t in traders">
+        <td>{{t.name}}</td>
+        <td>{{t.strategy}}</td>
+        <td>{{t.initMoney}}</td>
+        <td>{{t.currentMoney}}</td>
+        <td>{{t.transactions}}</td>
+        <td>{{t.earnings}}</td> 
+      </tr>
+    </table>
+  </div>
+  <div data-ng-show="isSelected(2)">
+    <!-- TRADERS TABLE -->
+    <table>
+      <tr>
+        <td>Transactions in total</td>
+        <td>{{transactionsTotal}}</td> 
+      </tr>
+      <tr>
+        <td>Volume in total</td>
+        <td>{{volumeTotal}}</td> 
+      </tr>
+      <tr>
+        <td>Traders</td>
+        <td>{{nTraders}}</td> 
+      </tr>
+      <tr>
+        <td>Market Activity</td>
+        <td>{{marketActivity}}</td> 
+      </tr>
+      <tr>
+        <td>Uptime</td>
+        <td>{{uptime}}</td> 
+      </tr>
+    </table>
+  </div>
+  
+  <!-- Transaction table -->
+  <table>
+    <tr>
+      <th>Seller</th>
+      <th>Buyer</th>
+      <th>Price</th>
+      <th>Amount</th>
+      <th>Time</th>
+    </tr>
+    <tr data-ng-repeat="trans in transactions">
+      <th>{{trans.seller}}</th>
+      <th>{{trans.buyer}}</th>
+      <th>{{trans.price}}</th>
+      <th>{{trans.amount}}</th>
+      <th>{{trans.time}}</th>
+    </tr>
+  </table>
+  
+  <!-- Wallet (as table now, will be pie diagram later) -->
+  <table>
+    <tr>
+      <th data-ng-repeat="currency in wallet">{{currency.name}}</th>
+    </tr>
+    <tr>
+      <td data-ng-repeat="currency in wallet">{{currency.amount}}</td>
+    </tr>
+  </table>
+</section>
+
+
 }

@@ -1,14 +1,14 @@
 var ws = new WebSocket("ws://localhost:9000/trader-list");
 ws.onmessage = function(event) {
-	console.log("WS received TrueFx quotes:");
-	console.log(JSON.parse(event.data));
+  console.log("WS received TrueFx quotes:");
+  console.log(JSON.parse(event.data));
 };
 ws.onopen = function(event) { 
-	console.log("WS connection open"); 
+  console.log("WS connection open"); 
 };
 ws.onclose = function(event) { 
-	console.log("WS connection closed"); 
+  console.log("WS connection closed"); 
 };
 ws.onerror = function(event) { 
-	console.log("WS Error"); 
+  console.log("WS Error"); 
 };
