@@ -168,12 +168,14 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
     val asklines = Source.fromFile(workingDir + askCSVFilename).getLines
     bidlines.zip(asklines)
       // Combine bid and ask data into one line
-      .map( l => l._1 + " " + l._2 )
-      .map( l => CSVParser.parse(CSVParser.csvcombo, l).get )
-      // `withC` and `whatC` are not available in the CVS, we add them back
-      // after parsing (they are in the path to the file opened above)
-      .map( q => Quote(q.marketId, q.timestamp, whatC, withC, q.bid, q.ask) );
+      .map(l => {
+        val q = CSVParser.parse(CSVParser.csvcombo, l._1 + " " + l._2).get
+        // `withC` and `whatC` are not available in the CVS, we add them back
+        // after parsing (they are in the path to the file opened above)
+        Quote(q.marketId, q.timestamp, whatC, withC, q.bid, q.ask)
+      })
   }
+  
 }
 
 /**
@@ -201,9 +203,8 @@ object CSVParser extends RegexParsers with java.io.Serializable {
   val timestamp: Parser[String] = """[0-9]{6}""".r
   val floatingpoint: Parser[String] = """[0-9]*\.?[0-9]*""".r
   
+  val stampFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss")    
   def toTime(datestamp: String, timestamp: String): Long = { 
-    val stampFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss")    
-    val stamp = stampFormat.parse(datestamp + timestamp)
-    stamp.getTime
+    stampFormat.parse(datestamp + timestamp).getTime
   }
 }
