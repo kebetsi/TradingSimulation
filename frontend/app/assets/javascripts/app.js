@@ -16,22 +16,9 @@ myApp.controller('MyController', [ '$scope', function($scope) {
     });
 
     // Create the chart
-    // $('#container').highcharts('StockChart', {
     myChart = new Highcharts.StockChart({
       chart : {
-        renderTo : 'container'// ,
-      // events : {
-      // load : function () {
-      //
-      // // set up the updating of the chart each second
-      // var series = this.series[0];
-      // setInterval(function () {
-      // var x = (new Date()).getTime(), // current time
-      // y = Math.round(Math.random() * 100);
-      // series.addPoint([x, y], true, true);
-      // }, 1000);
-      // }
-      // }
+        renderTo : 'container'
       },
 
       rangeSelector : {
@@ -86,7 +73,6 @@ myApp.controller('MyController', [ '$scope', function($scope) {
   });
 
   function toggleGraph(id) {
-    // console.log(this);
     var button_id = id.split("_")[1];
     series = myChart.series[button_id];
     if (series.visible) {
@@ -98,32 +84,25 @@ myApp.controller('MyController', [ '$scope', function($scope) {
 
   var ws = new WebSocket("ws://localhost:9000/wsTest");
   ws.onmessage = function(event) {
-    // console.log("WS received TrueFx quotes:");
-
     var quotes = JSON.parse(event.data).quotes;
-    // console.log(dataParsed);
-
     var fill = false;
     // initialize symbol names
     if ($scope.currencies.length < 10) {
       fill = true;
     }
 
-    var x = (new Date()).getTime(); // current time for debugging (fetcher
-                                    // always returns same time step)
+    var x = quotes[0].timestamp;  // note: timestamps for different symbols are not necessarily equal
+                                  // taking only one timestamp makes the graph faster and smoother for the cost of accuracy
     for (var i = 0; i < quotes.length; /* i += 2 */++i) {
       var whatC = quotes[i].whatC;
       var withC = quotes[i].withC;
       var y = quotes[i].ask;
-      // x = quotes[i].timestamp; // makes the whole graph
       var series = myChart.series[i];
-      series.name = whatC + " to " + withC;
       if (fill) {
+        series.name = whatC + " to " + withC;
         $scope.currencies.push(whatC + " to " + withC);
-//        console.log($scope.currencies);
       }
-      var shift = series.data.length > 20 ? true : false;
-      // console.log(series.data.length);
+      var shift = (series.data.length > 20);
       series.addPoint([ x, y ], false, shift); // bool1: redraw, bool2: shift
     }
 
@@ -131,8 +110,6 @@ myApp.controller('MyController', [ '$scope', function($scope) {
     $scope.$apply(); // this makes sure that the bound variables are updated
                       // even though we are in an asynchronous call
     // http://www.jeffryhouser.com/index.cfm/2014/6/2/How-do-I-run-code-when-a-variable-changes-with-AngularJS
-
-    // console.log($scope.currencies);
   };
   ws.onopen = function(event) {
     console.log("WS connection open");
@@ -151,12 +128,8 @@ myApp.controller('TabController', [ '$scope', function($scope) {
 
   $scope.selectTab = function(setTab) {
     $scope.tab = setTab;
-//    console.log($scope.tab);
-//    console.log(this.tab);
   };
   $scope.isSelected = function(checkTab) {
-//    console.log($scope.tab);
-//    console.log(this.tab);
     return $scope.tab === checkTab;
   };
   
