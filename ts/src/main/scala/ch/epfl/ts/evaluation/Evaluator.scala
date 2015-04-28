@@ -11,7 +11,7 @@ import ch.epfl.ts.data.Currency._
 
 /**
  * Represents metrics of a strategy
- * */
+ */
 case class EvaluationReport(totalReturns: Double, volatility: Double, drawdown: Double, sharpeRatio: Double)
 
 /**
@@ -42,12 +42,12 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   private var maxProfit = 0.0
 
   /** Max loss as a positive value
-   * */
+   */
   private var maxLoss = 0.0
 
   /**
    * Redirects out-going connections to the trader
-   * */
+   */
   override def connect(ar: ActorRef, ct: Class[_], name: String) = {
     if (ct.equals(classOf[EvaluationReport]))
       dest += (ct -> (ar :: dest.getOrElse(ct, List())))
@@ -76,29 +76,29 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    *  Returns the exchange ratio between two currency
    *
    *  1 unit of currency *from* can buy *ratio* units of currency *to*
-   * */
+   */
   private def ratio(from: Currency, to: Currency): Double = {
     if (from == to) 1.0 else priceTable(from -> to)
   }
 
   /**
    *  Returns the total money of the wallet converted to the given currency
-   * */
+   */
   private def value(in: Currency = currency): Double = {
     (wallet :\ 0.0) { case ((c, amount), acc) => acc + ratio(c, in) * amount }
   }
 
   /**
-   *  Updates the wallet and statistics after a sell contraction
-   * */
+   *  Updates the wallet and statistics after a sell transaction
+   */
   private def sell(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) - t.volume)
     wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) + t.volume * t.price)
   }
 
   /**
-   * Updates the wallet and statistics after a buy contraction
-   * */
+   * Updates the wallet and statistics after a buy transaction
+   */
   private def buy(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) + t.volume)
     wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) - t.volume * t.price)
@@ -106,7 +106,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
 
   /**
    * Updates the price table
-   * */
+   */
   private def updatePrice(q: Quote) = {
     val Quote(_, _, whatC, withC, bid, ask) = q
     priceTable.put(whatC -> withC, (bid + ask) / 2.0)
@@ -115,7 +115,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
 
   /**
    * Computes volatility, which is the variance of returns
-   * */
+   */
   private def computeVolatility = {
     val mean = (returnsList :\ 0.0)(_ + _) / returnsList.length
     (returnsList :\ 0.0) { (r, acc) => (r - mean) * (r - mean) + acc } / returnsList.length
@@ -123,7 +123,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
 
   /**
    * Updates the statistics
-   * */
+   */
   private def report: Unit = {
     val curVal = value()
 
@@ -135,21 +135,20 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
 
     lastValue = curVal
 
-    // generate report
+    // Generate report
     //TODO find appropriate value for risk free rate
     val riskFreeRate = 0.03
-    val volatility = computeVolatility
     val totalReturns = value() / initial
+    val volatility = computeVolatility
     val drawdown = maxLoss / initial
     val sharpeRatio = (totalReturns - riskFreeRate) / volatility
 
-    send(EvaluationReport(value() / initial, volatility, drawdown, sharpeRatio))
+    send(EvaluationReport(totalReturns, volatility, drawdown, sharpeRatio))
   }
 
   /**
    * Tells whether it's OK to report
-   *
-   * It's only OK to report if the currencies appear in the wallet also appear in the price table.
+   * @return True if and only if each currency appearing in the wallet also appears in the price table.
    * */
   private def canReport: Boolean = {
     if (priceTable.size == 0) false
@@ -158,18 +157,18 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
 
   /**
    * Starts the scheduler and trader
-   * */
+   */
   override def start = {
     schedule = context.system.scheduler.schedule(2000.milliseconds, period, self, 'Report)
   }
 
   /**
    * Stops the scheduler and trader
-   * */
+   */
   override def stop = {
     schedule.cancel()
 
-    // last report
+    // Last report
     if (canReport) report
   }
 }
