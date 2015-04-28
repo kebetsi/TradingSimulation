@@ -111,7 +111,6 @@ myApp.controller('MyController', [ '$scope', function($scope) {
 
     var x = (new Date()).getTime(); // current time for debugging (fetcher
                                     // always returns same time step)
-    console.log(quotes.length);
     for (var i = 0; i < quotes.length; /* i += 2 */++i) {
       var whatC = quotes[i].whatC;
       var withC = quotes[i].withC;
@@ -148,12 +147,64 @@ myApp.controller('MyController', [ '$scope', function($scope) {
 
 // table controller
 myApp.controller('TabController', [ '$scope', function($scope) {
-  this.tab = 1;
+  $scope.tab = 1;
 
-  this.selectTab = function(setTab) {
-    this.tab = setTab;
+  $scope.selectTab = function(setTab) {
+    $scope.tab = setTab;
+//    console.log($scope.tab);
+//    console.log(this.tab);
   };
-  this.isSelected = function(checkTab) {
-    return this.tab === checkTab;
+  $scope.isSelected = function(checkTab) {
+//    console.log($scope.tab);
+//    console.log(this.tab);
+    return $scope.tab === checkTab;
   };
+  
+  // traders
+  $scope.traders = [
+    {
+      name : "joe",
+      strategy : "random",
+      initMoney : 10,
+      currentMoney : 100,
+      transactions : 5,
+      earnings : 90 
+    },
+    {
+      name : "joe",
+      strategy : "random",
+      initMoney : 10,
+      currentMoney : 100,
+      transactions : 5,
+      earnings : 90 
+    }
+    ];
+  
+  $scope.transactions = [
+    {
+      seller : 'a',
+      buyer : 'b',
+      price : 10,
+      amount : 100,
+      time : '10:14'
+    },
+    {
+      seller : 'a',
+      buyer : 'b',
+      price : 10,
+      amount : 100,
+      time : '10:14'
+    }
+    ];
+  
+  $scope.wallet = [
+     {
+       name : 'eur',
+       amount : 100
+     },
+     {
+       name : 'chf',
+       amount : 10
+     }
+     ];
 } ]);
