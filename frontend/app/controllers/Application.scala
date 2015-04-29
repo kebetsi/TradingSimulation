@@ -12,6 +12,7 @@ import scala.reflect.ClassTag
 import ch.epfl.ts.data.OHLC
 import ch.epfl.ts.indicators.SMA
 import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.Transaction
 
 object Application extends Controller {
 
@@ -22,6 +23,12 @@ object Application extends Controller {
   def quote = WebSocket.acceptWithActor[String, String] { request =>
     out => 
       Props(classOf[TsMsgToJson[Quote]], out, implicitly[ClassTag[Quote]])
+  }
+  
+
+  def transaction = WebSocket.acceptWithActor[String, String] { request =>
+    out => 
+      Props(classOf[TsMsgToJson[Transaction]], out, implicitly[ClassTag[Transaction]])
   }
 
   def ohlc = WebSocket.acceptWithActor[String, String] { request =>
