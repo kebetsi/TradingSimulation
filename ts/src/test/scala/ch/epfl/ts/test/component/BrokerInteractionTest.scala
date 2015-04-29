@@ -35,7 +35,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
 
   market ! StartSignal
   broker ! StartSignal
-  market ! (marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
+  market ! Quote(marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
 
   "A trader " should {
     " register in a broker on startSignal" in {
