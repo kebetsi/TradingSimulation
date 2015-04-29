@@ -5,6 +5,9 @@ import ch.epfl.ts.indicators.MovingAverage
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{ MarketAskOrder, MarketBidOrder, Quote }
 import ch.epfl.ts.data.Currency
+import akka.actor.ActorLogging
+import ch.epfl.ts.engine.MarketFXSimulator
+import akka.actor.ActorRef
 
 /**
  * Simple momentum strategy. 
@@ -16,9 +19,9 @@ import ch.epfl.ts.data.Currency
  */
 class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
                     val shortPeriod: Int, val longPeriod: Int,
-                    val volume: Double, val tolerance : Double) extends Component {
+                    val volume: Double, val tolerance : Double ) extends Component with ActorLogging{
 
-
+  
 
   /**
    * Moving average of the current period
@@ -35,7 +38,7 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
   var holdings: Double = 0.0
 
   val (whatC, withC) = symbol
-
+  
   override def receiver = {
 
     case ma: MovingAverage => {
@@ -58,7 +61,7 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
 
     //BUY signal
     if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0 ) {
-      println("buy signal")
+      log.debug("buying "+volume)
       send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       oid += 1
       holdings = volume 
@@ -66,7 +69,7 @@ class SimpleFXTrader(val uid: Long, symbol: (Currency, Currency),
     
     //SELL signal
     else if (currentShort < currentLong && holdings > 0.0) {
-      println("sell signal")
+      log.debug("selling "+volume)
       send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       oid += 1
       holdings = 0.0

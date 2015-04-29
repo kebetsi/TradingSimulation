@@ -31,8 +31,8 @@ object SimpleExampleHistFX {
     // Fetcher
     // variables for the fetcher
     val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
-    val startDate = dateFormat.parse("201303");
-    val endDate = dateFormat.parse("201304");
+    val startDate = dateFormat.parse("201304");
+    val endDate = dateFormat.parse("201305");
     val workingDir = "/Users/admin";
     val currencyPair = "USDCHF";
 
