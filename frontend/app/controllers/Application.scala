@@ -8,7 +8,9 @@ import play.api.mvc._
 import play.api.libs.json.JsValue
 import akka.actor.Props
 import actors.TsMsgToJson
+import scala.reflect.ClassTag
 import ch.epfl.ts.data.OHLC
+import ch.epfl.ts.indicators.SMA
 
 object Application extends Controller {
 
@@ -16,8 +18,14 @@ object Application extends Controller {
     Ok(views.html.index("hello"))
   }
 
-  def traderList = WebSocket.acceptWithActor[String, String] { request =>
-    out => Props(classOf[TsMsgToJson[OHLC]], out)
+  def ohlc = WebSocket.acceptWithActor[String, String] { request =>
+    out => 
+      Props(classOf[TsMsgToJson[OHLC]], out, implicitly[ClassTag[OHLC]])
+  }
+
+  def sma = WebSocket.acceptWithActor[String, String] { request =>
+    out => 
+      Props(classOf[TsMsgToJson[SMA]], out, implicitly[ClassTag[SMA]])
   }
 
   /**
