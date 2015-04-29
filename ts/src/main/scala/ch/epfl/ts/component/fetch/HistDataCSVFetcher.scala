@@ -80,8 +80,8 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
    * Index of the next month to be fetched, incremented whenever a month has been fetched.
    * And the index for the quotes in that month, updated whenever a quote was sent.
    */
-  var currQ = allQuotes.next()
-  var nextQ = allQuotes.next()
+  var currentQuote = allQuotes.next()
+  var nextQuote = allQuotes.next()
   
   /**
    * Using java.util.Timer to simulate the timing of the quotes when they were generated originally.
@@ -95,13 +95,13 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
     
     def run() {
       // Get the current quote and send it
-      callback(currQ)
+      callback(currentQuote)
   
       if (allQuotes.hasNext) {
         // If there is a next quote, schedule the next call
-        currQ = nextQ
-        nextQ = allQuotes.next
-        timer.schedule(new SendQuotes(), (1 / speed * (nextQ.timestamp - currQ.timestamp)).toInt)
+        currentQuote = nextQuote
+        nextQuote = allQuotes.next
+        timer.schedule(new SendQuotes(), (1 / speed * (nextQuote.timestamp - currentQuote.timestamp)).toInt)
       } else {
         // Nothing more to do here, boys!
         timer.cancel() 
@@ -112,7 +112,8 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
   
   /**
    * Saves the quotes this fetcher has fetched (i.e. quotes that are stored in val allQuotes)
-   * in an sqlite database of a given name.
+   * in an sqlite database of a given name. The fetcher does nothing else during this time.
+   * The data is reloaded (rewinded all the way to the start) at the end of the function.
    * 
    * @param   filename    Name of the DB file the quotes will be saved to, the final file
    *                      will be called <filename>.db
@@ -120,16 +121,17 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
   def loadInPersistor(filename: String) {
     val persistor = new QuotePersistor(filename)
     while(allQuotes.hasNext) {
-      println("Loading 100000 records into persistor...")
-      var quoteBatch = List[Quote]()
-      var batchsize = 0
-      while(batchsize < 100000 && allQuotes.hasNext) {
-        quoteBatch = allQuotes.next :: quoteBatch
-        batchsize = batchsize + 1
+      val batchSize = 100000
+      println("Loading batch of "+batchSize+" records into persistor...")
+      var batch = List[Quote]()
+      var counter = 0
+      while(counter < batchSize && allQuotes.hasNext) {
+        batch = allQuotes.next :: batch
+        counter = counter + 1
       }
-      persistor.save(quoteBatch)
+      persistor.save(batch)
     }
-    // Reload the data because Iterator.next() destroyed it in the process
+    // Reload the data because Iterator.next() is destroyed it in the process
     loadData()
   }
   
