@@ -1,7 +1,6 @@
-var myApp = angular.module('myApp', [ 'ngRoute', 'highcharts-ng' ]);
+var myApp = angular.module('myApp', [ 'ngRoute', 'ui.bootstrap' ]);
 
 myApp.controller('MyController', [ '$scope', function($scope) {
-  $scope.greeting = 'it works';
   $scope.currencies = [];
 
   // put code for highchart here
@@ -147,64 +146,6 @@ myApp.controller('MyController', [ '$scope', function($scope) {
 
 // table controller
 myApp.controller('TabController', [ '$scope', function($scope) {
-  $scope.tab = 1;
 
-  $scope.selectTab = function(setTab) {
-    $scope.tab = setTab;
-//    console.log($scope.tab);
-//    console.log(this.tab);
-  };
-  $scope.isSelected = function(checkTab) {
-//    console.log($scope.tab);
-//    console.log(this.tab);
-    return $scope.tab === checkTab;
-  };
-  
-  // traders
-  $scope.traders = [
-    {
-      name : "joe",
-      strategy : "random",
-      initMoney : 10,
-      currentMoney : 100,
-      transactions : 5,
-      earnings : 90 
-    },
-    {
-      name : "joe",
-      strategy : "random",
-      initMoney : 10,
-      currentMoney : 100,
-      transactions : 5,
-      earnings : 90 
-    }
-    ];
-  
-  $scope.transactions = [
-    {
-      seller : 'a',
-      buyer : 'b',
-      price : 10,
-      amount : 100,
-      time : '10:14'
-    },
-    {
-      seller : 'a',
-      buyer : 'b',
-      price : 10,
-      amount : 100,
-      time : '10:14'
-    }
-    ];
-  
-  $scope.wallet = [
-     {
-       name : 'eur',
-       amount : 100
-     },
-     {
-       name : 'chf',
-       amount : 10
-     }
-     ];
+	
 } ]);
