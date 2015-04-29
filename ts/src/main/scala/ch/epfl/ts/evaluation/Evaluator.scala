@@ -12,7 +12,8 @@ import ch.epfl.ts.data.Currency._
 /**
  * Represents metrics of a strategy
  */
-case class EvaluationReport(totalReturns: Double, volatility: Double, drawdown: Double, sharpeRatio: Double)
+case class EvaluationReport(traderName: String, wallet: Map[Currency, Double], currency: Currency, initial: Double,
+                            current: Double, totalReturns: Double, volatility: Double, drawdown: Double, sharpeRatio: Double)
 
 /**
   * Evaluates the performance of traders by total returns, volatility, draw down and sharpe ratio
@@ -143,7 +144,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     val drawdown = maxLoss / initial
     val sharpeRatio = (totalReturns - riskFreeRate) / volatility
 
-    send(EvaluationReport(totalReturns, volatility, drawdown, sharpeRatio))
+    send(EvaluationReport(trader.name, wallet.toMap, currency, initial, curVal, totalReturns, volatility, drawdown, sharpeRatio))
   }
 
   /**
