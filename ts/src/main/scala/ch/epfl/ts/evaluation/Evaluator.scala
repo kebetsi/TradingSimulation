@@ -139,7 +139,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
     // Generate report
     //TODO find appropriate value for risk free rate
     val riskFreeRate = 0.03
-    val totalReturns = value() / initial
+    val totalReturns = (value() - initial) / initial
     val volatility = computeVolatility
     val drawdown = maxLoss / initial
     val sharpeRatio = (totalReturns - riskFreeRate) / volatility
