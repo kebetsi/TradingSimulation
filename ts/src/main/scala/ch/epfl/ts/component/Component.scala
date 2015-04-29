@@ -81,7 +81,7 @@ abstract class Component extends Receiver {
 
   final def componentReceive: PartialFunction[Any, Unit] = {
     case ComponentRegistration(ar, ct, name) =>
-      dest += (ct -> (ar :: dest.getOrElse(ct, List())))
+      connect(ar, ct, name)
       println("Received destination " + this.getClass.getSimpleName + ": from " + ar + " to " + ct.getSimpleName)
     case StartSignal => stopped = false
       start
@@ -92,10 +92,27 @@ abstract class Component extends Receiver {
     case y if stopped => println("Received data when stopped " + this.getClass.getSimpleName + " of type " + y.getClass )
   }
 
-  // subclass can override do initialization here
+  /**
+   * Connects two compoenents
+   *
+   * Normally subclass don't need to override this method.
+   * */
+  def connect(ar: ActorRef, ct: Class[_], name: String): Unit = {
+    dest += (ct -> (ar :: dest.getOrElse(ct, List())))
+  }
+
+  /**
+   * Starts the component
+   *
+   * Subclass can override do initialization here
+   * */
   def start: Unit = {}
 
-  // subclass can override do release resources here
+  /**
+   * Stops the component
+   *
+   * Subclass can override do release resources here
+   * */
   def stop: Unit = {}
 
   def receiver: PartialFunction[Any, Unit]
