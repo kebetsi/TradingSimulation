@@ -21,6 +21,7 @@ import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.component.fetch.HistDataCSVFetcher
+import ch.epfl.ts.traders.SimpleFXTraderWithShorting
 
 object SimpleExampleHistFX {
   def main(args: Array[String]): Unit = {
@@ -46,15 +47,15 @@ object SimpleExampleHistFX {
     val traderId: Long = 123L
     val symbol = (Currency.USD, Currency.CHF)
     val volume = 1000.0
-    val shortPeriod = 5
-    val longPeriod = 30
-    val periods = List(5, 30)
+    val shortPeriod = 2
+    val longPeriod = 6
+    val periods = List(2, 6)
     val tolerance = 0.0002
-    val trader = builder.createRef(Props(classOf[SimpleFXTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance), "simpleTrader")
+    val trader = builder.createRef(Props(classOf[SimpleFXTraderWithShorting], traderId, symbol, shortPeriod, longPeriod, volume, tolerance), "simpleTrader")
 
     // Indicator
     // specify period over which we build the OHLC (from quotes)
-    val period: Long = 60*1000 //OHLC of 1 minute  
+    val period: Long = 60*60*1000 //OHLC of 1 hour  
     val maCross = builder.createRef(Props(classOf[SmaIndicator], periods), "maCross")
     val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], 4L, symbol, period), "ohlcIndicator")
 
