@@ -11,11 +11,17 @@ import actors.TsMsgToJson
 import scala.reflect.ClassTag
 import ch.epfl.ts.data.OHLC
 import ch.epfl.ts.indicators.SMA
+import ch.epfl.ts.data.Quote
 
 object Application extends Controller {
 
   def index = Action {
     Ok(views.html.index("hello"))
+  }
+
+  def quote = WebSocket.acceptWithActor[String, String] { request =>
+    out => 
+      Props(classOf[TsMsgToJson[Quote]], out, implicitly[ClassTag[Quote]])
   }
 
   def ohlc = WebSocket.acceptWithActor[String, String] { request =>

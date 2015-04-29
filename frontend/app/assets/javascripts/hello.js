@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://localhost:9000/trader-list");
+var ws = new WebSocket("ws://localhost:9000/fetchers/quote");
 ws.onmessage = function(event) {
   console.log("WS received TrueFx quotes:");
   console.log(JSON.parse(event.data));

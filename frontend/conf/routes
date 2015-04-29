@@ -5,8 +5,11 @@
 # Home page
 GET   /                  controllers.Application.index
 
+GET   /fetchers/quote    controllers.Application.quote
+
 GET   /indicators/ohlc   controllers.Application.ohlc
 GET   /indicators/sma    controllers.Application.sma
+
 GET   /wsTest            controllers.Application.wsTest
 
 # Static
