@@ -9,12 +9,12 @@ import akka.testkit.TestActorRef
 import akka.testkit.TestKit
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.data.Currency
-import ch.epfl.ts.traders.SimpleFXTrader
+import ch.epfl.ts.traders.MovingAverageTrader
 import com.typesafe.config.ConfigFactory
 import ch.epfl.ts.indicators.SMA
 import akka.testkit.EventFilter
 
-class SimpleTraderTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(
+class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(
   """
   akka.loglevel = "DEBUG"
   akka.loggers = ["akka.testkit.TestEventListener"]
@@ -28,7 +28,7 @@ class SimpleTraderTest extends TestKit(ActorSystem("testSystem", ConfigFactory.p
   val periods = List(5, 30)
   val tolerance = 0.0002
 
-  val trader = TestActorRef(Props(classOf[SimpleFXTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance))
+  val trader = TestActorRef(Props(classOf[MovingAverageTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance,false))
   trader ! StartSignal
 
   "A trader " should {

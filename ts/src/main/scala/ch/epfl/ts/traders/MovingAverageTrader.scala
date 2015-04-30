@@ -16,10 +16,11 @@ import akka.actor.ActorRef
  * @param longPeriod the size of the rolling window of the long moving average
  * @param volume the amount that we want to buy when buy signal
  * @param tolerance is required to avoid fake buy signal
+ * @param withShort version with/without short orders
  */
-class SimpleFXTraderWithShorting(val uid: Long, symbol: (Currency, Currency),
-                                 val shortPeriod: Int, val longPeriod: Int,
-                                 val volume: Double, val tolerance: Double) extends Component with ActorLogging {
+class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
+                     val shortPeriod: Int, val longPeriod: Int,
+                     val volume: Double, val tolerance: Double, val withShort: Boolean) extends Component with ActorLogging {
 
   /**
    * Moving average of the current period
@@ -50,7 +51,11 @@ class SimpleFXTraderWithShorting(val uid: Long, symbol: (Currency, Currency),
         case Some(x) => currentLong = x
         case None    => println("Error: Missing indicator with period " + longPeriod)
       }
-      decideOrder()
+      if (withShort) {
+        decideOrder()
+      } else {
+        decideOrderWithShort()
+      }
     }
 
     case _ => println("SimpleTrader: received unknown")
@@ -59,12 +64,29 @@ class SimpleFXTraderWithShorting(val uid: Long, symbol: (Currency, Currency),
   def decideOrder() = {
 
     //BUY signal
+    if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
+      log.debug("buying " + volume)
+      send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+      oid += 1
+      holdings = volume
+    } //SELL signal
+    else if (currentShort < currentLong && holdings > 0.0) {
+      log.debug("selling " + volume)
+      send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+      oid += 1
+      holdings = 0.0
+    }
+  }
+
+  def decideOrderWithShort() = {
+
+    //BUY signal
     if (currentShort > currentLong) {
       if (shortings > 0.0) {
-        log.debug("closing short "+volume)
+        log.debug("closing short " + volume)
         send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
-        oid+=1;
-        shortings=0.0;        
+        oid += 1;
+        shortings = 0.0;
       }
       if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
         log.debug("buying " + volume)
@@ -81,7 +103,7 @@ class SimpleFXTraderWithShorting(val uid: Long, symbol: (Currency, Currency),
         holdings = 0.0
       }
       if (currentShort * (1 + tolerance) < currentLong && shortings == 0.0) {
-        log.debug("short "+volume)
+        log.debug("short " + volume)
         send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1;
         shortings = volume;

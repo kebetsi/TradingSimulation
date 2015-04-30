@@ -7,7 +7,7 @@ import ch.epfl.ts.component.persist.DummyPersistor
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.engine.MarketFXSimulator
 import akka.actor.Props
-import ch.epfl.ts.traders.SimpleFXTrader
+import ch.epfl.ts.traders.MovingAverageTrader
 import ch.epfl.ts.component.utils.BackLoop
 import ch.epfl.ts.indicators.SmaIndicator
 import scala.reflect.ClassTag
@@ -21,7 +21,7 @@ import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.component.fetch.HistDataCSVFetcher
-import ch.epfl.ts.traders.SimpleFXTraderWithShorting
+import ch.epfl.ts.traders.MovingAverageTrader
 
 object SimpleExampleHistFX {
   def main(args: Array[String]): Unit = {
@@ -51,7 +51,7 @@ object SimpleExampleHistFX {
     val longPeriod = 6
     val periods = List(2, 6)
     val tolerance = 0.0002
-    val trader = builder.createRef(Props(classOf[SimpleFXTraderWithShorting], traderId, symbol, shortPeriod, longPeriod, volume, tolerance), "simpleTrader")
+    val trader = builder.createRef(Props(classOf[MovingAverageTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance,true), "simpleTrader")
 
     // Indicator
     // specify period over which we build the OHLC (from quotes)
