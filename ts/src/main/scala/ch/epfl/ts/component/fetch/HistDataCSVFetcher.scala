@@ -2,6 +2,8 @@ package ch.epfl.ts.component.fetch
 
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Currency
+import ch.epfl.ts.component.persist.QuotePersistor
+import ch.epfl.ts.component.fetch.MarketNames._
 import scala.util.parsing.combinator._
 import scala.io.Source
 import scala.concurrent.duration._
@@ -9,7 +11,6 @@ import java.util.Date
 import java.util.Calendar
 import java.util.Timer
 import java.util.TimerTask
-import ch.epfl.ts.component.fetch.MarketNames._
 
 /**
  * HistDataCSVFetcher class reads data from csv source and converts it to Quotes.
@@ -59,16 +60,28 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
   
   /**
    * The centerpiece of this class, where we actually load the data.
-   * It contains all quotes this fetcher reads from disk, ready to be fetch()ed
+   * It contains all quotes this fetcher reads from disk, ready to be fetch()ed.
+   * 
+   * However, since allQuotes is an Iterator, it acts lazily. That means it only
+   * actually reads from disc when it needs to. The data is not prematurely loaded
+   * into memory.
    */
-  val allQuotes: List[Quote] = monthsBetweenStartAndEnd
-                                .flatMap(m => parse(bidPref + m + ".csv", askPref + m + ".csv"))
-                                .sortBy(q => q.timestamp)
+  var allQuotes = Iterator[Quote]()
+  loadData()
+  
+  def loadData() = {
+    allQuotes = Iterator[Quote]()
+    monthsBetweenStartAndEnd.foreach { 
+      m => allQuotes ++= parse(bidPref + m + ".csv", askPref + m + ".csv") 
+    }
+  }
   
   /**
-   * Index of the next quote to be fetched, incremented whenever a quote has been fetched
+   * Index of the next month to be fetched, incremented whenever a month has been fetched.
+   * And the index for the quotes in that month, updated whenever a quote was sent.
    */
-  var quoteIndex = 0
+  var currentQuote = allQuotes.next()
+  var nextQuote = allQuotes.next()
   
   /**
    * Using java.util.Timer to simulate the timing of the quotes when they were generated originally.
@@ -79,25 +92,47 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
   val timer = new Timer()
   timer.schedule(new SendQuotes, 0)
   class SendQuotes extends java.util.TimerTask {
+    
     def run() {
-      if (quoteIndex < allQuotes.length) {
-        // Update the iterator variables
-        var currQ = allQuotes( quoteIndex )
-        var nextQ = allQuotes( List(quoteIndex + 1, allQuotes.length).min )
-        quoteIndex = quoteIndex + 1;
-        
-        // Send the quote and schedule next call
-        callback(currQ)
-        timer.schedule(new SendQuotes(), (1 / speed * (nextQ.timestamp - currQ.timestamp)).toInt)
+      // Get the current quote and send it
+      callback(currentQuote)
+  
+      if (allQuotes.hasNext) {
+        // If there is a next quote, schedule the next call
+        currentQuote = nextQuote
+        nextQuote = allQuotes.next
+        timer.schedule(new SendQuotes(), (1 / speed * (nextQuote.timestamp - currentQuote.timestamp)).toInt)
       } else {
-        timer.cancel();
+        // Nothing more to do here, boys!
+        timer.cancel() 
       }
     }
+    
   }
   
-  // TODO
+  /**
+   * Saves the quotes this fetcher has fetched (i.e. quotes that are stored in val allQuotes)
+   * in an sqlite database of a given name. The fetcher does nothing else during this time.
+   * The data is reloaded (rewinded all the way to the start) at the end of the function.
+   * 
+   * @param   filename    Name of the DB file the quotes will be saved to, the final file
+   *                      will be called <filename>.db
+   */
   def loadInPersistor(filename: String) {
-    throw new UnsupportedOperationException("loadInPersistor is not yet implemented.");
+    val persistor = new QuotePersistor(filename)
+    while(allQuotes.hasNext) {
+      val batchSize = 100000
+      println("Loading batch of "+batchSize+" records into persistor...")
+      var batch = List[Quote]()
+      var counter = 0
+      while(counter < batchSize && allQuotes.hasNext) {
+        batch = allQuotes.next :: batch
+        counter = counter + 1
+      }
+      persistor.save(batch)
+    }
+    // Reload the data because Iterator.next() is destroyed it in the process
+    loadData()
   }
   
   /**
@@ -151,12 +186,14 @@ class HistDataCSVFetcher(dataDir: String, currencyPair: String,
     val asklines = Source.fromFile(workingDir + askCSVFilename).getLines
     bidlines.zip(asklines)
       // Combine bid and ask data into one line
-      .map( l => l._1 + " " + l._2 )
-      .map( l => CSVParser.parse(CSVParser.csvcombo, l).get )
-      // `withC` and `whatC` are not available in the CVS, we add them back
-      // after parsing (they are in the path to the file opened above)
-      .map( q => Quote(q.marketId, q.timestamp, whatC, withC, q.bid, q.ask) );
+      .map(l => {
+        val q = CSVParser.parse(CSVParser.csvcombo, l._1 + " " + l._2).get
+        // `withC` and `whatC` are not available in the CVS, we add them back
+        // after parsing (they are in the path to the file opened above)
+        Quote(q.marketId, q.timestamp, whatC, withC, q.bid, q.ask)
+      })
   }
+  
 }
 
 /**
@@ -184,9 +221,8 @@ object CSVParser extends RegexParsers with java.io.Serializable {
   val timestamp: Parser[String] = """[0-9]{6}""".r
   val floatingpoint: Parser[String] = """[0-9]*\.?[0-9]*""".r
   
+  val stampFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss")    
   def toTime(datestamp: String, timestamp: String): Long = { 
-    val stampFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss")    
-    val stamp = stampFormat.parse(datestamp + timestamp)
-    stamp.getTime
+    stampFormat.parse(datestamp + timestamp).getTime
   }
 }
