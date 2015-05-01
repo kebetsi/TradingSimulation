@@ -29,7 +29,7 @@ object EvaluationRunner {
     val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
     val startDate = dateFormat.parse("201301");
     val endDate = dateFormat.parse("201312");
-    val workingDir = "/Users/admin";
+    val workingDir = "./data";
     val currencyPair = "USDCHF";
     val fetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 4200.0), "HistFetcher")
 
@@ -49,27 +49,27 @@ object EvaluationRunner {
     //TODO Integrate indicators inside trader
     val symbol = (Currency.USD, Currency.CHF)
     val periods = List(3, 15)
-    val periodOHLC: Long = 24 * 60 * 60 * 1000 //OHLC of 1 day  
+    val periodOHLC: Long =  60 * 60 * 1000 //OHLC of 1 hour
     val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], 4L, symbol, periodOHLC), "ohlcIndicator")
     val maCross = builder.createRef(Props(classOf[EmaIndicator], periods), "maCross")
 
     // ----- Connecting actors
     fetcher -> (Seq(forexMarket, evaluator), classOf[Quote])
     evaluator -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
-    evaluator->(printer,classOf[EvaluationReport])
-    forexMarket->(evaluator,classOf[Transaction])
+    evaluator -> (printer, classOf[EvaluationReport])
+    forexMarket -> (evaluator, classOf[Transaction])
 
     // -- TODO Integrate indicators inside trader
     fetcher -> (ohlcIndicator, classOf[Quote])
     ohlcIndicator -> (maCross, classOf[OHLC])
     maCross -> (trader, classOf[EMA])
-    
+
     builder.start
   }
 
   def movingAverageTrader(traderId: Long) = {
     // Trader
-    val symbol = (Currency.EUR, Currency.CHF)
+    val symbol = (Currency.USD, Currency.CHF)
     val volume = 1000.0
     val shortPeriod = 3
     val longPeriod = 15

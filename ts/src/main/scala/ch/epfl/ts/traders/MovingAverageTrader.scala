@@ -52,7 +52,7 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
       decideOrder
     }
 
-    case _ => println("SimpleTrader: received unknown")
+    case whatever => println("SimpleTrader: received unknown"+ whatever)
   }
 
   def decideOrder =
