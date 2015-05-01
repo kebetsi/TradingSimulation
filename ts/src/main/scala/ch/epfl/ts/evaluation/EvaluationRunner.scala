@@ -70,7 +70,7 @@ object EvaluationRunner {
   def movingAverageTrader(traderId: Long) = {
     // Trader
     val symbol = (Currency.EUR, Currency.CHF)
-    val volume = 10.0
+    val volume = 1000.0
     val shortPeriod = 3
     val longPeriod = 15
     val tolerance = 0.0002
