@@ -1,18 +1,20 @@
 package ch.epfl.ts.example
 
+import scala.reflect.ClassTag
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
+import akka.actor.Props
+
 import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.engine.ForexMarketRules
 import ch.epfl.ts.component.fetch.TrueFxFetcher
 import ch.epfl.ts.component.persist.DummyPersistor
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.engine.MarketFXSimulator
-import akka.actor.Props
 import ch.epfl.ts.traders.MovingAverageTrader
 import ch.epfl.ts.component.utils.BackLoop
 import ch.epfl.ts.indicators.SmaIndicator
-import scala.reflect.ClassTag
 import ch.epfl.ts.component.fetch.PullFetchComponent
-import ch.epfl.ts.engine.RevenueComputeFX
 import ch.epfl.ts.data.{ Quote, OHLC }
 import ch.epfl.ts.data.Transaction
 import ch.epfl.ts.data.MarketAskOrder
@@ -21,6 +23,7 @@ import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.component.fetch.HistDataCSVFetcher
+import ch.epfl.ts.evaluation.Evaluator
 
 object MovingAverageFXExample {
   def main(args: Array[String]): Unit = {
@@ -67,16 +70,22 @@ object MovingAverageFXExample {
     val maCross = builder.createRef(Props(classOf[SmaIndicator], periods), "maCross")
     val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], MarketNames.FOREX_ID, symbol, period), "OHLCIndicator")
     
+    // Evaluation
+    val evaluationPeriod = 2000 milliseconds
+    val evaluationInitialDelay = 1000000.0
+    val currency = symbol._1
+    val evaluator = builder.createRef(Props(classOf[Evaluator], trader, traderId, evaluationInitialDelay, currency, evaluationPeriod), "Evaluator")
+
+    
     // Display
-    val traderNames = Map(traderId -> "MovingAverageFXTrader")
-    val display = builder.createRef(Props(classOf[RevenueComputeFX], traderNames), "display")
+    val traderNames = Map(traderId -> trader.name)
 
     // ----- Connecting actors
     fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator), classOf[Quote])
 
     trader -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
 
-    forexMarket -> (display, classOf[Transaction])
+    forexMarket -> (evaluator, classOf[Transaction])
     
     maCross -> (trader, classOf[SMA])
     ohlcIndicator -> (maCross, classOf[OHLC])
