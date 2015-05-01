@@ -28,12 +28,9 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
   var currentShort: Double = 0.0
   var currentLong: Double = 0.0
 
-  // TODO: Need to ensure unique order ids
-  var oid = 12345
+  var oid = 0
 
-  /**
-   *
-   */
+  // TODO: replace by being wallet-aware
   var holdings: Double = 0.0
   var shortings: Double = 0.0
 
@@ -51,18 +48,18 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
         case Some(x) => currentLong = x
         case None    => println("Error: Missing indicator with period " + longPeriod)
       }
-      if (withShort) {
-        decideOrder()
-      } else {
-        decideOrderWithShort()
-      }
+      
+      decideOrder
     }
 
     case _ => println("SimpleTrader: received unknown")
   }
 
-  def decideOrder() = {
-
+  def decideOrder =
+    if (withShort) decideOrderWithoutShort
+    else decideOrderWithShort
+    
+  def decideOrderWithoutShort = {
     //BUY signal
     if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
       log.debug("buying " + volume)
@@ -78,8 +75,7 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
     }
   }
 
-  def decideOrderWithShort() = {
-
+  def decideOrderWithShort = {
     //BUY signal
     if (currentShort > currentLong) {
       if (shortings > 0.0) {
