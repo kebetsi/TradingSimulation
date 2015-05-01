@@ -56,8 +56,8 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
   }
 
   def decideOrder =
-    if (withShort) decideOrderWithoutShort
-    else decideOrderWithShort
+    if (withShort) decideOrderWithShort
+    else decideOrderWithoutShort
     
   def decideOrderWithoutShort = {
     //BUY signal
