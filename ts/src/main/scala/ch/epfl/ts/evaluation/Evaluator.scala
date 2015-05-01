@@ -110,8 +110,8 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   private def updatePrice(q: Quote) = {
     val Quote(_, _, whatC, withC, bid, ask) = q
-    priceTable.put(whatC -> withC, (bid + ask) / 2.0)
-    priceTable.put(withC -> whatC, (1.0/bid + 1.0/ask) / 2.0)
+    priceTable.put(whatC -> withC, bid)
+    priceTable.put(withC -> whatC, 1/ask)
   }
 
   /**
