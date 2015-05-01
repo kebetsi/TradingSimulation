@@ -61,10 +61,8 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   override def receiver = {
     case t: Transaction if t.buyerId == traderId =>  // buy
-      trader.ar ! t
       buy(t)
     case t: Transaction if t.sellerId == traderId =>  // sell
-      trader.ar ! t
       sell(t)
     case q: Quote =>
       updatePrice(q)
