@@ -20,37 +20,52 @@ import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
 import ch.epfl.ts.data.Currency
 import ch.epfl.ts.engine.RevenueCompute
+import ch.epfl.ts.component.fetch.HistDataCSVFetcher
 
-
-object SimpleExampleFX {
+object MovingAverageFXExample {
   def main(args: Array[String]): Unit = {
     val builder = new ComponentBuilder("simpleFX")
     val marketForexId = MarketNames.FOREX_ID
 
+    val useLiveData = true
+    val symbol = (Currency.EUR, Currency.CHF)
+    
     // ----- Creating actors
     // Fetcher
-    val fetcherFx: TrueFxFetcher = new TrueFxFetcher
-    val fxQuoteFetcher = builder.createRef(Props(classOf[PullFetchComponent[Quote]], fetcherFx, implicitly[ClassTag[Quote]]), "trueFxFetcher")
+    val fxQuoteFetcher = {
+      if(useLiveData) {
+    	  val fetcherFx: TrueFxFetcher = new TrueFxFetcher
+        builder.createRef(Props(classOf[PullFetchComponent[Quote]], fetcherFx, implicitly[ClassTag[Quote]]), "TrueFxFetcher")
+      }
+      else {
+        val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
+        val startDate = dateFormat.parse("201304");
+        val endDate = dateFormat.parse("201305");
+        val workingDir = "./data";
+        val currencyPair = symbol._1.toString() + symbol._2.toString();
+        
+        builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 4200.0), "HistDataFetcher")
+      }
+    }
     
     // Market
     val rules = new ForexMarketRules()
     val forexMarket = builder.createRef(Props(classOf[MarketFXSimulator], marketForexId, rules), MarketNames.FOREX_NAME)
     
     // Trader: cross moving average
-    val traderId : Long = 123L
-    val symbol = (Currency.USD,Currency.CHF)
+    val traderId = 123L
     val volume = 1000.0
     val shortPeriod = 2
     val longPeriod = 6
-    val periods=List(2,6)
-    val tolerance = 0.00001
-    val trader = builder.createRef(Props(classOf[MovingAverageTrader], traderId,symbol, shortPeriod, longPeriod, volume, tolerance,true), "simpleTrader")
+    val periods = List(2,6)
+    val tolerance = 0.0002
+    val trader = builder.createRef(Props(classOf[MovingAverageTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance, true), "MovingAverageTrader")
    
     // Indicator
-    // specify period over which we build the OHLC (from quotes)
-    val period : Long = 20000 //OHLC of 20 seconds 
+    // Specify period over which we build the OHLC (from quotes)
+    val period = 20000L // OHLC of 20 seconds 
     val maCross = builder.createRef(Props(classOf[SmaIndicator], periods), "maCross")
-    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], fetcherFx.marketId,symbol, period), "ohlcIndicator")
+    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], MarketNames.FOREX_ID, symbol, period), "OHLCIndicator")
     
     // Display
     val traderNames = Map(traderId -> "MovingAverageFXTrader")
