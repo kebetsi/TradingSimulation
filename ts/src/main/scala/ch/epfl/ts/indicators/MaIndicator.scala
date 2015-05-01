@@ -23,16 +23,16 @@ abstract class MaIndicator(periods:List[Int]) extends Component {
   
   def receiver = {
     case o: OHLC => {
-      println("maIndicator: received ohlc: " + o)
+      println("MaIndicator: received OHLC: " + o)
       values += o
       if (values.size == maxPeriod) {
         val ma = computeMa
-        println("maIndicator: sending " + ma)
+        println("MaIndicator: sending " + ma)
         send(ma)
         values = values.tail
       }
     } 
-    case _ => println("maIndicator : received unknown")
+    case _ => println("MaIndicator : received unknown")
   }
   
   /**
