@@ -43,8 +43,7 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
         }
       }
     }
-  }
-  "A trader " should {
+
     "sell(3,20)" in {
       within(1 second) {
         EventFilter.debug(message = "selling 1000.0", occurrences = 1) intercept {
@@ -52,9 +51,7 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
         }
       }
     }
-  }
-
-  "A trader " should {
+    
     "not buy(10.001,10)" in {
       within(1 second) {
         EventFilter.debug(message = "buying 1000.0", occurrences = 0) intercept {
@@ -62,10 +59,8 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
         }
       }
     }
-  }
 
-  //For small numbers > is eq to >=  (10*(1+0.0002) = 10.00199999)
-  "A trader " should {
+    // For small numbers > is eq to >=  (10*(1+0.0002) = 10.00199999)
     "buy(10.002,10)" in {
       within(1 second) {
         EventFilter.debug(message = "buying 1000.0", occurrences = 1) intercept {
@@ -73,9 +68,7 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
         }
       }
     }
-  }
 
-  "A trader " should {
     "not buy(10.003,10) (already hold a position)" in {
       within(1 second) {
         EventFilter.debug(message = "buying 1000.0", occurrences = 0) intercept {
@@ -83,9 +76,7 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
         }
       }
     }
-  }
 
-  "A trader " should {
     "sell(9.9999,10)" in {
       within(1 second) {
         EventFilter.debug(message = "selling 1000.0", occurrences = 1) intercept {
@@ -93,9 +84,7 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
         }
       }
     }
-  }
-
-  "A trader " should {
+    
     "not sell(9.9999,10) (no holding)" in {
       within(1 second) {
         EventFilter.debug(message = "selling 1000.0", occurrences = 0) intercept {
