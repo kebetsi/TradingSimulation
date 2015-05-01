@@ -1,3 +1,4 @@
+# Java specific
 *.class
 *.log
 
@@ -9,6 +10,7 @@ dist/*
 target/
 lib_managed/
 src_managed/
+project/target
 project/boot/
 project/plugins/project/
 
@@ -17,20 +19,20 @@ project/plugins/project/
 .worksheet
 **/*.sc
 
-
+# Eclipse specific
 .cache
 .classpath
 .project
 .settings
 .metadata
 
+# IntelliJ speciifc
 TradingSimulation.iml
 .idea/
-
-project/target
-target/
 
 # OS specific
 .DS_Store
 
-
+# Project specific
+data/*
+!data/.gitkeep
