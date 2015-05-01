@@ -21,7 +21,6 @@ import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.indicators.{ OhlcIndicator, MaIndicator, MovingAverage, SMA }
 import ch.epfl.ts.data.Currency
-import ch.epfl.ts.engine.RevenueCompute
 import ch.epfl.ts.component.fetch.HistDataCSVFetcher
 import ch.epfl.ts.evaluation.Evaluator
 

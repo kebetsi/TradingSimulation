@@ -1,19 +1,23 @@
-package ch.epfl.ts.test.component
+package ch.epfl.ts.test.traders
 
-import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+import scala.concurrent.duration.DurationInt
 import org.scalatest.WordSpecLike
+import com.typesafe.config.ConfigFactory
 import akka.actor.ActorSystem
 import akka.actor.Props
+import akka.testkit.EventFilter
 import akka.testkit.TestActorRef
 import akka.testkit.TestKit
 import ch.epfl.ts.component.StartSignal
 import ch.epfl.ts.data.Currency
-import ch.epfl.ts.traders.MovingAverageTrader
-import com.typesafe.config.ConfigFactory
 import ch.epfl.ts.indicators.SMA
-import akka.testkit.EventFilter
+import ch.epfl.ts.traders.MovingAverageTrader
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
 
+
+@RunWith(classOf[JUnitRunner])
 class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(
   """
   akka.loglevel = "DEBUG"

@@ -15,10 +15,10 @@ import ch.epfl.ts.engine.{ForexMarketRules, MarketFXSimulator, GetWalletFunds}
 import ch.epfl.ts.component.fetch.MarketNames
 import akka.util.Timeout
 import ch.epfl.ts.data.Quote
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-/**
- * Created by sygi on 07.04.15.
- */
+@RunWith(classOf[JUnitRunner])
 class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest", ConfigFactory.parseString(
   """
   akka.loglevel = "DEBUG"
