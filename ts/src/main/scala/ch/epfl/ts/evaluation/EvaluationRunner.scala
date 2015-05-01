@@ -6,11 +6,14 @@ import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data._
 import ch.epfl.ts.engine.{ MarketFXSimulator, ForexMarketRules }
 import ch.epfl.ts.indicators.SMA
-
 import akka.actor.Props
 import ch.epfl.ts.traders.MovingAverageTrader
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+import ch.epfl.ts.component.utils.Printer
+import ch.epfl.ts.indicators.EmaIndicator
+import ch.epfl.ts.indicators.OhlcIndicator
+import ch.epfl.ts.indicators.EMA
 
 /**
  * Evaluates the performance of trading strategies
@@ -24,27 +27,43 @@ object EvaluationRunner {
     // Fetcher
     // variables for the fetcher
     val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
-    val startDate = dateFormat.parse("201503");
-    val endDate = dateFormat.parse("201503");
+    val startDate = dateFormat.parse("201301");
+    val endDate = dateFormat.parse("201312");
     val workingDir = "./data";
-    val currencyPair = "EURCHF";
-    val fetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 60.0), "HistFetcher")
+    val currencyPair = "USDCHF";
+    val fetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 4200.0), "HistFetcher")
 
     // Market
     val rules = new ForexMarketRules()
     val forexMarket = builder.createRef(Props(classOf[MarketFXSimulator], marketForexId, rules), MarketNames.FOREX_NAME)
 
     // Evaluator
-    val period = 2000 milliseconds
-    val initial = 1000000.0
+    val period = 10 * 1000 milliseconds
+    val initial = 5000.0
     val currency = CHF
     val evaluator = builder.createRef(Props(classOf[Evaluator], trader, traderId, initial, currency, period), "evaluator")
 
+    //Printer 
+    val printer = builder.createRef(Props(classOf[Printer], "my-printer"), "printer")
+
+    //TODO Integrate indicators inside trader
+    val symbol = (Currency.USD, Currency.CHF)
+    val periods = List(3, 15)
+    val periodOHLC: Long = 24 * 60 * 60 * 1000 //OHLC of 1 day  
+    val ohlcIndicator = builder.createRef(Props(classOf[OhlcIndicator], 4L, symbol, periodOHLC), "ohlcIndicator")
+    val maCross = builder.createRef(Props(classOf[EmaIndicator], periods), "maCross")
+
     // ----- Connecting actors
     fetcher -> (Seq(forexMarket, evaluator), classOf[Quote])
-
     evaluator -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
+    evaluator->(printer,classOf[EvaluationReport])
+    forexMarket->(evaluator,classOf[Transaction])
 
+    // -- TODO Integrate indicators inside trader
+    fetcher -> (ohlcIndicator, classOf[Quote])
+    ohlcIndicator -> (maCross, classOf[OHLC])
+    maCross -> (trader, classOf[EMA])
+    
     builder.start
   }
 
