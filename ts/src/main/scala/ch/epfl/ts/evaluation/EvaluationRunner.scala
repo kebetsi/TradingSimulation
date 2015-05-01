@@ -29,7 +29,7 @@ object EvaluationRunner {
     val dateFormat = new java.text.SimpleDateFormat("yyyyMM")
     val startDate = dateFormat.parse("201301");
     val endDate = dateFormat.parse("201312");
-    val workingDir = "./data";
+    val workingDir = "/Users/admin";
     val currencyPair = "USDCHF";
     val fetcher = builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 4200.0), "HistFetcher")
 
@@ -72,7 +72,7 @@ object EvaluationRunner {
     val symbol = (Currency.EUR, Currency.CHF)
     val volume = 10.0
     val shortPeriod = 3
-    val longPeriod = 10
+    val longPeriod = 15
     val tolerance = 0.0002
 
     val periods = List(3, 10)
