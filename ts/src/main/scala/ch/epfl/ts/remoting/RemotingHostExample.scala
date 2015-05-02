@@ -58,15 +58,15 @@ class MasterActor extends Actor {
 /**
  * Dummy actor to test Akka remoting
  */
-class WorkerActor(hostActor: ComponentRef, dummyParam: Int) extends Actor {
+class WorkerActor(hostActor: ActorRef, dummyParam: Int) extends Actor {
   
   println("Worker actor with param " + dummyParam + " now running.")
-  hostActor.ar ! WorkerIsLive
+  hostActor ! WorkerIsLive
   
   override def receive = {
     case s: String => {
       println("WorkerActor received: " + s)
-      hostActor.ar ! "Hi there!"
+      hostActor ! "Hi there!"
     }
     case m => println("WorkerActor received weird: " + m)
   }
@@ -143,7 +143,7 @@ object RemotingHostExample {
       val name = prefix +  "-Worker-" + dummyParam
       
       // TODO: evaluator as well
-      val trader = builder.createRef(Props(classOf[WorkerActor], master, dummyParam).withDeploy(deploy), name)
+      val trader = builder.createRef(Props(classOf[WorkerActor], master.ar, dummyParam).withDeploy(deploy), name)
 
       // Register this new trader to the master
       master.ar ! trader
