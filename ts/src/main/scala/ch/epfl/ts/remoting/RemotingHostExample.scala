@@ -27,6 +27,11 @@ import ch.epfl.ts.data.MarketBidOrder
 
 case object WorkerIsLive
 
+// TODO: remove
+class QuoteTag extends ClassTag[Quote] {
+  override def runtimeClass = classOf[Quote]
+}
+
 /**
  * Responsible for overseeing actors instantiated at worker nodes
  */
@@ -96,7 +101,8 @@ object RemotingHostExample {
   val commonProps = {
     // Fetcher
     val fetcher = new TrueFxFetcher
-    val fetcherActor = Props(classOf[PullFetchComponent[Quote]], fetcher, implicitly[ClassTag[Quote]])
+    implicit val tag = new QuoteTag
+    val fetcherActor = Props(classOf[PullFetchComponent[Quote]], fetcher, implicitly[QuoteTag])
     
     // Market
     val rules = new ForexMarketRules()
