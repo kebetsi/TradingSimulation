@@ -95,8 +95,8 @@ object RemotingHostExample {
    */
   val commonProps = {
     // Fetcher
-    val fetcherActor = new TrueFxFetcher
-    val fetcher = Props(classOf[PullFetchComponent[Quote]], fetcherActor, implicitly[ClassTag[Quote]])
+    val fetcher = new TrueFxFetcher
+    val fetcherActor = Props(classOf[PullFetchComponent[Quote]], fetcher, implicitly[ClassTag[Quote]])
     
     // Market
     val rules = new ForexMarketRules()
@@ -106,7 +106,7 @@ object RemotingHostExample {
     val printer = Props(classOf[Printer], "")
     
     Map(
-      "fetcher" -> fetcher,
+      "fetcher" -> fetcherActor,
       "market"  -> market,
       "printer" -> printer
     )
@@ -154,12 +154,7 @@ object RemotingHostExample {
       println("Created trader " + name + " at host " + host)
     }
     
-    // TODO: connections
-//    fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator), classOf[Quote])
-//    trader -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
-//    forexMarket -> (display, classOf[Transaction])
-//    maCross -> (trader, classOf[SMA])
-//    ohlcIndicator -> (maCross, classOf[OHLC])
+    // TODO: all useful connections
     common("fetcher") -> (common("printer"), classOf[Quote])
     common("market")  -> (common("printer"), classOf[Transaction])
   }
@@ -180,7 +175,7 @@ akka.actor.serialize-creators = on
     
     val allParameterValues = (1 to 10)
     val slicedParameters = {
-      val n = (allParameterValues.length / availableWorkers.length).ceil.toInt 
+      val n = (allParameterValues.length / availableWorkers.length.toFloat).ceil.toInt 
       (0 until availableWorkers.length).map(i => allParameterValues.slice(n * i, (n * i) + n))
     }
     
