@@ -13,17 +13,23 @@ import akka.actor.Props
 import akka.actor.actorRef2Scala
 import akka.remote.RemoteScope
 
+case object WorkerIsLive
+
 /**
  * Responsible for overseeing actors instantiated at worker nodes
  */
 class MasterActor extends Actor {
   
   var workers: MutableList[ActorRef] = MutableList()
+  var nAlive = 0
   
   override def receive = {
     case w: ActorRef => {
       workers += w
-      pingAllWorkers
+    }
+    case WorkerIsLive => {
+      nAlive += 1
+      println("Master sees " + nAlive + " workers available.")
     }
     case s: String => {
       println("MasterActor received: " + s)
@@ -33,13 +39,14 @@ class MasterActor extends Actor {
   
   
   def pingAllWorkers = workers.foreach {
-    w => w ! "Ping!"
+    w => w ! 'Ping
   }
 }
 
 class WorkerActor(hostActor: ActorRef, dummyParam: Int) extends Actor {
   
-  hostActor ! "I am alive! I have parameter value: " + dummyParam
+  println("Worker actor with param " + dummyParam + " now running.")
+  hostActor ! WorkerIsLive
   
   override def receive = {
     case s: String => {
@@ -76,21 +83,29 @@ akka.actor.serialize-creators = on
     implicit val system = ActorSystem("host", remotingConfig)
     val master = system.actorOf(Props(classOf[MasterActor]), name = "MasterActor")
     
+    val allParameterValues = (1 to 20)
+    val slicedParameters = {
+      val n = (allParameterValues.length / availableWorkers.length).ceil.toInt 
+      (0 until availableWorkers.length).map(i => allParameterValues.slice(n * i, (n * i) + n))
+    }
+    
     // Programmatic deployment: master asks workers to instantiate actors
     val remoteActors = for {
-      (worker, idx) <- availableWorkers.zipWithIndex
+      (workerHost, idx) <- availableWorkers.zipWithIndex
     } yield {
-      val address = Address("akka.tcp", workerSystemName, availableWorkers(0), workerPort)
+      val address = Address("akka.tcp", workerSystemName, workerHost, workerPort)
       val deploy = Deploy(scope = RemoteScope(address))
       
       // TODO: send different actors to different systems (use built-in load balancing mechanisms?)
       for {
-        dummyParam <- 1 to 3
+        dummyParam <- slicedParameters(idx)
       } yield {
         val name = "Worker-" + idx + "-" + dummyParam
         val remoteActor = system.actorOf(Props(classOf[WorkerActor], master, dummyParam).withDeploy(deploy), name)
         // Register this new actor to the master
         master ! remoteActor
+        
+        println("Created " + name + " at host " + workerHost)
       }
     }
   }
