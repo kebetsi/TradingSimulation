@@ -71,9 +71,13 @@ object RemotingHostExample {
   
   val availableWorkers = List(
     "ts-1-021qv44y.cloudapp.net",
-    "ts-2.cloudapp.net",
+    //"ts-2.cloudapp.net",
     "ts-3.cloudapp.net",
-    "ts-4.cloudapp.net"
+    //"ts-4.cloudapp.net",
+    //"ts-5.cloudapp.net",
+    //"ts-6.cloudapp.net",
+    "ts-7.cloudapp.net",
+    "ts-8.cloudapp.net"
     // TODO: other hosts
   )
   val workerPort = 3333
