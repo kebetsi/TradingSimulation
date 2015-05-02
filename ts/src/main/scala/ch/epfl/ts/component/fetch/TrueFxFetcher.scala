@@ -9,7 +9,7 @@ import ch.epfl.ts.data.OHLC
  * Fetcher for the TrueFX HTTP API, which provides live Forex quotes for free
  * @see TrueFX dev documentation: http://www.truefx.com/dev/data/TrueFX_MarketDataWebAPI_DeveloperGuide.pdf
  */
-class TrueFxFetcher extends PullFetch[Quote]{
+class TrueFxFetcher extends PullFetch[Quote] with Serializable {
   val serverBase = "http://webrates.truefx.com/rates/connect.html" + "?f=csv"
 
   val marketId = MarketNames.FOREX_ID

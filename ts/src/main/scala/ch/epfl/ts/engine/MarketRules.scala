@@ -14,7 +14,7 @@ case class Commission(limitOrderFee: Double, marketOrderFee: Double)
  * Extend this class and override its method(s) to customize Market rules for specific markets.
  *
  */
-class MarketRules {
+class MarketRules extends Serializable {
   val commission = Commission(0, 0)
 
   // when used on TreeSet, head() and iterator() provide increasing order
