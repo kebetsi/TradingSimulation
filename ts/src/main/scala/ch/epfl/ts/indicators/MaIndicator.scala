@@ -32,7 +32,7 @@ abstract class MaIndicator(periods:List[Int]) extends Component {
         values = values.tail
       }
     } 
-    case _ =>
+    case _ => println("maIndicator : received unknown")
   }
   
   /**
