@@ -1,4 +1,4 @@
-package ch.epfl.ts.example
+package ch.epfl.ts.remoting
 
 import scala.collection.mutable.MutableList
 
@@ -64,7 +64,11 @@ akka.actor.serialize-creators = on
 """).withFallback(ConfigFactory.load());
     
     val availableWorkers = List(
-        "ts-1-021qv44y.cloudapp.net"
+        "ts-1-021qv44y.cloudapp.net",
+        "ts-2.cloudapp.net",
+        "ts-3.cloudapp.net",
+        "ts-4.cloudapp.net"
+        // TODO: other hosts
     )
     val workerPort = 3333
     val workerSystemName = "remote"
@@ -74,16 +78,16 @@ akka.actor.serialize-creators = on
     
     // Programmatic deployment: master asks workers to instantiate actors
     val remoteActors = for {
-      worker <- availableWorkers
+      (worker, idx) <- availableWorkers.zipWithIndex
     } yield {
       val address = Address("akka.tcp", workerSystemName, availableWorkers(0), workerPort)
       val deploy = Deploy(scope = RemoteScope(address))
       
       // TODO: send different actors to different systems (use built-in load balancing mechanisms?)
       for {
-        dummyParam <- 1 to 10
+        dummyParam <- 1 to 3
       } yield {
-        val name = "Worker" + dummyParam
+        val name = "Worker-" + idx + "-" + dummyParam
         val remoteActor = system.actorOf(Props(classOf[WorkerActor], master, dummyParam).withDeploy(deploy), name)
         // Register this new actor to the master
         master ! remoteActor

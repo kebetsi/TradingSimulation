@@ -1,4 +1,4 @@
-package ch.epfl.ts.example
+package ch.epfl.ts.remoting
 
 import com.typesafe.config.ConfigFactory
 import akka.actor.Actor
