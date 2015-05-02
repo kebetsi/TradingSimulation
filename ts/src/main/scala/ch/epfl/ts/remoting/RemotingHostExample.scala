@@ -27,11 +27,6 @@ import ch.epfl.ts.data.MarketBidOrder
 
 case object WorkerIsLive
 
-// TODO: remove
-class QuoteTag extends ClassTag[Quote] {
-  override def runtimeClass = classOf[Quote]
-}
-
 /**
  * Responsible for overseeing actors instantiated at worker nodes
  */
@@ -77,6 +72,11 @@ class WorkerActor(hostActor: ActorRef, dummyParam: Int) extends Actor {
   }
 }
 
+/** Need this concrete class to help serialization */
+class QuoteTag extends ClassTag[Quote] with Serializable {
+  override def runtimeClass = classOf[Quote]
+}
+
 object RemotingHostExample {
   
   val availableWorkers = List(
@@ -101,8 +101,7 @@ object RemotingHostExample {
   val commonProps = {
     // Fetcher
     val fetcher = new TrueFxFetcher
-    implicit val tag = new QuoteTag
-    val fetcherActor = Props(classOf[PullFetchComponent[Quote]], fetcher, implicitly[QuoteTag])
+    val fetcherActor = Props(classOf[PullFetchComponent[Quote]], fetcher, new QuoteTag)
     
     // Market
     val rules = new ForexMarketRules()
@@ -190,6 +189,7 @@ akka.actor.serialize-creators = on
       (workerHost, idx) <- availableWorkers.zipWithIndex
     } yield createRemoteActors(master, workerHost, idx.toString(), slicedParameters(idx))
     
-    // TODO: handle start and stop
+    builder.start
+    // TODO: handle evaluator reports on stop
   }
 }
