@@ -106,9 +106,9 @@ object RemotingHostExample {
     val printer = Props(classOf[Printer], "")
     
     Map(
-      'fetcher -> fetcher,
-      'market  -> market,
-      'printer -> printer
+      "fetcher" -> fetcher,
+      "market"  -> market,
+      "printer" -> printer
     )
   }
   
@@ -132,7 +132,7 @@ object RemotingHostExample {
     
     // Common props
     val common = commonProps.map({ case (name, props) =>
-      println("Created common prop " + name + " at host " + host)
+      println("Creating common prop " + (prefix + "-" + name) + " at host " + host)
       (name -> builder.createRef(props.withDeploy(deploy), prefix + name))
     })
     
@@ -146,10 +146,10 @@ object RemotingHostExample {
       val trader = builder.createRef(Props(classOf[WorkerActor], master.ar, dummyParam).withDeploy(deploy), name)
 
       // Register this new trader to the master
-      master.ar ! trader
+      master.ar ! trader.ar
       // Connect this new trader to the required components
       // TODO: support all order types
-      trader -> (common('market), classOf[MarketAskOrder], classOf[MarketBidOrder])
+      trader -> (common("market"), classOf[MarketAskOrder], classOf[MarketBidOrder])
 
       println("Created trader " + name + " at host " + host)
     }
@@ -160,8 +160,8 @@ object RemotingHostExample {
 //    forexMarket -> (display, classOf[Transaction])
 //    maCross -> (trader, classOf[SMA])
 //    ohlcIndicator -> (maCross, classOf[OHLC])
-    common('fetcher) -> (common('printer), classOf[Quote])
-    common('market) -> (common('printer), classOf[Transaction])
+    common("fetcher") -> (common("printer"), classOf[Quote])
+    common("market")  -> (common("printer"), classOf[Transaction])
   }
   
   def main(args: Array[String]): Unit = {
@@ -175,7 +175,7 @@ akka.remote.netty.tcp.port = 3333
 akka.actor.serialize-creators = on
 """).withFallback(ConfigFactory.load());
     
-    implicit val builder = new ComponentBuilder("simpleFX", remotingConfig)
+    implicit val builder = new ComponentBuilder("host", remotingConfig)
     val master = builder.createRef(Props(classOf[MasterActor]), "MasterActor")
     
     val allParameterValues = (1 to 10)
