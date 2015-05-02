@@ -19,6 +19,11 @@ import ch.epfl.ts.component.fetch.PullFetchComponent
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.component.utils.Printer
+import ch.epfl.ts.component.ComponentBuilder
+import ch.epfl.ts.component.ComponentRef
+import ch.epfl.ts.data.Transaction
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
 
 case object WorkerIsLive
 
@@ -39,7 +44,7 @@ class MasterActor extends Actor {
       println("Master sees " + nAlive + " workers available.")
     }
     case s: String => {
-      println("MasterActor received: " + s)
+      println("MasterActor received string: " + s)
     }
     case m => println("MasterActor received weird: " + m)
   }
@@ -53,15 +58,15 @@ class MasterActor extends Actor {
 /**
  * Dummy actor to test Akka remoting
  */
-class WorkerActor(hostActor: ActorRef, dummyParam: Int) extends Actor {
+class WorkerActor(hostActor: ComponentRef, dummyParam: Int) extends Actor {
   
   println("Worker actor with param " + dummyParam + " now running.")
-  hostActor ! WorkerIsLive
+  hostActor.ar ! WorkerIsLive
   
   override def receive = {
     case s: String => {
       println("WorkerActor received: " + s)
-      hostActor ! "Hi there!"
+      hostActor.ar ! "Hi there!"
     }
     case m => println("WorkerActor received weird: " + m)
   }
@@ -101,9 +106,9 @@ object RemotingHostExample {
     val printer = Props(classOf[Printer], "")
     
     Map(
-      "Fetcher" -> fetcher,
-      "Market"  -> market,
-      "Printer" -> printer
+      'fetcher -> fetcher,
+      'market  -> market,
+      'printer -> printer
     )
   }
   
@@ -119,19 +124,17 @@ object RemotingHostExample {
   // TODO: replace by actual parameters
   // TODO: do not hardcode strategy
   // TODO: connect actors
-  def createRemoteActors(master: ActorRef, host: String, prefix: String,
+  def createRemoteActors(master: ComponentRef, host: String, prefix: String,
                          parameterValues: Iterable[Int])
-                        (implicit system: ActorSystem): Unit = {
+                        (implicit builder: ComponentBuilder): Unit = {
     val address = Address("akka.tcp", workerSystemName, host, workerPort)
     val deploy = Deploy(scope = RemoteScope(address))
     
     // Common props
-    for {
-      (name, props) <- commonProps
-    } yield {
-      system.actorOf(props.withDeploy(deploy), prefix + name)
+    val common = commonProps.map({ case (name, props) =>
       println("Created common prop " + name + " at host " + host)
-    }
+      (name -> builder.createRef(props.withDeploy(deploy), prefix + name))
+    })
     
     // One trader for each parameterization
     for {
@@ -140,15 +143,25 @@ object RemotingHostExample {
       val name = prefix +  "-Worker-" + dummyParam
       
       // TODO: evaluator as well
-      val remoteActor = system.actorOf(Props(classOf[WorkerActor], master, dummyParam).withDeploy(deploy), name)
-      
-      // Register this new actor to the master
-      master ! remoteActor
-      
+      val trader = builder.createRef(Props(classOf[WorkerActor], master, dummyParam).withDeploy(deploy), name)
+
+      // Register this new trader to the master
+      master.ar ! trader
+      // Connect this new trader to the required components
+      // TODO: support all order types
+      trader -> (common('market), classOf[MarketAskOrder], classOf[MarketBidOrder])
+
       println("Created trader " + name + " at host " + host)
     }
     
     // TODO: connections
+//    fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator), classOf[Quote])
+//    trader -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
+//    forexMarket -> (display, classOf[Transaction])
+//    maCross -> (trader, classOf[SMA])
+//    ohlcIndicator -> (maCross, classOf[OHLC])
+    common('fetcher) -> (common('printer), classOf[Quote])
+    common('market) -> (common('printer), classOf[Transaction])
   }
   
   def main(args: Array[String]): Unit = {
@@ -162,10 +175,10 @@ akka.remote.netty.tcp.port = 3333
 akka.actor.serialize-creators = on
 """).withFallback(ConfigFactory.load());
     
-    implicit val system = ActorSystem("host", remotingConfig)
-    val master = system.actorOf(Props(classOf[MasterActor]), name = "MasterActor")
+    implicit val builder = new ComponentBuilder("simpleFX", remotingConfig)
+    val master = builder.createRef(Props(classOf[MasterActor]), "MasterActor")
     
-    val allParameterValues = (1 to 20)
+    val allParameterValues = (1 to 10)
     val slicedParameters = {
       val n = (allParameterValues.length / availableWorkers.length).ceil.toInt 
       (0 until availableWorkers.length).map(i => allParameterValues.slice(n * i, (n * i) + n))
@@ -175,5 +188,7 @@ akka.actor.serialize-creators = on
     val remoteActors = for {
       (workerHost, idx) <- availableWorkers.zipWithIndex
     } yield createRemoteActors(master, workerHost, idx.toString(), slicedParameters(idx))
+    
+    // TODO: handle start and stop
   }
 }

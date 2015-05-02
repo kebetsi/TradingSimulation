@@ -48,7 +48,7 @@ final class ComponentBuilder(myName: String, config: Config) {
 
 /** Encapsulates [[akka.actor.ActorRef]] to facilitate connection of components
   */
-class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: ComponentBuilder) {
+class ComponentRef(val ar: ActorRef, val clazz: Class[_], val name: String, cb: ComponentBuilder) extends Serializable {
   /** Connects current component to the destination component
     *
     * @param destination the destination component
