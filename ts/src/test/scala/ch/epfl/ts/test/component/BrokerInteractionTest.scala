@@ -36,7 +36,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
   market ! StartSignal
   broker ! StartSignal
   market ! Quote(marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
-
+  broker ! Quote(marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
   "A trader " should {
     " register in a broker on startSignal" in {
       within(1 second) {
@@ -97,7 +97,9 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
             }
           }
         }
-        EventFilter.debug(message = USD + " -> Some(97.0)", occurrences = 1) intercept {
+        //sendMarketOrder is a Market Bid Order in CHF/USD of volume 3 it means buy 3CHF at market price (ask price = 13.2 in the test)
+        //So remaining USD is 100-3*13.2
+        EventFilter.debug(message = USD + " -> Some("+(100.0-3*13.2)+")", occurrences = 1) intercept {
           EventFilter.debug(start = CHF + " -> Some", occurrences = 1) intercept {
               trader ! 'knowYourWallet
           }

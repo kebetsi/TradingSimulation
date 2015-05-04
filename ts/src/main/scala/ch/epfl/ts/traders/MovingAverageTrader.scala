@@ -8,6 +8,10 @@ import ch.epfl.ts.data.Currency
 import akka.actor.ActorLogging
 import ch.epfl.ts.engine.MarketFXSimulator
 import akka.actor.ActorRef
+import ch.epfl.ts.data.ConfirmRegistration
+import ch.epfl.ts.data.Register
+import ch.epfl.ts.engine.FundWallet
+import ch.epfl.ts.engine.GetWalletFunds
 
 /**
  * Simple momentum strategy.
@@ -19,8 +23,15 @@ import akka.actor.ActorRef
  * @param withShort version with/without short orders
  */
 class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
-                     val shortPeriod: Int, val longPeriod: Int,
-                     val volume: Double, val tolerance: Double, val withShort: Boolean) extends Component with ActorLogging {
+                          val shortPeriod: Int, val longPeriod: Int,
+                          val volume: Double, val tolerance: Double, val withShort: Boolean) extends Component with ActorLogging {
+
+  import context.dispatcher
+  /**
+   * Broker information
+   */
+  var broker: ActorRef = null
+  var registered = false
 
   /**
    * Moving average of the current period
@@ -38,6 +49,12 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
 
   override def receiver = {
 
+    case ConfirmRegistration => {
+      broker = sender()
+      registered = true
+      log.debug("TraderWithB: Broker confirmed")
+    }
+
     case ma: MovingAverage => {
       println("Trader receive MAs")
       ma.value.get(shortPeriod) match {
@@ -48,17 +65,17 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
         case Some(x) => currentLong = x
         case None    => println("Error: Missing indicator with period " + longPeriod)
       }
-      
+
       decideOrder
     }
 
-    case whatever => println("SimpleTrader: received unknown"+ whatever)
+    case whatever => println("SimpleTrader: received unknown : " + whatever)
   }
 
   def decideOrder =
     if (withShort) decideOrderWithShort
     else decideOrderWithoutShort
-    
+
   def decideOrderWithoutShort = {
     //BUY signal
     if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
@@ -106,4 +123,12 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
       }
     }
   }
+
+  override def start = {
+    log.debug("MovingAverageTrader received startSignal")
+    send(Register(uid))
+    send(FundWallet(uid, Currency.CHF, 5000))
+    send(GetWalletFunds(uid))
+  }
+
 }
