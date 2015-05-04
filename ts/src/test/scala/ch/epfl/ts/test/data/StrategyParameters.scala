@@ -1,30 +1,33 @@
 package ch.epfl.ts.test.data
 
-import scala.language.postfixOps
 import scala.concurrent.duration.DurationLong
+import scala.language.postfixOps
 import scala.util.Try
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import ch.epfl.ts.component.ComponentBuilder
-import ch.epfl.ts.traders.TraderCompanion
-import ch.epfl.ts.traders.MadTrader
-import ch.epfl.ts.data.StrategyParameters
-import ch.epfl.ts.data.ParameterTrait
-import ch.epfl.ts.data.CurrencyPairParameter
-import ch.epfl.ts.data.NaturalNumberParameter
-import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.data.BooleanParameter
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Currency
-import ch.epfl.ts.traders.TransactionVwapTrader
-import ch.epfl.ts.traders.SimpleTraderWithBroker
-import ch.epfl.ts.traders.Arbitrageur
-import ch.epfl.ts.data.RealNumberParameter
-import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.data.CurrencyPairParameter
 import ch.epfl.ts.data.MarketRulesParameter
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.ParameterTrait
+import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.engine.ForexMarketRules
-import ch.epfl.ts.traders.SobiTrader
+import ch.epfl.ts.engine.MarketRules
+import ch.epfl.ts.traders.Arbitrageur
+import ch.epfl.ts.traders.MadTrader
 import ch.epfl.ts.traders.MovingAverageTrader
+import ch.epfl.ts.traders.SimpleTraderWithBroker
+import ch.epfl.ts.traders.SobiTrader
+import ch.epfl.ts.traders.TraderCompanion
+import ch.epfl.ts.traders.TransactionVwapTrader
+import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.data.WalletParameter
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -36,6 +39,10 @@ class StrategyParametersTests extends FunSuite {
   val illegalCurrencies = (Currency.GBP, Currency.GBP)
   val legalCoefficient = 0.2342341341
   val illegalCoefficient = -0.2342341341
+  val validWallet1: Wallet.Type = Map(Currency.EUR -> 1000.0)
+  val validWallet2: Wallet.Type = Map(Currency.CHF -> 1000.0, Currency.USD -> 0.0, Currency.BTC -> 50.0)
+  val validWallet3: Wallet.Type = Map()
+  val invalidWallet1: Wallet.Type = Map(Currency.CHF -> 1000.0, Currency.USD -> 0.0, Currency.BTC -> -50.0)
 
   private type CurrencyPair = (Currency.Currency, Currency.Currency)
 
@@ -181,9 +188,15 @@ class StrategyParametersTests extends FunSuite {
   }
 
   testConcreteParameter(
-      CoefficientParameter,
-      List(0.058924379237491379, 0.0, 1.0),
-      List(-1.0, -0.0001, 1.000001)
+      BooleanParameter,
+      List(true, false),
+      List()
+    )
+
+  testConcreteParameter(
+  		CoefficientParameter,
+  		List(0.058924379237491379, 0.0, 1.0),
+  		List(-1.0, -0.0001, 1.000001)
     )
 
   testConcreteParameter(
@@ -210,6 +223,12 @@ class StrategyParametersTests extends FunSuite {
       List(illegalCurrencies)
     )
 
+  testConcreteParameter(
+      WalletParameter,
+      List(validWallet1, validWallet2, validWallet3),
+      List(invalidWallet1)
+    )
+    
   testConcreteParameter(
       MarketRulesParameter,
       List(new ForexMarketRules),

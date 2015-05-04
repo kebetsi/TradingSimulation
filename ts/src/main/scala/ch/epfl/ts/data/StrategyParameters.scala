@@ -6,6 +6,7 @@ import scala.reflect.ClassTag
 import ch.epfl.ts.engine.MarketRules
 import ch.epfl.ts.engine.ForexMarketRules
 import ch.epfl.ts.benchmark.marketSimulator.BenchmarkMarketRules
+import ch.epfl.ts.engine.Wallet
 
 
 /**
@@ -326,6 +327,31 @@ object CurrencyPairParameter extends ParameterTrait {
   }
 
   def defaultValue = (Currency.EUR, Currency.CHF)
+}
+
+
+/**
+ * Parameter representing funds in various currencies.
+ */
+case class WalletParameter(wallet: Wallet.Type) extends Parameter("Wallet") {
+  type T = Wallet.Type
+  def companion = WalletParameter
+  def value(): T = wallet
+}
+
+object WalletParameter extends ParameterTrait {
+  type T = Wallet.Type
+  def getInstance(v: T) = new WalletParameter(v)
+
+  /**
+   * All amounts must be non-negative
+   */
+  def isValid(v: T): Boolean = v.values.forall { x => x >= 0 }
+
+  // TODO: enumeration of valid wallets
+  def validValues: Iterable[T] = Seq(defaultValue)
+
+  def defaultValue = Map[Currency, Double]()
 }
 
 
