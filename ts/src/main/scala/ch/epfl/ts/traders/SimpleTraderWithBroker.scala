@@ -18,6 +18,7 @@ import ch.epfl.ts.data.Register
 import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedAskOrder, AcceptedOrder, RejectedOrder}
 import ch.epfl.ts.engine.ExecutedBidOrder
+import ch.epfl.ts.engine.Wallet
 
 /**
  * SimpleTraderWithBroker companion object
@@ -54,7 +55,7 @@ class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new Str
       registered = true
       log.debug("TraderWithB: Broker confirmed")
     }
-    case WalletFunds(uid, funds :Map[Currency, Double]) => {
+    case WalletFunds(uid, funds: Wallet.Type) => {
       log.debug("TraderWithB: money I have: ")
       for(i <- funds.keys) yield {log.debug(i + " -> " + funds.get(i))}
     }

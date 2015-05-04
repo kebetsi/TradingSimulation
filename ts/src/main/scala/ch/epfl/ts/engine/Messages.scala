@@ -58,7 +58,7 @@ case class GetWalletClosedOrder(override val uid: Long) extends WalletState(uid)
 case class GetWalletCanceledOrder(override val uid: Long) extends WalletState(uid)
 
 /* Answers */
-case class WalletFunds(override val uid: Long, f: Map[Currency, Double]) extends WalletState(uid)
+case class WalletFunds(override val uid: Long, f: Wallet.Type) extends WalletState(uid)
 
 case class WalletConfirm(override val uid: Long) extends WalletState(uid)
 case class WalletInsufficient(override val uid: Long) extends WalletState(uid)
