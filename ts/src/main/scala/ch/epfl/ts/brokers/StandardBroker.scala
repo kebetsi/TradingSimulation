@@ -1,28 +1,49 @@
 package ch.epfl.ts.brokers
 
-import akka.actor.{ActorLogging, Props, ActorRef}
+import akka.actor.{ ActorLogging, Props, ActorRef }
 import akka.pattern.ask
 import akka.util.Timeout
 import ch.epfl.ts.component.Component
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import ch.epfl.ts.engine.{Wallet, WalletConfirm, FundWallet, WalletFunds,
-  GetWalletFunds,WalletInsufficient, ExecutedOrder, WalletState, AcceptedOrder, RejectedOrder}
+import ch.epfl.ts.engine.{
+  Wallet,
+  WalletConfirm,
+  FundWallet,
+  WalletFunds,
+  GetWalletFunds,
+  WalletInsufficient,
+  ExecutedBidOrder,
+  ExecutedAskOrder,
+  WalletState,
+  AcceptedOrder,
+  RejectedOrder
+}
 import scala.Some
-import ch.epfl.ts.data.{Register, ConfirmRegistration, Order}
+import ch.epfl.ts.data.{ Register, ConfirmRegistration, Order }
+import ch.epfl.ts.data.Currency._
+import scala.collection.mutable.{ HashMap => MHashMap }
+import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.MarketAskOrder
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.LimitBidOrder
+import ch.epfl.ts.data.LimitAskOrder
 
 /**
  * Created by sygi on 03.04.15.
  */
-class ExampleBroker extends Component with ActorLogging {
+class StandardBroker extends Component with ActorLogging {
   import context.dispatcher
   var mapping = Map[Long, ActorRef]()
-  val dummyReturn: PartialFunction[Any, Unit] = {case _ => {}}
+  val dummyReturn: PartialFunction[Any, Unit] = { case _ => {} }
+
+  var tradingPrices = MHashMap[(Currency, Currency), (Double, Double)]()
+
   override def receiver: PartialFunction[Any, Unit] = {
     case Register(id) => {
       log.debug("Broker: registration of agent " + id)
       log.debug("with ref: " + sender())
-      if (mapping.get(id) != None){
+      if (mapping.get(id) != None) {
         log.debug("Duplicate Id")
         //TODO(sygi): reply to the trader that registration failed
         return dummyReturn
@@ -59,10 +80,22 @@ class ExampleBroker extends Component with ActorLogging {
       })
     }
 
-    case e: ExecutedOrder => {
-      if (mapping.contains(e.uid)){
+    case e: ExecutedBidOrder => {
+      if (mapping.contains(e.uid)) {
         val replyTo = mapping.getOrElse(e.uid, null)
-        executeForWallet(e.uid, FundWallet(e.uid, e.whatC, e.volume / e.price), {
+        executeForWallet(e.uid, FundWallet(e.uid, e.whatC, e.volume), {
+          case WalletConfirm(uid) => {
+            log.debug("Broker: Transaction executed")
+            replyTo ! e
+          }
+          case p => log.debug("Broker: A wallet replied with an unexpected message: " + p)
+        })
+      }
+    }
+    case e: ExecutedAskOrder => {
+      if (mapping.contains(e.uid)) {
+        val replyTo = mapping.getOrElse(e.uid, null)
+        executeForWallet(e.uid, FundWallet(e.uid, e.withC, e.volume * e.price), {
           case WalletConfirm(uid) => {
             log.debug("Broker: Transaction executed")
             replyTo ! e
@@ -77,7 +110,12 @@ class ExampleBroker extends Component with ActorLogging {
       log.debug("Broker: received order")
       val replyTo = sender
       val uid = o.chargedTraderId()
-      val placementCost = o.costValue()
+      val placementCost = o match {
+        case _: MarketBidOrder => o.volume * tradingPrices(o.whatC, o.withC)._2 // we buy at ask price
+        case _: MarketAskOrder => o.volume
+        case _: LimitBidOrder  => o.volume * o.price
+        case _: LimitAskOrder  => o.volume
+      }
       val costCurrency = o.costCurrency()
       executeForWallet(uid, FundWallet(uid, costCurrency, -placementCost), {
         case WalletConfirm(uid) => {
@@ -93,13 +131,17 @@ class ExampleBroker extends Component with ActorLogging {
       })
     }
 
+    case q: Quote => {
+      tradingPrices((q.whatC, q.withC)) = (q.bid, q.ask)
+    }
+
     case p => log.debug("Broker: received unknown " + p)
   }
 
   //TODO(sygi) - implement it
   //def addToWallet(uid: Long, currency: Currency, amount: Double, messageOnSuccess: Option[Any], messageOnFailure: Option[Any])
 
-  def executeForWallet(uid: Long, question: WalletState, cb: PartialFunction[Any, Unit]) = { 
+  def executeForWallet(uid: Long, question: WalletState, cb: PartialFunction[Any, Unit]) = {
     context.child("wallet" + uid) match {
       case Some(walletActor) => {
         implicit val timeout = new Timeout(100 milliseconds)

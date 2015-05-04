@@ -26,7 +26,7 @@ project/plugins/project/
 .settings
 .metadata
 
-# IntelliJ speciifc
+# IntelliJ specific
 TradingSimulation.iml
 .idea/
 
@@ -34,5 +34,6 @@ TradingSimulation.iml
 .DS_Store
 
 # Project specific
+ts/data/*
 data/*
 !data/.gitkeep

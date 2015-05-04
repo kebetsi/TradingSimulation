@@ -8,7 +8,7 @@ object Currency extends Enumeration {
   // Cryptocurrencies
   val BTC = Value("btc")
   val LTC = Value("ltc")
-  
+
   // Real-life currencies
   val USD = Value("usd")
   val CHF = Value("chf")
@@ -18,10 +18,10 @@ object Currency extends Enumeration {
   val GBP = Value("gbp")
   val AUD = Value("aud")
   val CAD = Value("cad")
-  
+
   // Fallback ("default")
   val DEF = Value("def")
-  
+
   def fromString(s: String): Currency = {
     this.values.find(v => v.toString().toLowerCase() == s.toLowerCase()) match {
       case Some(currency) => currency
@@ -30,7 +30,12 @@ object Currency extends Enumeration {
       }
     }
   }
-  
+
+  def supportedCurrencies(): Set[Currency] = Set(
+    BTC, LTC,
+    USD, CHF, RUR, EUR, JPY, GBP, AUD, CAD
+  )
+
   /**
    * Creates a tuple of currencies given a string
    *

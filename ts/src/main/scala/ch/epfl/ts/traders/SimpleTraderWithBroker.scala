@@ -1,27 +1,51 @@
 package ch.epfl.ts.traders
 
-import ch.epfl.ts.component.Component
-import ch.epfl.ts.data._
-import akka.actor.{ActorLogging, ActorRef}
-import ch.epfl.ts.data.Currency._
-import scala.concurrent.duration._
+import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
+import akka.actor.ActorLogging
+import akka.actor.ActorRef
 import akka.pattern.ask
-import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedOrder, AcceptedOrder, RejectedOrder}
+import akka.util.Timeout
+import ch.epfl.ts.data.ConfirmRegistration
+import ch.epfl.ts.data.Currency.CHF
+import ch.epfl.ts.data.Currency.Currency
+import ch.epfl.ts.data.Currency.USD
+import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.MarketOrder
+import ch.epfl.ts.data.Order
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Register
-import ch.epfl.ts.data.ConfirmRegistration
-import akka.util.Timeout
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedAskOrder, AcceptedOrder, RejectedOrder}
+import ch.epfl.ts.engine.ExecutedBidOrder
+import ch.epfl.ts.engine.Wallet
+
+/**
+ * SimpleTraderWithBroker companion object
+ */
+object SimpleTraderWithBroker extends TraderCompanion {
+  type ConcreteTrader = SimpleTraderWithBroker
+  override protected val concreteTraderTag = scala.reflect.classTag[SimpleTraderWithBroker]
+  
+  override def strategyRequiredParameters = Map()
+}
 
 /**
  * Dummy broker-aware trader.
  */
-class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
-  import context.dispatcher //allows the usage of ask pattern in an Actor
-  val l = context.system.log
+class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters)
+    extends Trader(uid, parameters)
+    with ActorLogging {
+  
+  // Allows the usage of ask pattern in an Actor
+  import context.dispatcher
+
+  override def companion = SimpleTraderWithBroker
+
   var broker: ActorRef = null
   var registered = false
   var oid = 1L
+
   override def receiver = {
     case q: Quote => {
       log.debug("TraderWithB receided a quote: " + q)
@@ -31,7 +55,7 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
       registered = true
       log.debug("TraderWithB: Broker confirmed")
     }
-    case WalletFunds(uid, funds :Map[Currency, Double]) => {
+    case WalletFunds(uid, funds: Wallet.Type) => {
       log.debug("TraderWithB: money I have: ")
       for(i <- funds.keys) yield {log.debug(i + " -> " + funds.get(i))}
     }
@@ -42,7 +66,10 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
       log.debug("TraderWithB: Got a wallet confirmation")
     }
 
-    case _: ExecutedOrder => {
+    case _: ExecutedAskOrder => {
+      log.debug("TraderWithB: Got an executed order")
+    }
+    case _: ExecutedBidOrder => {
       log.debug("TraderWithB: Got an executed order")
     }
 
@@ -81,7 +108,7 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
     }
   }
 
-  override def start = {
+  override def init = {
     log.debug("TraderWithB received startSignal")
     send(Register(uid))
   }

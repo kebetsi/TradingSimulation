@@ -15,7 +15,7 @@ import scala.reflect.ClassTag
  */
 object BtceTransactionFlowTesterWithStorage {
   def main(args: Array[String]): Unit = {
-    val builder = new ComponentBuilder("DataSourceSystem")
+    implicit val builder = new ComponentBuilder("DataSourceSystem")
 
     // Initialize the Interface to DB
     val btceXactPersit = new TransactionPersistor("btce-transaction-db-batch")

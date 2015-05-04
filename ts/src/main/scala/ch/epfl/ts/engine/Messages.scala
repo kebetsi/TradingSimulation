@@ -26,12 +26,17 @@ case class RejectedOrder(val oid: Long, val uid: Long, val timestamp: Long, val 
 object RejectedOrder {
   def apply(o: Order): RejectedOrder = RejectedOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, o.price)
 }
-
-case class ExecutedOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+case class ExecutedBidOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
   extends Order
 
-object ExecutedOrder {
-  def apply(o: Order): ExecutedOrder = ExecutedOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, o.price)
+case class ExecutedAskOrder(val oid: Long, val uid: Long, val timestamp: Long, val whatC: Currency, val withC: Currency, val volume: Double, val price: Double)
+  extends Order
+
+object ExecutedBidOrder {
+  def apply(o: Order,price:Double): ExecutedBidOrder = ExecutedBidOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, price)
+}
+object ExecutedAskOrder {
+  def apply(o: Order,price:Double): ExecutedAskOrder = ExecutedAskOrder(o.oid, o.uid, o.timestamp, o.whatC, o.withC, o.volume, price)
 }
 //TODO(sygi): change this messages and actually use them to communicate broker -> trader
 
@@ -53,7 +58,7 @@ case class GetWalletClosedOrder(override val uid: Long) extends WalletState(uid)
 case class GetWalletCanceledOrder(override val uid: Long) extends WalletState(uid)
 
 /* Answers */
-case class WalletFunds(override val uid: Long, f: Map[Currency, Double]) extends WalletState(uid)
+case class WalletFunds(override val uid: Long, f: Wallet.Type) extends WalletState(uid)
 
 case class WalletConfirm(override val uid: Long) extends WalletState(uid)
 case class WalletInsufficient(override val uid: Long) extends WalletState(uid)
