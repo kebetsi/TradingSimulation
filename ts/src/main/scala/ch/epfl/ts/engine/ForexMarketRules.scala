@@ -5,6 +5,7 @@ import ch.epfl.ts.data.{ DelOrder, LimitAskOrder, LimitBidOrder, MarketAskOrder,
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.data.MarketBidOrder
 import ch.epfl.ts.data.MarketAskOrder
+import akka.actor.ActorLogging
 
 /**
  * represents the cost of placing a bid and market order
@@ -17,8 +18,6 @@ case class CommissionFX(limitOrderFee: Double, marketOrderFee: Double)
  *
  */
 class ForexMarketRules extends MarketRules {
-  // TODO: there should be a nonzero commission, right?
-  // override val commission = Commission(0, 0)
 
   def matchingFunction(marketId: Long,
                        newOrder: Order,
@@ -39,7 +38,7 @@ class ForexMarketRules extends MarketRules {
               newOrder.whatC, newOrder.withC,
               newOrder.uid, newOrder.oid,
               sellerTraderId, sellOrderId))
-        send(ExecutedOrder.apply(mbid))
+        send(ExecutedBidOrder.apply(mbid,currentTradingPrice))
         
       case mask: MarketAskOrder =>
         println("Receive MASK order")
@@ -51,7 +50,7 @@ class ForexMarketRules extends MarketRules {
                         newOrder.whatC, newOrder.withC,
                         buyerTraderId, buyOrderId,
                         newOrder.uid, newOrder.oid))
-        send(ExecutedOrder.apply(mask))
+        send(ExecutedAskOrder.apply(mask,currentTradingPrice))
 
     }
   }

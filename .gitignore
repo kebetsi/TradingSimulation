@@ -34,5 +34,6 @@ TradingSimulation.iml
 .DS_Store
 
 # Project specific
+ts/data/*
 data/*
 !data/.gitkeep

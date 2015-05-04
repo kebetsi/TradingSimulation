@@ -7,11 +7,12 @@ import ch.epfl.ts.data.Currency._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import akka.pattern.ask
-import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedOrder, AcceptedOrder, RejectedOrder}
+import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedAskOrder, AcceptedOrder, RejectedOrder}
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Register
 import ch.epfl.ts.data.ConfirmRegistration
 import akka.util.Timeout
+import ch.epfl.ts.engine.ExecutedBidOrder
 
 /**
  * Dummy broker-aware trader.
@@ -42,7 +43,10 @@ class SimpleTraderWithBroker(uid: Long) extends Component with ActorLogging{
       log.debug("TraderWithB: Got a wallet confirmation")
     }
 
-    case _: ExecutedOrder => {
+    case _: ExecutedAskOrder => {
+      log.debug("TraderWithB: Got an executed order")
+    }
+    case _: ExecutedBidOrder => {
       log.debug("TraderWithB: Got an executed order")
     }
 

@@ -3,7 +3,7 @@ package ch.epfl.ts.test.component
 import akka.actor.{ActorRef, Props, ActorSystem}
 import akka.testkit.{EventFilter, TestKit}
 import ch.epfl.ts.component.{StartSignal}
-import ch.epfl.ts.brokers.ExampleBroker
+import ch.epfl.ts.brokers.StandardBroker
 import ch.epfl.ts.traders.SimpleTraderWithBroker
 import org.scalatest.WordSpecLike
 import scala.concurrent.duration._
@@ -15,10 +15,10 @@ import ch.epfl.ts.engine.{ForexMarketRules, MarketFXSimulator, GetWalletFunds}
 import ch.epfl.ts.component.fetch.MarketNames
 import akka.util.Timeout
 import ch.epfl.ts.data.Quote
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-/**
- * Created by sygi on 07.04.15.
- */
+@RunWith(classOf[JUnitRunner])
 class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest", ConfigFactory.parseString(
   """
   akka.loglevel = "DEBUG"
@@ -36,7 +36,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
   market ! StartSignal
   broker ! StartSignal
   market ! Quote(marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
-
+  broker ! Quote(marketID, System.currentTimeMillis(), CHF, USD, 10.2, 13.2)
   "A trader " should {
     " register in a broker on startSignal" in {
       within(1 second) {
@@ -97,7 +97,9 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
             }
           }
         }
-        EventFilter.debug(message = USD + " -> Some(97.0)", occurrences = 1) intercept {
+        //sendMarketOrder is a Market Bid Order in CHF/USD of volume 3 it means buy 3CHF at market price (ask price = 13.2 in the test)
+        //So the cost here is  : 3*13.2
+        EventFilter.debug(message = USD + " -> Some("+(100.0-3*13.2)+")", occurrences = 1) intercept {
           EventFilter.debug(start = CHF + " -> Some", occurrences = 1) intercept {
               trader ! 'knowYourWallet
           }
@@ -147,7 +149,7 @@ class SimpleTraderWrapped(uid: Long, broker: ActorRef) extends SimpleTraderWithB
 /**
  * Analogical class for the broker.
  */
-class SimpleBrokerWrapped(market: ActorRef) extends ExampleBroker {
+class SimpleBrokerWrapped(market: ActorRef) extends StandardBroker {
   override def send[T: ClassTag](t: T) {
     market ! t
   }
@@ -165,4 +167,3 @@ class FxMarketWrapped(uid: Long, rules: ForexMarketRules) extends MarketFXSimula
     }
   }
 }
-
