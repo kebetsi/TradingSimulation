@@ -27,6 +27,7 @@ import ch.epfl.ts.indicators.OhlcIndicator
 import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.data.MarketAskOrder
 import ch.epfl.ts.data.MarketBidOrder
+import ch.epfl.ts.data.WalletParameter
 
 /**
  * in this system, two fetchers gather orders and transaction
@@ -65,6 +66,7 @@ object BTCArbitrage {
     // trading agents
     val arbitrageurId = 111L
     val parameters = new StrategyParameters(
+      Arbitrageur.INITIAL_FUNDS -> WalletParameter(Map()),
       Arbitrageur.VOLUME -> NaturalNumberParameter(50),
       Arbitrageur.PRICE_DELTA -> RealNumberParameter(1.0)
     )    

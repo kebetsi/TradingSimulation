@@ -68,6 +68,7 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(uid, p
   var alternate = 0
   val r = new Random
 
+  // TODO: make wallet-aware
   override def receiver = {
     case SendMarketOrder => {
       // Randomize volume and price

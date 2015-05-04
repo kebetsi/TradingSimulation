@@ -17,6 +17,8 @@ import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.test.TestHelpers
 import ch.epfl.ts.traders.MadTrader
 import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.data.WalletParameter
+import ch.epfl.ts.engine.Wallet
 
 @RunWith(classOf[JUnitRunner])
 class MadTraderTest
@@ -25,6 +27,7 @@ class MadTraderTest
   
   val traderId = 42L
   val currencies = (Currency.EUR, Currency.CHF)
+  val initialFunds: Wallet.Type = Map(currencies._2 -> 1000.0)
   val initialDelay =  100 milliseconds
   val interval = 50 milliseconds
   val volume = 100
@@ -34,6 +37,7 @@ class MadTraderTest
   val gracePeriod = (10 milliseconds)
   
   val parameters = new StrategyParameters(
+      MadTrader.INITIAL_FUNDS -> WalletParameter(initialFunds),
       MadTrader.CURRENCY_PAIR -> CurrencyPairParameter(currencies),
       MadTrader.INITIAL_DELAY -> new TimeParameter(initialDelay),
       MadTrader.INTERVAL -> new TimeParameter(interval),

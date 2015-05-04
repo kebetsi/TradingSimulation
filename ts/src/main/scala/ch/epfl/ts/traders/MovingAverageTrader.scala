@@ -48,7 +48,7 @@ object MovingAverageTrader extends TraderCompanion {
     SYMBOL -> CurrencyPairParameter,
     SHORT_PERIOD -> TimeParameter,
     LONG_PERIOD -> TimeParameter,
-    VOLUME -> NaturalNumberParameter,
+    VOLUME -> RealNumberParameter,
     TOLERANCE -> RealNumberParameter
   )
   
@@ -70,7 +70,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
   val symbol = parameters.get[(Currency, Currency)](MovingAverageTrader.SYMBOL)
   val shortPeriod = parameters.get[FiniteDuration](MovingAverageTrader.SHORT_PERIOD)
   val longPeriod = parameters.get[FiniteDuration](MovingAverageTrader.LONG_PERIOD)
-  val volume = parameters.get[Int](MovingAverageTrader.VOLUME)
+  val volume = parameters.get[Double](MovingAverageTrader.VOLUME)
   val tolerance = parameters.get[Double](MovingAverageTrader.TOLERANCE)
   val withShort = parameters.getOrElse[Boolean](MovingAverageTrader.WITH_SHORT, false)
 

@@ -36,6 +36,9 @@ import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.data.CurrencyPairParameter
 import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.data.WalletParameter
+import ch.epfl.ts.data.RealNumberParameter
 
 object MovingAverageFXExample {
   def main(args: Array[String]): Unit = {
@@ -68,17 +71,15 @@ object MovingAverageFXExample {
     // Trader: cross moving average
     val traderId = 123L
     val periods = List(2, 6)
+    val initialFunds: Wallet.Type = Map(Currency.CHF -> 5000.0)
     val parameters = new StrategyParameters(
+      MovingAverageTrader.INITIAL_FUNDS -> WalletParameter(initialFunds),
       MovingAverageTrader.SYMBOL -> CurrencyPairParameter(symbol),
       MovingAverageTrader.VOLUME -> NaturalNumberParameter(1000),
       MovingAverageTrader.SHORT_PERIOD -> new TimeParameter(periods(0) seconds),
-      MovingAverageTrader.LONG_PERIOD -> new TimeParameter(periods(1) seconds)
+      MovingAverageTrader.LONG_PERIOD -> new TimeParameter(periods(1) seconds),
+      MovingAverageTrader.TOLERANCE -> RealNumberParameter(0.0002)
     )
-
-    // TODO: these as a strategy parameters as well
-    val tolerance = 0.0002
-    val initialFunds = 5000.0
-    val initialCurrency = Currency.CHF
 
     val trader = MovingAverageTrader.getInstance(traderId, parameters, "MovingAverageTrader")
 

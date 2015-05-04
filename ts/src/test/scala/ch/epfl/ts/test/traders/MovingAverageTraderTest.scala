@@ -16,6 +16,14 @@ import ch.epfl.ts.traders.MovingAverageTrader
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import ch.epfl.ts.test.TestHelpers
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.WalletParameter
+import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.data.BooleanParameter
 
 
 @RunWith(classOf[JUnitRunner])
@@ -25,17 +33,22 @@ class MovingAverageTraderTest
 
   val traderId: Long = 123L
   val symbol = (Currency.USD, Currency.CHF)
+  val initialFunds: Wallet.Type = Map(symbol._2 -> 5000.0)
   val volume = 1000.0
-  val shortPeriod = 5
-  val longPeriod = 30
-  val periods = List(5, 30)
+  val periods = Seq(5, 30)
   val tolerance = 0.0002
- 
-  // TODO Useless here (for the moment)
-  val initialFund = 5000.0;
-  val initialCurrency=Currency.CHF
-
-  val trader = TestActorRef(Props(classOf[MovingAverageTrader], traderId, symbol,initialFund,initialCurrency, shortPeriod, longPeriod, volume, tolerance,false))
+  
+  val parameters = new StrategyParameters(
+      MovingAverageTrader.INITIAL_FUNDS -> WalletParameter(initialFunds),
+      MovingAverageTrader.SYMBOL -> CurrencyPairParameter(symbol),
+      MovingAverageTrader.SHORT_PERIOD -> new TimeParameter(periods(0)),
+      MovingAverageTrader.LONG_PERIOD -> new TimeParameter(periods(1)),
+      MovingAverageTrader.VOLUME -> RealNumberParameter(volume),
+      MovingAverageTrader.TOLERANCE -> RealNumberParameter(tolerance),
+      MovingAverageTrader.WITH_SHORT -> BooleanParameter(false)
+  )
+  
+  val trader = TestActorRef(Props(classOf[MovingAverageTrader], traderId, parameters))
   trader ! StartSignal
 
   /**
