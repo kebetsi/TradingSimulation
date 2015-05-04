@@ -2,7 +2,6 @@ package ch.epfl.ts.traders
 
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.pattern.ask
@@ -17,13 +16,8 @@ import ch.epfl.ts.data.Order
 import ch.epfl.ts.data.Quote
 import ch.epfl.ts.data.Register
 import ch.epfl.ts.data.StrategyParameters
-import ch.epfl.ts.engine.AcceptedOrder
-import ch.epfl.ts.engine.ExecutedOrder
-import ch.epfl.ts.engine.FundWallet
-import ch.epfl.ts.engine.GetWalletFunds
-import ch.epfl.ts.engine.RejectedOrder
-import ch.epfl.ts.engine.WalletConfirm
-import ch.epfl.ts.engine.WalletFunds
+import ch.epfl.ts.engine.{GetWalletFunds, WalletConfirm, FundWallet, WalletFunds, ExecutedAskOrder, AcceptedOrder, RejectedOrder}
+import ch.epfl.ts.engine.ExecutedBidOrder
 
 /**
  * SimpleTraderWithBroker companion object
@@ -31,7 +25,7 @@ import ch.epfl.ts.engine.WalletFunds
 object SimpleTraderWithBroker extends TraderCompanion {
   type ConcreteTrader = SimpleTraderWithBroker
   override protected val concreteTraderTag = scala.reflect.classTag[SimpleTraderWithBroker]
-  
+
   override def requiredParameters = Map()
 }
 
@@ -42,13 +36,13 @@ class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new Str
     extends Trader(parameters) with ActorLogging {
   // Allows the usage of ask pattern in an Actor
   import context.dispatcher
-  
+
   override def companion = SimpleTraderWithBroker
-  
+
   var broker: ActorRef = null
   var registered = false
   var oid = 1L
-  
+
   override def receiver = {
     case q: Quote => {
       log.debug("TraderWithB receided a quote: " + q)
@@ -69,7 +63,10 @@ class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new Str
       log.debug("TraderWithB: Got a wallet confirmation")
     }
 
-    case _: ExecutedOrder => {
+    case _: ExecutedAskOrder => {
+      log.debug("TraderWithB: Got an executed order")
+    }
+    case _: ExecutedBidOrder => {
       log.debug("TraderWithB: Got an executed order")
     }
 

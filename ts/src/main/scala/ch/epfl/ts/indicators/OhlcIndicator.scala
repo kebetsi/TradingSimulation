@@ -21,9 +21,9 @@ class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis:
   val (whatC, withC) = symbol
 
   override def receiver = {
-    
+
     // We either receive the price from quote (Backtesting/realtime trading) or from transaction (for simulation)
-    
+
     case t: Transaction => {
       if (whichTick(t.timestamp) > currentTick) {
         // New tick, send OHLC with values stored until now, and reset accumulators (Transaction volume & prices)
@@ -39,7 +39,7 @@ class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis:
          currentTick = whichTick(q.timestamp)
       }
       if (q.whatC == whatC && q.withC == withC) {
-        println("OhlcIndicator: at time " + q.timestamp + ", recieved quote " + q.toString)
+        // println("OhlcIndicator: at time " + q.timestamp + ", recieved quote " + q.toString)
         if (whichTick(q.timestamp) > currentTick) {
           send(computeOHLC)
           currentTick = whichTick(q.timestamp)

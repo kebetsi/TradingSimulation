@@ -20,11 +20,11 @@ import ch.epfl.ts.traders.TransactionVwapTrader
 import ch.epfl.ts.traders.SimpleTraderWithBroker
 import ch.epfl.ts.traders.Arbitrageur
 import ch.epfl.ts.data.RealNumberParameter
-import ch.epfl.ts.traders.SimpleFXTrader
 import ch.epfl.ts.engine.MarketRules
 import ch.epfl.ts.data.MarketRulesParameter
 import ch.epfl.ts.engine.ForexMarketRules
 import ch.epfl.ts.traders.SobiTrader
+import ch.epfl.ts.traders.MovingAverageTrader
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -220,7 +220,7 @@ class StrategyParametersTests extends FunSuite {
   /** Simple tests for strategy's parameterization */
   testConcreteStrategy(MadTrader)
   testConcreteStrategy(TransactionVwapTrader)
-  testConcreteStrategy(SimpleFXTrader)
+  testConcreteStrategy(MovingAverageTrader)
   testConcreteStrategy(SimpleTraderWithBroker)
   testConcreteStrategy(Arbitrageur)
   testConcreteStrategy(SobiTrader)
