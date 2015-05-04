@@ -59,7 +59,7 @@ object SobiTrader extends TraderCompanion {
 /**
  * SOBI trader
  */
-class SobiTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
+class SobiTrader(uid: Long, parameters: StrategyParameters) extends Trader(uid, parameters) {
   import context._
   case object PossibleOrder
 
@@ -105,7 +105,7 @@ class SobiTrader(uid: Long, parameters: StrategyParameters) extends Trader(param
     case _ => println("SobiTrader: received unknown")
   }
 
-  override def start = {
+  override def init = {
     system.scheduler.schedule(0 milliseconds, interval, self, PossibleOrder)
   }
 

@@ -30,7 +30,7 @@ object TransactionVwapTrader extends TraderCompanion {
 /**
  * Transaction VWAP trader.
  */
-class TransactionVwapTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
+class TransactionVwapTrader(uid: Long, parameters: StrategyParameters) extends Trader(uid, parameters) {
   import context._
   override def companion = TransactionVwapTrader
   
@@ -90,7 +90,7 @@ class TransactionVwapTrader(uid: Long, parameters: StrategyParameters) extends T
     }
   }
 
-  override def start = {
+  override def init = {
     println("TransactionVwapTrader: Started")
     system.scheduler.schedule(0 milliseconds, timeFrame, self, Tick)
   }

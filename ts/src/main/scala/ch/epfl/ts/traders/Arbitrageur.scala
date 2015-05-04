@@ -34,7 +34,7 @@ object Arbitrageur extends TraderCompanion {
  * Arbitrageur trader: receives Transactions from multiple markets and sends market orders
  * to the exchanges when a certain delta price difference is reached.
  */
-class Arbitrageur(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
+class Arbitrageur(uid: Long, parameters: StrategyParameters) extends Trader(uid, parameters) {
   override def companion = Arbitrageur
   
   var oid = 40000000L

@@ -50,7 +50,7 @@ object MadTrader extends TraderCompanion {
 /**
  * Trader that gives just random ask and bid orders alternatively
  */
-class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parameters) {
+class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(uid, parameters) {
   import context._
   override def companion = MadTrader
 
@@ -92,7 +92,7 @@ class MadTrader(uid: Long, parameters: StrategyParameters) extends Trader(parame
   /**
    * When simulation is started, plan ahead the next random trade
    */
-  override def start = {
+  override def init = {
     system.scheduler.schedule(initialDelay, interval, self, SendMarketOrder)
   }
 }

@@ -15,14 +15,13 @@ import ch.epfl.ts.indicators.SMA
 import ch.epfl.ts.traders.MovingAverageTrader
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import ch.epfl.ts.test.TestHelpers
 
 
 @RunWith(classOf[JUnitRunner])
-class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(
-  """
-  akka.loglevel = "DEBUG"
-  akka.loggers = ["akka.testkit.TestEventListener"]
-  """))) with WordSpecLike {
+class MovingAverageTraderTest
+    extends TestKit(TestHelpers.makeTestActorSystem("MovingAverageTraderTestSystem"))
+    with WordSpecLike {
 
   val traderId: Long = 123L
   val symbol = (Currency.USD, Currency.CHF)

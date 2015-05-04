@@ -63,7 +63,7 @@ object MovingAverageTrader extends TraderCompanion {
  * Simple momentum strategy.
  */
 class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
-    extends Trader(parameters) with ActorLogging {
+    extends Trader(uid, parameters) with ActorLogging {
 
   import context.dispatcher
 
@@ -183,11 +183,8 @@ class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
     }
   }
 
-  override def start = {
+  override def init = {
     log.debug("MovingAverageTrader received startSignal")
-    send(Register(uid))
-    send(FundWallet(uid, initialCurrency, initialFund))
-    send(GetWalletFunds(uid))
   }
 
 }

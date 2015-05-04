@@ -8,6 +8,9 @@ import ch.epfl.ts.component.ComponentBuilder
 import ch.epfl.ts.component.ComponentRef
 import ch.epfl.ts.data.ParameterTrait
 import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.engine.FundWallet
+import ch.epfl.ts.data.Register
 
 case class RequiredParameterMissingException(message: String) extends RuntimeException(message)
 
@@ -20,7 +23,7 @@ case class RequiredParameterMissingException(message: String) extends RuntimeExc
  * It will throw a `RequiredParameterMissingException` on instantiation if any of the
  * required parameters have not been provided (or have the wrong type).
  */
-abstract class Trader(parameters: StrategyParameters) extends Component {
+abstract class Trader(uid: Long, parameters: StrategyParameters) extends Component {
   /** Gives a handle to the companion object */
   def companion: TraderCompanion
   
@@ -28,6 +31,28 @@ abstract class Trader(parameters: StrategyParameters) extends Component {
   companion.verifyParameters(parameters)
   
   // TODO: warn if parameters are unused
+  
+  /**
+   * Initialization common to all trading strategies:
+   *   - Register to the broker
+   *   - Put initial funds into our wallet
+   */
+  final override def start = {
+    // Register with the broker we are connected to
+    send(Register(uid))
+    // Fund the wallet using the provided currency
+    send(FundWallet(uid, initialCurrency, initialFund))
+    send(GetWalletFunds(uid))
+    
+    // Strategy-specific initialization
+    init
+  }
+  
+  /**
+   * Strategies wishing to perform some initialization may
+   * override this function.
+   */
+  def init = {}
 }
 
 /**
