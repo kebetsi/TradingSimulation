@@ -33,7 +33,7 @@ object SimpleTraderWithBroker extends TraderCompanion {
 /**
  * Dummy broker-aware trader.
  */
-class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new StrategyParameters())
+class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters)
     extends Trader(uid, parameters)
     with ActorLogging {
   
@@ -108,7 +108,7 @@ class SimpleTraderWithBroker(uid: Long, parameters: StrategyParameters = new Str
     }
   }
 
-  override def start = {
+  override def init = {
     log.debug("TraderWithB received startSignal")
     send(Register(uid))
   }

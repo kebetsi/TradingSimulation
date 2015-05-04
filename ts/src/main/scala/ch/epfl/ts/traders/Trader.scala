@@ -25,7 +25,7 @@ case class RequiredParameterMissingException(message: String) extends RuntimeExc
  * It will throw a `RequiredParameterMissingException` on instantiation if any of the
  * required parameters have not been provided (or have the wrong type).
  */
-abstract class Trader(uid: Long, parameters: StrategyParameters) extends Component {
+abstract class Trader(val uid: Long, val parameters: StrategyParameters) extends Component {
   /** Gives a handle to the companion object */
   def companion: TraderCompanion
   
@@ -42,10 +42,18 @@ abstract class Trader(uid: Long, parameters: StrategyParameters) extends Compone
    *   - Put initial funds into our wallet
    */
   final override def start = {
+    
+    println("Common start function received")
+    
     // Register with the broker we are connected to
     send(Register(uid))
     // Fund the wallet using the provided currency
-    send(FundWallet(uid, initialCurrency, initialFund))
+    for {
+      (currency, funds) <- initialFunds
+      if funds > 0.0
+    } yield {
+      send(FundWallet(uid, currency, funds))
+    }
     send(GetWalletFunds(uid))
     
     // Strategy-specific initialization
@@ -97,7 +105,6 @@ trait TraderCompanion {
    * Provide a new instance of the concrete trading strategy using these parameters.
    * Can be overriden by concrete TraderCompanion, but the generic implementation should be sufficient.
    */
-  // TODO: need to use the implicit actor system, or the ComponentBuilder or something
   protected def getConcreteInstance(builder: ComponentBuilder,
                                     uid: Long, parameters: StrategyParameters,
                                     name: String) = {

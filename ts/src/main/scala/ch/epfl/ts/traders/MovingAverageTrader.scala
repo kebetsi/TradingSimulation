@@ -60,7 +60,7 @@ object MovingAverageTrader extends TraderCompanion {
 /**
  * Simple momentum strategy.
  */
-class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
+class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     extends Trader(uid, parameters) with ActorLogging {
 
   import context.dispatcher
