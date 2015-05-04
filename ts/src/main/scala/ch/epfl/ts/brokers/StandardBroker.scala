@@ -92,10 +92,10 @@ class StandardBroker extends Component with ActorLogging {
         })
       }
     }
-      case e: ExecutedAskOrder => {
+    case e: ExecutedAskOrder => {
       if (mapping.contains(e.uid)) {
         val replyTo = mapping.getOrElse(e.uid, null)
-        executeForWallet(e.uid, FundWallet(e.uid, e.withC, e.volume*e.price), {
+        executeForWallet(e.uid, FundWallet(e.uid, e.withC, e.volume * e.price), {
           case WalletConfirm(uid) => {
             log.debug("Broker: Transaction executed")
             replyTo ! e
@@ -111,10 +111,10 @@ class StandardBroker extends Component with ActorLogging {
       val replyTo = sender
       val uid = o.chargedTraderId()
       val placementCost = o match {
-        case mbid: MarketBidOrder => o.volume * tradingPrices(o.whatC, o.withC)._2 // we buy at ask price
-        case mask: MarketAskOrder => o.volume
-        case lbid: LimitBidOrder  => o.volume * o.price
-        case lask: LimitAskOrder  => o.volume
+        case _: MarketBidOrder => o.volume * tradingPrices(o.whatC, o.withC)._2 // we buy at ask price
+        case _: MarketAskOrder => o.volume
+        case _: LimitBidOrder  => o.volume * o.price
+        case _: LimitAskOrder  => o.volume
       }
       val costCurrency = o.costCurrency()
       executeForWallet(uid, FundWallet(uid, costCurrency, -placementCost), {

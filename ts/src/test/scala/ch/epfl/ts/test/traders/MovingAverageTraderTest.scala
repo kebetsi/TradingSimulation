@@ -33,10 +33,10 @@ class MovingAverageTraderTest extends TestKit(ActorSystem("testSystem", ConfigFa
   val tolerance = 0.0002
  
   //TODO Useless here (for the moment)
-  val initialFund = 5000;
+  val initialFund = 5000.0;
   val initialCurrency=Currency.CHF
 
-  val trader = TestActorRef(Props(classOf[MovingAverageTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance,false))
+  val trader = TestActorRef(Props(classOf[MovingAverageTrader], traderId, symbol,initialFund,initialCurrency, shortPeriod, longPeriod, volume, tolerance,false))
   trader ! StartSignal
 
   /**

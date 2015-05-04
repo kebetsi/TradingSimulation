@@ -18,6 +18,7 @@ import ch.epfl.ts.indicators.EMA
 /**
  * Evaluates the performance of trading strategies
  */
+//TODO Make Evaluator consistent with a Trader connected to a Broker which provide wallet-awareness  
 object EvaluationRunner {
   val builder = new ComponentBuilder("evaluation")
 
