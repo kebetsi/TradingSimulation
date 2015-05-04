@@ -26,6 +26,10 @@ case class Transaction(mid: Long, price: Double, volume: Double, timestamp: Long
  * Trait representing an object that causes placing a charge on the wallet.
  */
 trait Chargeable {
+  /**
+   * The currency with which we pay (withC in a bidOrder , whatC in an Ask order)
+   * 
+   */
   def costCurrency(): Currency
   def chargedTraderId(): Long
 }
