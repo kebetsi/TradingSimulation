@@ -154,6 +154,27 @@ trait ParameterTrait { self =>
 }
 
 
+/**
+ * Parameter representing a simple boolean flag (true / false)
+ */
+case class BooleanParameter(flag: Boolean) extends Parameter("BooleanFlag") {
+  type T = Boolean
+  def companion = BooleanParameter
+  def value(): Boolean = flag
+}
+
+object BooleanParameter extends ParameterTrait {
+  type T = Boolean
+  def getInstance(v: Boolean) = new BooleanParameter(v)
+
+  /** Any boolean value is valid */
+  def isValid(v: Boolean): Boolean = true
+
+  def validValues: Iterable[Boolean] = Seq(true, false)
+
+  def defaultValue = false
+}
+
 
 /**
  * Parameter representing a floating point coefficient in range [0; 1]

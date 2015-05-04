@@ -21,6 +21,8 @@ import ch.epfl.ts.data.CurrencyPairParameter
 import ch.epfl.ts.data.NaturalNumberParameter
 import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.data.BooleanParameter
 
 /**
  * MovingAverageTrader companion object
@@ -37,27 +39,28 @@ object MovingAverageTrader extends TraderCompanion {
   val LONG_PERIOD = "LongPeriod"
   /** Volume to trade */
   val VOLUME = "Volume"
-
-  // TODO: add tolerance, withShort
+  /** Tolerance: a kind of sensitivity threshold to avoid "fake" buy signals */
+  val TOLERANCE = "Tolerance"
+  /** Allow the use of Short orders in the strategy */
+  val WITH_SHORT = "WithShort"
+    
   // TODO: refactor InitialFund, Initial Currency
-  // val uid: Long, symbol: (Currency, Currency), val initialFund: Double, val initialCurrency: Currency, val shortPeriod: Int, val longPeriod: Int, val volume: Double, val tolerance: Double, val withShort: Boolean
 
   override def requiredParameters = Map(
     SYMBOL -> CurrencyPairParameter,
     SHORT_PERIOD -> TimeParameter,
     LONG_PERIOD -> TimeParameter,
-    VOLUME -> NaturalNumberParameter
+    VOLUME -> NaturalNumberParameter,
+    TOLERANCE -> RealNumberParameter
+  )
+  
+  override def optionnalParameters = Map(
+    WITH_SHORT -> BooleanParameter
   )
 }
 
 /**
  * Simple momentum strategy.
- * @param symbol the pair of currency we are trading with
- * @param shortPeriod the size of the rolling window of the short moving average
- * @param longPeriod the size of the rolling window of the long moving average
- * @param volume the amount that we want to buy when buy signal
- * @param tolerance is required to avoid fake buy signal
- * @param withShort version with/without short orders
  */
 class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
     extends Trader(parameters) with ActorLogging {
@@ -68,6 +71,8 @@ class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
   val shortPeriod = parameters.get[FiniteDuration](MovingAverageTrader.SHORT_PERIOD)
   val longPeriod = parameters.get[FiniteDuration](MovingAverageTrader.LONG_PERIOD)
   val volume = parameters.get[Int](MovingAverageTrader.VOLUME)
+  val tolerance = parameters.get[Double](MovingAverageTrader.TOLERANCE)
+  val withShort = parameters.getOrElse[Boolean](MovingAverageTrader.WITH_SHORT, false)
 
   /**
    * Broker information
@@ -181,7 +186,7 @@ class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
   override def start = {
     log.debug("MovingAverageTrader received startSignal")
     send(Register(uid))
-    send(FundWallet(uid,initialCurrency, initialFund))
+    send(FundWallet(uid, initialCurrency, initialFund))
     send(GetWalletFunds(uid))
   }
 
