@@ -11,6 +11,8 @@ import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.engine.GetWalletFunds
 import ch.epfl.ts.engine.FundWallet
 import ch.epfl.ts.data.Register
+import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.WalletParameter
 
 case class RequiredParameterMissingException(message: String) extends RuntimeException(message)
 
@@ -30,7 +32,9 @@ abstract class Trader(uid: Long, parameters: StrategyParameters) extends Compone
   // On instantiation, check that all mandatory parameters have been provided
   companion.verifyParameters(parameters)
   
-  // TODO: warn if parameters are unused
+  // TODO: warn if some parameters are unused
+  
+  val initialFunds = parameters.get[Map[Currency.Currency, Double]]("InitialFunds")
   
   /**
    * Initialization common to all trading strategies:
@@ -101,9 +105,24 @@ trait TraderCompanion {
   }
   
   /**
+   * Initial funds: represents the initial state of the wallet (can
+   * contain several currencies).
+   * This is a parameter required for all trading strategies
+   */
+  val INITIAL_FUNDS = "InitialFunds"
+  
+  
+  /**
+   * All parameters required to instantiate this strategy.
+   */
+  final def requiredParameters = Map[Key, ParameterTrait](
+    INITIAL_FUNDS -> WalletParameter
+  ) ++ strategyRequiredParameters
+  
+  /**
    * Parameters for which the user of the strategy *must* provide a value.
    */
-  def requiredParameters: Map[Key, ParameterTrait]
+  protected def strategyRequiredParameters: Map[Key, ParameterTrait]
   
   /**
    * If the user of the strategy doesn't provide

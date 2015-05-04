@@ -43,10 +43,8 @@ object MovingAverageTrader extends TraderCompanion {
   val TOLERANCE = "Tolerance"
   /** Allow the use of Short orders in the strategy */
   val WITH_SHORT = "WithShort"
-    
-  // TODO: refactor InitialFund, Initial Currency
 
-  override def requiredParameters = Map(
+  override def strategyRequiredParameters = Map(
     SYMBOL -> CurrencyPairParameter,
     SHORT_PERIOD -> TimeParameter,
     LONG_PERIOD -> TimeParameter,
@@ -54,7 +52,7 @@ object MovingAverageTrader extends TraderCompanion {
     TOLERANCE -> RealNumberParameter
   )
   
-  override def optionnalParameters = Map(
+  override def optionalParameters = Map(
     WITH_SHORT -> BooleanParameter
   )
 }
@@ -67,6 +65,8 @@ class MovingAverageTrader(val uid: Long, parameters: StrategyParameters)
 
   import context.dispatcher
 
+  override def companion = MovingAverageTrader
+  
   val symbol = parameters.get[(Currency, Currency)](MovingAverageTrader.SYMBOL)
   val shortPeriod = parameters.get[FiniteDuration](MovingAverageTrader.SHORT_PERIOD)
   val longPeriod = parameters.get[FiniteDuration](MovingAverageTrader.LONG_PERIOD)

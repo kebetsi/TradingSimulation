@@ -46,7 +46,7 @@ object SobiTrader extends TraderCompanion {
    */
   val MARKET_RULES = "MarketRules"
   
-  override def requiredParameters = Map(
+  override def strategyRequiredParameters = Map(
     THETA -> RealNumberParameter,
     PRICE_DELTA -> RealNumberParameter,
     VOLUME -> NaturalNumberParameter,

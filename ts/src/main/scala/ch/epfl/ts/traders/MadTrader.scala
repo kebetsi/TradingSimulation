@@ -36,7 +36,7 @@ object MadTrader extends TraderCompanion {
   /** Which currencies to trade */
   val CURRENCY_PAIR = "currency_pair"
 
-  override def requiredParameters: Map[Key, ParameterTrait] = Map(
+  override def strategyRequiredParameters: Map[Key, ParameterTrait] = Map(
       INTERVAL -> TimeParameter,
       ORDER_VOLUME -> NaturalNumberParameter,
       CURRENCY_PAIR -> CurrencyPairParameter

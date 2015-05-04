@@ -20,8 +20,7 @@ object TransactionVwapTrader extends TraderCompanion {
   /** Volume to trade */
   val VOLUME = "Volume"
   
-  // timeFrameMillis: Int
-  override def requiredParameters = Map(
+  override def strategyRequiredParameters = Map(
     TIME_FRAME -> TimeParameter,
     VOLUME -> NaturalNumberParameter
   )

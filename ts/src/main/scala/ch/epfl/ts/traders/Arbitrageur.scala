@@ -24,7 +24,7 @@ object Arbitrageur extends TraderCompanion {
    */
   val VOLUME = "Volume"
   
-  override def requiredParameters = Map(
+  override def strategyRequiredParameters = Map(
     PRICE_DELTA -> RealNumberParameter,
     VOLUME -> NaturalNumberParameter
   )
