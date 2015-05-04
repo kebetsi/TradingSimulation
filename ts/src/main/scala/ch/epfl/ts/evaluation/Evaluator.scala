@@ -36,9 +36,11 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
   import context._
 
   private var schedule: Cancellable = null
-  private val wallet = MMap[Currency, Double](currency -> initial)
   private val returnsList = MList[Double]()
   private val priceTable = MMap[(Currency, Currency), Double]()
+  
+  // TODO: use the initial funds known by the actor (INITIAL_FUNDS parameter)
+  private val wallet = MMap[Currency, Double](currency -> initial)
 
   private var lastValue = initial
   private var maxProfit = 0.0

@@ -12,7 +12,7 @@ import scala.collection.mutable.MutableList
 class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis: Long) extends Component {
 
   /**
-   * stores transactions' price values
+   * Stores transactions' price values
    */
   var values: MutableList[Double] = MutableList[Double]()
   var volume: Double = 0.0
@@ -21,12 +21,12 @@ class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis:
   val (whatC, withC) = symbol
 
   override def receiver = {
-    
-    //We either receive the price from quote (Backtesting/realtime trading) or from transaction (for simulation)
-    
+
+    // We either receive the price from quote (Backtesting/realtime trading) or from transaction (for simulation)
+
     case t: Transaction => {
       if (whichTick(t.timestamp) > currentTick) {
-        // new tick, send OHLC with values stored until now, and reset accumulators (Transaction volume & prices)
+        // New tick, send OHLC with values stored until now, and reset accumulators (Transaction volume & prices)
         send(computeOHLC)
         currentTick = whichTick(t.timestamp)
       }
@@ -35,11 +35,11 @@ class OhlcIndicator(marketId: Long, symbol: (Currency,Currency), tickSizeMillis:
     }
 
     case q: Quote => {
-      if(currentTick==0){
-         currentTick =whichTick(q.timestamp)
+      if(currentTick == 0){
+         currentTick = whichTick(q.timestamp)
       }
       if (q.whatC == whatC && q.withC == withC) {
-//        println("OhlcIndicator : recieved quote" + q.timestamp)
+        // println("OhlcIndicator: at time " + q.timestamp + ", recieved quote " + q.toString)
         if (whichTick(q.timestamp) > currentTick) {
           send(computeOHLC)
           currentTick = whichTick(q.timestamp)

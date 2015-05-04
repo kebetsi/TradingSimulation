@@ -5,7 +5,7 @@ case class SMA(override val value: Map[Int, Double]) extends MovingAverage(value
 /**
  * Simple moving average indicator
  */
-class SmaIndicator(periods: List[Int]) extends MaIndicator(periods: List[Int]) {
+class SmaIndicator(periods: List[Int]) extends MaIndicator(periods) {
 
   def computeMa: SMA = {
 

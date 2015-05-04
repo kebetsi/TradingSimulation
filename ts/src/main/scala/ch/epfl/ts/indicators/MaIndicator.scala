@@ -9,13 +9,13 @@ import scala.collection.mutable.MutableList
 /**
  * Moving Average value data
  */
-abstract class MovingAverage(val value: Map[Int,Double])
+abstract class MovingAverage(val value: Map[Int, Double])
 
 /**
  * Moving average superclass. To implement a moving average indicator,
  * extend this class and implement the computeMa() method.
  */
-abstract class MaIndicator(periods:List[Int]) extends Component {
+abstract class MaIndicator(periods: List[Int]) extends Component {
 
   var values: MutableList[OHLC] = MutableList[OHLC]()
   val sortedPeriod = periods.sorted

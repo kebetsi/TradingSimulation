@@ -15,23 +15,24 @@ import ch.epfl.ts.engine.{ForexMarketRules, MarketFXSimulator, GetWalletFunds}
 import ch.epfl.ts.component.fetch.MarketNames
 import akka.util.Timeout
 import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.WalletParameter
+import ch.epfl.ts.test.TestHelpers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest", ConfigFactory.parseString(
-  """
-  akka.loglevel = "DEBUG"
-  akka.loggers = ["akka.testkit.TestEventListener"]
-  """
-)))
+class BrokerInteractionTest
+    extends TestKit(TestHelpers.makeTestActorSystem("BrokerInteractionTest"))
     with WordSpecLike {
 
   val marketID = 1L
   val market = system.actorOf(Props(classOf[FxMarketWrapped], marketID, new ForexMarketRules()), MarketNames.FOREX_NAME)
   val broker: ActorRef = system.actorOf(Props(classOf[SimpleBrokerWrapped], market), "Broker")
+  
   val tId = 15L
-  val trader = system.actorOf(Props(classOf[SimpleTraderWrapped], tId, broker), "Trader")
+  val parameters = new StrategyParameters(SimpleTraderWithBroker.INITIAL_FUNDS -> WalletParameter(Map()))
+  val trader = system.actorOf(Props(classOf[SimpleTraderWrapped], tId, parameters, broker), "Trader")
 
   market ! StartSignal
   broker ! StartSignal
@@ -138,7 +139,8 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
  * @param uid traderID
  * @param broker ActorRef
  */
-class SimpleTraderWrapped(uid: Long, broker: ActorRef) extends SimpleTraderWithBroker(uid) {
+class SimpleTraderWrapped(uid: Long, parameters: StrategyParameters, broker: ActorRef)
+    extends SimpleTraderWithBroker(uid, parameters) {
   override def send[T: ClassTag](t: T) {
     broker ! t
   }
