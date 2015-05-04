@@ -3,7 +3,7 @@ package ch.epfl.ts.test.component
 import akka.actor.{ActorRef, Props, ActorSystem}
 import akka.testkit.{EventFilter, TestKit}
 import ch.epfl.ts.component.{StartSignal}
-import ch.epfl.ts.brokers.ExampleBroker
+import ch.epfl.ts.brokers.StandardBroker
 import ch.epfl.ts.traders.SimpleTraderWithBroker
 import org.scalatest.WordSpecLike
 import scala.concurrent.duration._
@@ -98,7 +98,7 @@ class BrokerInteractionTest extends TestKit(ActorSystem("BrokerInteractionTest",
           }
         }
         //sendMarketOrder is a Market Bid Order in CHF/USD of volume 3 it means buy 3CHF at market price (ask price = 13.2 in the test)
-        //So remaining USD is 100-3*13.2
+        //So the cost here is  : 3*13.2
         EventFilter.debug(message = USD + " -> Some("+(100.0-3*13.2)+")", occurrences = 1) intercept {
           EventFilter.debug(start = CHF + " -> Some", occurrences = 1) intercept {
               trader ! 'knowYourWallet
@@ -149,7 +149,7 @@ class SimpleTraderWrapped(uid: Long, broker: ActorRef) extends SimpleTraderWithB
 /**
  * Analogical class for the broker.
  */
-class SimpleBrokerWrapped(market: ActorRef) extends ExampleBroker {
+class SimpleBrokerWrapped(market: ActorRef) extends StandardBroker {
   override def send[T: ClassTag](t: T) {
     market ! t
   }

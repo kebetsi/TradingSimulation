@@ -12,6 +12,10 @@ import ch.epfl.ts.data.ConfirmRegistration
 import ch.epfl.ts.data.Register
 import ch.epfl.ts.engine.FundWallet
 import ch.epfl.ts.engine.GetWalletFunds
+import ch.epfl.ts.engine.AcceptedOrder
+import ch.epfl.ts.engine.RejectedOrder
+import ch.epfl.ts.engine.ExecutedAskOrder
+import ch.epfl.ts.engine.ExecutedBidOrder
 
 /**
  * Simple momentum strategy.
@@ -22,7 +26,9 @@ import ch.epfl.ts.engine.GetWalletFunds
  * @param tolerance is required to avoid fake buy signal
  * @param withShort version with/without short orders
  */
-class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
+
+//TODO Kbs for MND's PR => Remove InitialFund , Initial Currency 
+class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency), val initialFund: Double, val initialCurrency: Currency,
                           val shortPeriod: Int, val longPeriod: Int,
                           val volume: Double, val tolerance: Double, val withShort: Boolean) extends Component with ActorLogging {
 
@@ -68,6 +74,16 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
 
       decideOrder
     }
+    
+    //Transaction has been accepted by the broker (but may not be executed : e.g. limit orders) = OPEN Positions
+    case _:AcceptedOrder => //TODO SimplePrint / Log /.../Frontend log ??
+   
+    //Order has been executed on the market = CLOSE Positions
+    case _:ExecutedBidOrder =>//TODO SimplePrint / Log /.../Frontend log ??
+    case _:ExecutedAskOrder => //TODO SimplePrint/Log/.../Frontend log ??
+      
+    //If we receive a Rejected Order, we stop the trader
+    case _:RejectedOrder=> stop
 
     case whatever => println("SimpleTrader: received unknown : " + whatever)
   }
@@ -127,7 +143,7 @@ class MovingAverageTrader(val uid: Long, symbol: (Currency, Currency),
   override def start = {
     log.debug("MovingAverageTrader received startSignal")
     send(Register(uid))
-    send(FundWallet(uid, Currency.CHF, 5000))
+    send(FundWallet(uid,initialCurrency, initialFund))
     send(GetWalletFunds(uid))
   }
 

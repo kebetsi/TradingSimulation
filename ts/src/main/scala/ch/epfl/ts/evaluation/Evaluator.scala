@@ -30,6 +30,7 @@ case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Curr
   * @param currency currency of the initial seed money
   * @param period the time period to send evaluation report
   */
+ //TODO Make Evaluator consistent with a Trader connected to a Broker which provide wallet-awareness  
 class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._

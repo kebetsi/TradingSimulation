@@ -23,7 +23,7 @@ import ch.epfl.ts.data.Currency
 import ch.epfl.ts.component.fetch.HistDataCSVFetcher
 import ch.epfl.ts.evaluation.Evaluator
 import ch.epfl.ts.indicators.EmaIndicator
-import ch.epfl.ts.brokers.ExampleBroker
+import ch.epfl.ts.brokers.StandardBroker
 import ch.epfl.ts.data.Register
 import ch.epfl.ts.engine.FundWallet
 import com.typesafe.config.ConfigFactory
@@ -68,7 +68,11 @@ object MovingAverageFXExample {
     val longPeriod = 6
     val periods = List(2, 6)
     val tolerance = 0.0002
-    val trader = builder.createRef(Props(classOf[MovingAverageTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance, false), "MovingAverageTrader")
+    
+    val initialFund=5000.0
+    val initialCurrency=Currency.CHF
+    
+    val trader = builder.createRef(Props(classOf[MovingAverageTrader], traderId, symbol,initialFund,initialCurrency, shortPeriod, longPeriod, volume, tolerance, false), "MovingAverageTrader")
 
     // Indicator
     // Specify period over which we build the OHLC (from quotes)
@@ -83,7 +87,7 @@ object MovingAverageFXExample {
 //    val evaluator = builder.createRef(Props(classOf[Evaluator], trader, traderId, evaluationInitialDelay, currency, evaluationPeriod), "Evaluator")
    
     //Broker
-    val broker = builder.createRef(Props(classOf[ExampleBroker]), "Broker")
+    val broker = builder.createRef(Props(classOf[StandardBroker]), "Broker")
 
     // Display
     val traderNames = Map(traderId -> trader.name)

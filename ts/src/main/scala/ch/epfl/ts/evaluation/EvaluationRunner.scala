@@ -76,7 +76,8 @@ object EvaluationRunner {
     val tolerance = 0.0002
 
     val periods = List(3, 10)
-
+    
+    //TODO : Now trader need also initialFund,initialCurrency
     builder.createRef(Props(classOf[MovingAverageTrader], traderId, symbol, shortPeriod, longPeriod, volume, tolerance, true), "simpleTrader")
   }
 

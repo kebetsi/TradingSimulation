@@ -32,7 +32,7 @@ import ch.epfl.ts.data.LimitAskOrder
 /**
  * Created by sygi on 03.04.15.
  */
-class ExampleBroker extends Component with ActorLogging {
+class StandardBroker extends Component with ActorLogging {
   import context.dispatcher
   var mapping = Map[Long, ActorRef]()
   val dummyReturn: PartialFunction[Any, Unit] = { case _ => {} }
