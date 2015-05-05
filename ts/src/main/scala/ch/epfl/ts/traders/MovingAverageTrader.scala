@@ -23,7 +23,12 @@ import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.data.RealNumberParameter
 import ch.epfl.ts.data.BooleanParameter
-
+import scala.slick.direct.order
+import scala.language.postfixOps
+import akka.pattern.ask
+import ch.epfl.ts.data._
+import akka.util.Timeout
+import scala.concurrent.duration._
 /**
  * MovingAverageTrader companion object
  */
@@ -46,24 +51,22 @@ object MovingAverageTrader extends TraderCompanion {
     SYMBOL -> CurrencyPairParameter,
     SHORT_PERIOD -> TimeParameter,
     LONG_PERIOD -> TimeParameter,
-    TOLERANCE -> RealNumberParameter
-  )
-  
+    TOLERANCE -> RealNumberParameter)
+
   override def optionalParameters = Map(
-    WITH_SHORT -> BooleanParameter
-  )
+    WITH_SHORT -> BooleanParameter)
 }
 
 /**
  * Simple momentum strategy.
  */
 class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
-    extends Trader(uid, parameters) with ActorLogging {
+  extends Trader(uid, parameters) with ActorLogging {
 
   import context.dispatcher
 
   override def companion = MovingAverageTrader
-  
+
   val symbol = parameters.get[(Currency, Currency)](MovingAverageTrader.SYMBOL)
   val shortPeriod = parameters.get[FiniteDuration](MovingAverageTrader.SHORT_PERIOD)
   val longPeriod = parameters.get[FiniteDuration](MovingAverageTrader.LONG_PERIOD)
@@ -112,17 +115,11 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
       decideOrder
     }
 
-    // Transaction has been accepted by the broker (but may not be executed : e.g. limit orders) = OPEN Positions
-    case _: AcceptedOrder => // TODO SimplePrint / Log /.../Frontend log ??
-
     // Order has been executed on the market = CLOSE Positions
-    case _: ExecutedBidOrder =>// TODO SimplePrint / Log /.../Frontend log ??
+    case _: ExecutedBidOrder => // TODO SimplePrint / Log /.../Frontend log ??
     case _: ExecutedAskOrder => // TODO SimplePrint/Log/.../Frontend log ??
 
-    // If we receive a Rejected Order, we stop the trader
-    case _: RejectedOrder=> stop
-
-    case whatever => println("SimpleTrader: received unknown : " + whatever)
+    case whatever            => println("SimpleTrader: received unknown : " + whatever)
   }
 
   def decideOrder =
@@ -136,8 +133,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
       send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       oid += 1
       holdings = volume
-    }
-    // SELL signal
+    } // SELL signal
     else if (currentShort < currentLong && holdings > 0.0) {
       log.debug("selling " + volume)
       send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
@@ -151,35 +147,55 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     if (currentShort > currentLong) {
       if (shortings > 0.0) {
         log.debug("closing short " + volume)
-        send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+        placeOrder(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1;
         shortings = 0.0;
       }
       if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
         log.debug("buying " + volume)
-        send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+        placeOrder(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1
         holdings = volume
       }
-    }
-    // SELL signal
+    } // SELL signal
     else if (currentShort < currentLong) {
       if (holdings > 0.0) {
         log.debug("selling " + volume)
-        send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+        placeOrder(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1
         holdings = 0.0
       }
       if (currentShort * (1 + tolerance) < currentLong && shortings == 0.0) {
         log.debug("short " + volume)
-        send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+        placeOrder(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1;
         shortings = volume;
       }
     }
   }
-  
-  
+
+  def placeOrder(order: MarketOrder) = {
+    implicit val timeout = new Timeout(500 milliseconds)
+    val future = (broker ? order).mapTo[Order]
+    future onSuccess {
+      //Transaction has been accepted by the broker (but may not be executed : e.g. limit orders) = OPEN Positions
+      case _: AcceptedOrder => log.debug("MATrader: order placement succeeded")
+      case _: RejectedOrder => {
+        log.debug("MATrader: order failed")
+        stop
+      }
+      case _ => {
+        log.debug("MATrader: unknown order response")
+        stop
+      }
+    }
+    future onFailure {
+      case p => {
+        log.debug("Wallet command failed: " + p)
+        stop
+      }
+    }
+  }
 
   override def init = {
     log.debug("MovingAverageTrader received startSignal")
