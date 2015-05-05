@@ -20,11 +20,11 @@ import ch.epfl.ts.data.WalletParameter
 import ch.epfl.ts.test.TestHelpers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import ch.epfl.ts.test.ActorTestSuite
 
 @RunWith(classOf[JUnitRunner])
 class BrokerInteractionTest
-    extends TestKit(TestHelpers.makeTestActorSystem("BrokerInteractionTest"))
-    with WordSpecLike {
+    extends ActorTestSuite("BrokerInteractionTest") {
 
   val marketID = 1L
   val market = system.actorOf(Props(classOf[FxMarketWrapped], marketID, new ForexMarketRules()), MarketNames.FOREX_NAME)

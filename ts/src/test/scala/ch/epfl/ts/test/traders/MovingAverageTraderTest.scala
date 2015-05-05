@@ -33,12 +33,16 @@ import akka.util.Timeout
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.data._
 import scala.math.floor
+import org.scalatest.Sequential
+import ch.epfl.ts.test.ActorTestSuite
 
+/**
+ * @warning Some of the following tests are dependent and should be executed in the specified order.
+ */
 @RunWith(classOf[JUnitRunner])
 class MovingAverageTraderTest
-  extends TestKit(TestHelpers.makeTestActorSystem("MovingAverageTraderTestSystem"))
-  with WordSpecLike {
-
+  extends ActorTestSuite("MovingAverageTraderTestSystem") {
+  
   val traderId: Long = 123L
   val symbol = (Currency.USD, Currency.CHF)
   val initialFunds: Wallet.Type = Map(symbol._2 -> 5000.0)
@@ -57,7 +61,7 @@ class MovingAverageTraderTest
   val market = system.actorOf(Props(classOf[FxMarketWrapped], marketID, new ForexMarketRules()), MarketNames.FOREX_NAME)
   val broker: ActorRef = system.actorOf(Props(classOf[SimpleBrokerWrapped], market), "Broker")
   val trader = system.actorOf(Props(classOf[MovingAverageTraderWrapped], traderId, parameters, broker), "Trader")
-
+  
   market ! StartSignal
   broker ! StartSignal
   trader ! StartSignal
@@ -69,9 +73,7 @@ class MovingAverageTraderTest
   broker ! testQuote
   trader ! testQuote
 
-  /**
-   * @warning The following tests are dependent and should be executed in the specified order.
-   */
+  
   val initWallet = initialFunds;
   var cash = initialFunds(Currency.CHF)
   var volume = floor(cash / askPrice)
