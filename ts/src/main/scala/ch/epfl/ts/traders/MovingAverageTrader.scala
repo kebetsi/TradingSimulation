@@ -143,7 +143,6 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     future onSuccess {
       case WalletFunds(id, funds: Map[Currency, Double]) => {
         val cashWith = funds.getOrElse(withC, 0.0)
-        log.debug("cashWith" + cashWith)
         holdings = funds.getOrElse(whatC, 0.0)
         if (holdings < 0.0) {
           shortings = abs(holdings)
