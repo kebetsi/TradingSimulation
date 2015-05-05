@@ -32,6 +32,7 @@ import scala.concurrent.duration._
 import scala.collection.mutable.{ HashMap => MHashMap }
 import ch.epfl.ts.engine.WalletFunds
 import scala.math.abs
+import scala.math.floor
 import ch.epfl.ts.engine.Wallet
 
 /**
@@ -149,7 +150,8 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
           holdings = 0.0
         }
         val askPrice = tradingPrices(whatC, withC)._2
-        volume = cashWith / askPrice
+        //Prevent slippage leading to insufisent funds
+        volume = floor(cashWith / askPrice)
         if (withShort) {
           decideOrderWithShort(volume, holdings, shortings)
         } else {
@@ -216,17 +218,14 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
       case _: AcceptedOrder => log.debug("MATrader: order placement succeeded")
       case _: RejectedOrder => {
         log.debug("MATrader: order failed")
-        stop
       }
       case _ => {
         log.debug("MATrader: unknown order response")
-        stop
       }
     }
     future onFailure {
       case p => {
         log.debug("Wallet command failed: " + p)
-        stop
       }
     }
   }
