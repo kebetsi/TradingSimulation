@@ -2,6 +2,7 @@ package ch.epfl.ts.engine
 
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.Order
+import akka.actor.ActorRef
 
 /*
  * Definition of the Simulator's internal messages.
@@ -47,7 +48,8 @@ object ExecutedAskOrder {
 abstract class WalletState(val uid: Long)
 
 /* Getter */
-case class GetWalletFunds(override val uid: Long) extends WalletState(uid)
+//actorRef to enable ask pattern (future) and keeping verification of the GetWalletFund sender
+case class GetWalletFunds(override val uid: Long,ref:ActorRef) extends WalletState(uid)
 
 case class GetWalletAllOrders(override val uid: Long) extends WalletState(uid)
 

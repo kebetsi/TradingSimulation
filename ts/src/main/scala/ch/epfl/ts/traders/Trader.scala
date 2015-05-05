@@ -54,7 +54,7 @@ abstract class Trader(val uid: Long, val parameters: StrategyParameters) extends
     } yield {
       send(FundWallet(uid, currency, funds))
     }
-    send(GetWalletFunds(uid))
+    send(GetWalletFunds(uid,this.self))
     
     // Strategy-specific initialization
     init

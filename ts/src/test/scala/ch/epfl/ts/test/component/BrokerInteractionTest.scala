@@ -54,7 +54,7 @@ class BrokerInteractionTest
     " create a wallet for the trader" in {
       within(1 second) {
         EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 1) intercept {
-          broker ! GetWalletFunds(38265L)
+          broker ! GetWalletFunds(38265L,trader)
         }
         EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 0) intercept {
           EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {

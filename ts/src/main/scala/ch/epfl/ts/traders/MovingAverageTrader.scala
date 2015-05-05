@@ -34,6 +34,7 @@ import ch.epfl.ts.engine.WalletFunds
 import scala.math.abs
 import scala.math.floor
 import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.engine.GetWalletFunds
 
 /**
  * MovingAverageTrader companion object
@@ -131,7 +132,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     case _: ExecutedBidOrder => // TODO SimplePrint / Log /.../Frontend log ??
     case _: ExecutedAskOrder => // TODO SimplePrint/Log/.../Frontend log ??
 
-    case whatever            => println("SimpleTrader: received unknown : " + whatever)
+    case whatever => println("SimpleTrader: received unknown : " + whatever)
   }
   def decideOrder = {
     var volume = 0.0
@@ -139,7 +140,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     var shortings = 0.0
 
     implicit val timeout = new Timeout(500 milliseconds)
-    val future = (broker ? GetWalletFunds(uid)).mapTo[WalletFunds]
+    val future = (broker ? GetWalletFunds(uid,this.self)).mapTo[WalletFunds]
     future onSuccess {
       case WalletFunds(id, funds: Map[Currency, Double]) => {
         val cashWith = funds.getOrElse(withC, 0.0)
