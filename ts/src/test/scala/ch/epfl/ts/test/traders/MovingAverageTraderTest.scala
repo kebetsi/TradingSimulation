@@ -43,7 +43,6 @@ class MovingAverageTraderTest
       MovingAverageTrader.SYMBOL -> CurrencyPairParameter(symbol),
       MovingAverageTrader.SHORT_PERIOD -> new TimeParameter(periods(0)),
       MovingAverageTrader.LONG_PERIOD -> new TimeParameter(periods(1)),
-      MovingAverageTrader.VOLUME -> RealNumberParameter(volume),
       MovingAverageTrader.TOLERANCE -> RealNumberParameter(tolerance),
       MovingAverageTrader.WITH_SHORT -> BooleanParameter(false)
   )

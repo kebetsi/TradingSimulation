@@ -233,8 +233,6 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
 
   override def init = {
     log.debug("MovingAverageTrader received startSignal")
-    send(Register(uid))
-    send(FundWallet(uid, withC, initialFunds.toMap.getOrElse(withC, 0.0)))
   }
 
 }
