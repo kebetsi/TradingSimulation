@@ -11,8 +11,6 @@ scalaVersion in ThisBuild := "2.11.2"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
 
-// Some of our tests require sequential execution
-parallelExecution in Test := false
 
 lazy val frontend = (project in file("frontend"))
     .enablePlugins(PlayScala)
@@ -28,3 +26,5 @@ lazy val ts = (project in file("ts"))
         libraryDependencies ++= Dependencies.ts
     )
 
+// Some of our tests require sequential execution
+parallelExecution in Test in ts := false
