@@ -21,7 +21,7 @@ import net.liftweb.json.Serialization.write
  * Note: we are using lift-json since there is no easy way to use Play's json
  * library with generic type parameters.
  */
-class TsMsgToJson[T <: AnyRef: ClassTag](out: ActorRef) extends Actor {
+class MessageToJson[T <: AnyRef: ClassTag](out: ActorRef) extends Actor {
   val clazz = implicitly[ClassTag[T]].runtimeClass
   implicit val formats = DefaultFormats
 

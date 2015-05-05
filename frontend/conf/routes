@@ -9,11 +9,6 @@ GET   /fetchers/quote       controllers.Application.quote
 
 GET   /market/transaction   controllers.Application.transaction
 
-GET   /indicators/ohlc      controllers.Application.ohlc
-GET   /indicators/sma       controllers.Application.sma
-
-GET   /wsTest               controllers.Application.wsTest
-
 # Static
 # ~~~~
 

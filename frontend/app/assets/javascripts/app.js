@@ -59,15 +59,6 @@ myApp.controller('MyController', [ '$scope', function($scope) {
       }())
     });
 
-    // $('#button').click(function () {
-    // var chart = $('#container').highcharts(),
-    // series = chart.series[0];
-    // if (series.visible) {
-    // series.hide();
-    // } else {
-    // series.show();
-    // }
-    // });
 
   });
 
@@ -89,6 +80,10 @@ myApp.controller('MyController', [ '$scope', function($scope) {
     if ($scope.currencies.length < 10) {
       fill = true;
     }
+    
+    quotes.foreach(function(quote) {
+      console.log(quote.timestamp);
+    });
 
     var x = quotes[0].timestamp;  // note: timestamps for different symbols are not necessarily equal
                                   // taking only one timestamp makes the graph faster and smoother for the cost of accuracy
