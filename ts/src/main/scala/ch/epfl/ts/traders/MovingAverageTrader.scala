@@ -32,6 +32,7 @@ import scala.concurrent.duration._
 import scala.collection.mutable.{ HashMap => MHashMap }
 import ch.epfl.ts.engine.WalletFunds
 import scala.math.abs
+import ch.epfl.ts.engine.Wallet
 
 /**
  * MovingAverageTrader companion object
@@ -165,8 +166,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
 
   }
 
-
-  def decideOrderWithoutShort(volume:Double,holdings:Double) = {
+  def decideOrderWithoutShort(volume: Double, holdings: Double) = {
     // BUY signal
     if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
       log.debug("buying " + volume)
@@ -180,7 +180,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     }
   }
 
-  def decideOrderWithShort(volume:Double,holdings:Double,shortings:Double) = {
+  def decideOrderWithShort(volume: Double, holdings: Double, shortings: Double) = {
     // BUY signal
     if (currentShort > currentLong) {
       if (shortings > 0.0) {
@@ -233,6 +233,8 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
 
   override def init = {
     log.debug("MovingAverageTrader received startSignal")
+    send(Register(uid))
+    send(FundWallet(uid, withC, initialFunds.toMap.getOrElse(withC, 0.0)))
   }
 
 }
