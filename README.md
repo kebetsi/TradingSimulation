@@ -13,7 +13,9 @@ Detailed documentation can be found on the dedicated [wiki](https://github.com/k
 
 - `sbt compile` to compile the source files
 
-- `sbt run` displays a list of examples that can be run
+- `sbt "project ts" run` displays a list of examples that can be run in the TradingSimulater backend
+
+- `sbt "project frontend" run` starts the frontend. The server is listening for HTTP on http://localhost:9000/
 
 ### License
 
