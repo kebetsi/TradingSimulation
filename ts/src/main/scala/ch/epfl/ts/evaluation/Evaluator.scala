@@ -12,8 +12,22 @@ import ch.epfl.ts.data.Currency._
 /**
  * Represents metrics of a strategy
  */
-case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Currency, Double], currency: Currency, initial: Double,
-                            current: Double, totalReturns: Double, volatility: Double, drawdown: Double, sharpeRatio: Double)
+case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Currency, Double],
+                            currency: Currency, initial: Double, current: Double, totalReturns: Double,
+                            volatility: Double, drawdown: Double, sharpeRatio: Double) extends Ordered[EvaluationReport] {
+
+  /** Compares two evaluation reports by total returns
+    *
+    * Returns x where:
+    *   x < 0 when this < that
+    *   x == 0 when this == that
+    *   x > 0 when this > that
+    */
+  def compare(that: EvaluationReport) = {
+    val delta = this.totalReturns - that.totalReturns
+    if (delta > 0) 1 else if (delta < 0) -1 else 0
+  }
+}
 
 /**
   * Evaluates the performance of traders by total returns, volatility, draw down and sharpe ratio
@@ -54,7 +68,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   override def connect(ar: ActorRef, ct: Class[_], name: String) = {
     if (ct.equals(classOf[EvaluationReport]))
-      dest += (ct -> (ar :: dest.getOrElse(ct, List())))
+      super.connect(ar, ct, name)
     else
       trader.ar ! ComponentRegistration(ar, ct, name)
   }
