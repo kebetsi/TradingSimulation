@@ -37,8 +37,6 @@ object MovingAverageTrader extends TraderCompanion {
   val SHORT_PERIOD = "ShortPeriod"
   /** Period for the longer moving average **/
   val LONG_PERIOD = "LongPeriod"
-  /** Volume to trade */
-  val VOLUME = "Volume"
   /** Tolerance: a kind of sensitivity threshold to avoid "fake" buy signals */
   val TOLERANCE = "Tolerance"
   /** Allow the use of Short orders in the strategy */
@@ -48,7 +46,6 @@ object MovingAverageTrader extends TraderCompanion {
     SYMBOL -> CurrencyPairParameter,
     SHORT_PERIOD -> TimeParameter,
     LONG_PERIOD -> TimeParameter,
-    VOLUME -> RealNumberParameter,
     TOLERANCE -> RealNumberParameter
   )
   
@@ -70,7 +67,6 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
   val symbol = parameters.get[(Currency, Currency)](MovingAverageTrader.SYMBOL)
   val shortPeriod = parameters.get[FiniteDuration](MovingAverageTrader.SHORT_PERIOD)
   val longPeriod = parameters.get[FiniteDuration](MovingAverageTrader.LONG_PERIOD)
-  val volume = parameters.get[Double](MovingAverageTrader.VOLUME)
   val tolerance = parameters.get[Double](MovingAverageTrader.TOLERANCE)
   val withShort = parameters.getOrElse[Boolean](MovingAverageTrader.WITH_SHORT, false)
 
@@ -182,6 +178,8 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
       }
     }
   }
+  
+  
 
   override def init = {
     log.debug("MovingAverageTrader received startSignal")
