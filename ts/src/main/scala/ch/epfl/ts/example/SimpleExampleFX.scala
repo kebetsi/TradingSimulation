@@ -24,7 +24,7 @@ import ch.epfl.ts.engine.RevenueCompute
 
 object SimpleExampleFX {
   def main(args: Array[String]): Unit = {
-    val builder = new ComponentBuilder("simpleFX")
+    val builder = new ComponentBuilder
     val marketForexId = MarketNames.FOREX_ID
 
     // ----- Creating actors

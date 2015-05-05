@@ -17,6 +17,10 @@ final class ComponentBuilder(myName: String, config: Config) {
   val system = ActorSystem(myName, config)
   var graph = Map[ComponentRef, List[(ComponentRef, Class[_])]]()
   var instances = List[ComponentRef]()
+  
+  def this() {
+    this(ConfigFactory.load().getString("akka.systemName"), ConfigFactory.load())
+  }
 
   def this(name: String){
     this(name, ConfigFactory.load())
