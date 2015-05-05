@@ -29,6 +29,7 @@ import akka.pattern.ask
 import ch.epfl.ts.data._
 import akka.util.Timeout
 import scala.concurrent.duration._
+import scala.collection.mutable.{ HashMap => MHashMap }
 /**
  * MovingAverageTrader companion object
  */
@@ -93,7 +94,13 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
 
   val (whatC, withC) = symbol
 
+  var tradingPrices = MHashMap[(Currency, Currency), (Double, Double)]()
+
   override def receiver = {
+    
+    case q:Quote =>{
+      tradingPrices((q.whatC, q.withC)) = (q.bid, q.ask)
+    }
 
     case ConfirmRegistration => {
       broker = sender()
