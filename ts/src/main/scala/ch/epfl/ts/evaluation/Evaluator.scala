@@ -30,14 +30,17 @@ case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Curr
   * @param currency currency of the initial seed money
   * @param period the time period to send evaluation report
   */
+ //TODO Make Evaluator consistent with a Trader connected to a Broker which provide wallet-awareness  
 class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._
 
   private var schedule: Cancellable = null
-  private val wallet = MMap[Currency, Double](currency -> initial)
   private val returnsList = MList[Double]()
   private val priceTable = MMap[(Currency, Currency), Double]()
+  
+  // TODO: use the initial funds known by the actor (INITIAL_FUNDS parameter)
+  private val wallet = MMap[Currency, Double](currency -> initial)
 
   private var lastValue = initial
   private var maxProfit = 0.0
@@ -61,10 +64,8 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   override def receiver = {
     case t: Transaction if t.buyerId == traderId =>  // buy
-      trader.ar ! t
       buy(t)
     case t: Transaction if t.sellerId == traderId =>  // sell
-      trader.ar ! t
       sell(t)
     case q: Quote =>
       updatePrice(q)
@@ -110,8 +111,8 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   private def updatePrice(q: Quote) = {
     val Quote(_, _, whatC, withC, bid, ask) = q
-    priceTable.put(whatC -> withC, (bid + ask) / 2.0)
-    priceTable.put(withC -> whatC, (1.0/bid + 1.0/ask) / 2.0)
+    priceTable.put(whatC -> withC, bid)
+    priceTable.put(withC -> whatC, 1/ask)
   }
 
   /**

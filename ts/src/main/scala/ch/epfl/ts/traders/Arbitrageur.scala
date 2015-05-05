@@ -4,15 +4,44 @@ import ch.epfl.ts.component.Component
 import ch.epfl.ts.component.fetch.MarketNames.marketIdToName
 import ch.epfl.ts.data.{ OHLC, Transaction, MarketAskOrder, MarketBidOrder }
 import ch.epfl.ts.data.Currency._
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.NaturalNumberParameter
+import ch.epfl.ts.data.RealNumberParameter
+
+/**
+ * Arbitrageur companion object
+ */
+object Arbitrageur extends TraderCompanion {
+  type ConcreteTrader = Arbitrageur
+  override protected val concreteTraderTag = scala.reflect.classTag[Arbitrageur]
+  
+  /**
+   * Minimum gap in price to trigger a trade
+   */
+  val PRICE_DELTA = "PriceDelta"
+  /**
+   * Volume to be traded
+   */
+  val VOLUME = "Volume"
+  
+  override def strategyRequiredParameters = Map(
+    PRICE_DELTA -> RealNumberParameter,
+    VOLUME -> NaturalNumberParameter
+  )
+}
 
 /**
  * Arbitrageur trader: receives Transactions from multiple markets and sends market orders
  * to the exchanges when a certain delta price difference is reached.
  */
-class Arbitrageur(uid: Long, priceDelta: Double, volume: Double) extends Component {
-
+class Arbitrageur(uid: Long, parameters: StrategyParameters) extends Trader(uid, parameters) {
+  override def companion = Arbitrageur
+  
   var oid = 40000000L
 
+  val priceDelta = parameters.get[Double](Arbitrageur.PRICE_DELTA)
+  val volume = parameters.get[Int](Arbitrageur.VOLUME)
+  
   // key: marketId, value: tradingPrice
   var marketPrices = Map[Long, Double]()
   // key: (marketIdA, marketIdB), value: (tradingPriceA - tradingPriceB)

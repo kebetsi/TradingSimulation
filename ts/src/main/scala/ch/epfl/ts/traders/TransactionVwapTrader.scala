@@ -1,19 +1,50 @@
 package ch.epfl.ts.traders
 
+import scala.language.postfixOps
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.DurationInt
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.data.Currency._
 import ch.epfl.ts.data.{MarketAskOrder, MarketBidOrder, Transaction}
+import ch.epfl.ts.data.{StrategyParameters, TimeParameter, NaturalNumberParameter, ParameterTrait}
 
-import scala.concurrent.duration.DurationInt
-import scala.language.postfixOps
+/**
+ * Transaction VWAP trader companion object
+ */
+object TransactionVwapTrader extends TraderCompanion {
+  type ConcreteTrader = TransactionVwapTrader
+  override protected val concreteTraderTag = scala.reflect.classTag[TransactionVwapTrader]
+  
+  /** Time frame */
+  val TIME_FRAME = "TimeFrame"
+  /** Volume to trade */
+  val VOLUME = "Volume"
+  
+  override def strategyRequiredParameters = Map(
+    TIME_FRAME -> TimeParameter,
+    VOLUME -> NaturalNumberParameter
+  )
+}
 
 /**
  * Transaction VWAP trader.
  */
-class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
+class TransactionVwapTrader(uid: Long, parameters: StrategyParameters) extends Trader(uid, parameters) {
   import context._
-
+  override def companion = TransactionVwapTrader
+  
   case object Tick
+
+  val timeFrame = parameters.get[FiniteDuration](TransactionVwapTrader.TIME_FRAME)
+  val volumeToTrade = parameters.get[Int](TransactionVwapTrader.VOLUME)
+
+  var transactions: List[Transaction] = Nil
+  var cumulativeTPV: Double = 0.0;
+  var cumulativeVolume: Double = 0.0;
+  var vwap: Double = 0.0;
+  var tradingPrice: Double = 0.0;
+
+  var oid = uid
 
   def priceOrdering = new Ordering[Transaction] {
     def compare(first: Transaction, second: Transaction): Int =
@@ -24,16 +55,7 @@ class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
     def compare(first: Transaction, second: Transaction): Int =
       if (first.timestamp > second.timestamp) 1 else if (first.timestamp < second.timestamp) -1 else 0
   }
-
-  var transactions: List[Transaction] = Nil
-  var cumulativeTPV: Double = 0.0;
-  var cumulativeVolume: Double = 0.0;
-  var vwap: Double = 0.0;
-  var tradingPrice: Double = 0.0;
-
-  var oid = uid
-  val volumeToTrade = 50
-
+  
   def receiver = {
     case t: Transaction => transactions = t :: transactions
     case Tick => {
@@ -67,8 +89,8 @@ class TransactionVwapTrader(uid: Long, timeFrameMillis: Int) extends Component {
     }
   }
 
-  override def start = {
+  override def init = {
     println("TransactionVwapTrader: Started")
-    system.scheduler.schedule(0 milliseconds, timeFrameMillis milliseconds, self, Tick)
+    system.scheduler.schedule(0 milliseconds, timeFrame, self, Tick)
   }
 }

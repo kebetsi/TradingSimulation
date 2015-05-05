@@ -3,12 +3,20 @@ package ch.epfl.ts.engine
 import akka.actor.{ActorLogging, Actor}
 import ch.epfl.ts.data.Currency.Currency
 
+/**
+ * Wallet actor's companion object
+ */
+object Wallet {
+	/** Data representation of the funds in multiple currencies */
+	type Type = Map[Currency, Double]
+}
+
 /*
 * Represents an one trader's wallet
 * TODO(sygi): remove user id from those communicates (ch.epfl.ts.engine.Messages)
 */
 class Wallet extends Actor with ActorLogging {
-  var funds: Map[Currency, Double] = Map[Currency, Double]()
+  var funds: Wallet.Type = Map[Currency, Double]()
 
   override def receive = {
     case GetWalletFunds(uid) => answerGetWalletFunds(uid)
