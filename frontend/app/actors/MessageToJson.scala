@@ -13,6 +13,7 @@ import ch.epfl.ts.component.ComponentRegistration
 import scala.reflect.ClassTag
 import net.liftweb.json._
 import net.liftweb.json.Serialization.write
+import com.typesafe.config.ConfigFactory
 
 /**
  * Receives Messages of a given Class Tag from the Trading Simulation backend (ts)
@@ -25,10 +26,11 @@ class MessageToJson[T <: AnyRef: ClassTag](out: ActorRef) extends Actor {
   val clazz = implicitly[ClassTag[T]].runtimeClass
   implicit val formats = DefaultFormats
 
-  // TODO we should be able to read all parameters except the actor system name 
-  // from the application.conf file of the backend
-  // TODO we could expose the actor system name in the frontend
-  val actors = context.actorSelection("akka.tcp://simpleFX@127.0.0.1:2552/user/*")
+  val config = ConfigFactory.load()
+  val name = config.getString("akka.backend.systemName")
+  val hostname = config.getString("akka.backend.hostname")
+  val port = config.getString("akka.backend.port")
+  val actors = context.actorSelection("akka.tcp://" + name + "@" + hostname + ":" + port + "/user/*")
 
   actors ! ComponentRegistration(self, clazz, "frontend" + clazz)
 
