@@ -30,6 +30,9 @@ import ch.epfl.ts.data._
 import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.collection.mutable.{ HashMap => MHashMap }
+import ch.epfl.ts.engine.WalletFunds
+import scala.math.abs
+
 /**
  * MovingAverageTrader companion object
  */
@@ -97,8 +100,8 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
   var tradingPrices = MHashMap[(Currency, Currency), (Double, Double)]()
 
   override def receiver = {
-    
-    case q:Quote =>{
+
+    case q: Quote => {
       tradingPrices((q.whatC, q.withC)) = (q.bid, q.ask)
     }
 
@@ -128,55 +131,79 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
 
     case whatever            => println("SimpleTrader: received unknown : " + whatever)
   }
+  def decideOrder = {
+    var volume = 0.0
+    var holdings = 0.0
+    var shortings = 0.0
 
-  def decideOrder =
-    if (withShort) decideOrderWithShort
-    else decideOrderWithoutShort
+    implicit val timeout = new Timeout(500 milliseconds)
+    val future = (broker ? GetWalletFunds(uid)).mapTo[WalletFunds]
+    future onSuccess {
+      case WalletFunds(id, funds: Map[Currency, Double]) => {
+        val cashWith = funds.getOrElse(withC, 0.0)
+        log.debug("cashWith" + cashWith)
+        holdings = funds.getOrElse(whatC, 0.0)
+        if (holdings < 0.0) {
+          shortings = abs(holdings)
+          holdings = 0.0
+        }
+        val askPrice = tradingPrices(whatC, withC)._2
+        volume = cashWith / askPrice
+        if (withShort) {
+          decideOrderWithShort(volume, holdings, shortings)
+        } else {
+          decideOrderWithoutShort(volume, holdings)
+        }
+      }
+    }
+    future onFailure {
+      case p => {
+        log.debug("MA Trader : Wallet command failed : " + p)
+        stop
+      }
+    }
 
-  def decideOrderWithoutShort = {
+  }
+
+
+  def decideOrderWithoutShort(volume:Double,holdings:Double) = {
     // BUY signal
     if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
       log.debug("buying " + volume)
-      send(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+      placeOrder(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
       oid += 1
-      holdings = volume
     } // SELL signal
     else if (currentShort < currentLong && holdings > 0.0) {
-      log.debug("selling " + volume)
-      send(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+      log.debug("selling " + holdings)
+      placeOrder(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, holdings, -1))
       oid += 1
-      holdings = 0.0
     }
   }
 
-  def decideOrderWithShort = {
+  def decideOrderWithShort(volume:Double,holdings:Double,shortings:Double) = {
     // BUY signal
     if (currentShort > currentLong) {
       if (shortings > 0.0) {
-        log.debug("closing short " + volume)
-        placeOrder(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+        log.debug("closing short " + shortings)
+        placeOrder(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, shortings, -1))
         oid += 1;
-        shortings = 0.0;
       }
       if (currentShort > currentLong * (1 + tolerance) && holdings == 0.0) {
         log.debug("buying " + volume)
         placeOrder(MarketBidOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1
-        holdings = volume
       }
     } // SELL signal
     else if (currentShort < currentLong) {
       if (holdings > 0.0) {
-        log.debug("selling " + volume)
-        placeOrder(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
+        log.debug("selling " + holdings)
+        placeOrder(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, holdings, -1))
         oid += 1
-        holdings = 0.0
       }
       if (currentShort * (1 + tolerance) < currentLong && shortings == 0.0) {
         log.debug("short " + volume)
         placeOrder(MarketAskOrder(oid, uid, System.currentTimeMillis(), whatC, withC, volume, -1))
         oid += 1;
-        shortings = volume;
       }
     }
   }
