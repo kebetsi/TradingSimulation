@@ -13,6 +13,7 @@ import ch.epfl.ts.engine.ForexMarketRules
 import scala.reflect.ClassTag
 import akka.actor.ActorRef
 import akka.util.Timeout
+import ch.epfl.ts.component.ComponentBuilder
 
 object TestHelpers {
 
@@ -34,6 +35,8 @@ abstract class ActorTestSuite(val name: String)
   extends TestKit(TestHelpers.makeTestActorSystem(name))
   with WordSpecLike
   with BeforeAndAfterAll {
+  
+  implicit val builder = new ComponentBuilder(system)
   
 	/** After all tests have run, shut down the system */
   override def afterAll() = {
