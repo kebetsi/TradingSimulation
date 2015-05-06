@@ -17,6 +17,9 @@ HOSTS=(ts-1-021qv44y ts-2) #ts-3 ts-4 ts-5 ts-6 ts-7 ts-8)
 USERS=(merlin dennis) #ts3 jakub ts-5 jakob ts-7 ts-8)
 PORTS=(22 22) # 22 22 22 22 65530 52640)
 
+# Which git branch to run on workers
+BRANCH="run-on-cluster"
+
 # Which class to run on workers
 CLASS="ch.epfl.ts.remoting.RemotingActorExample"
 
@@ -53,6 +56,10 @@ for i in "${!HOSTS[@]}"; do
 		status)
 			echo "${bold}ps -ef | grep '$CLASS'${normal} on $HOST$DOMAINNAME:"
 			ssh $USER@$HOST$DOMAINNAME -p $PORT "ps -ef | grep '$CLASS' | grep -v grep"
+			;;
+		update)
+			echo "Updating from git branch $BRANCH"
+			ssh $USER@$HOST$DOMAINNAME -p $PORT "sh -c 'cd ~/TradingSimulation; git fetch; git checkout origin/$BRANCH'"
 			;;
 		*)
 			echo "Unknown action $1"
