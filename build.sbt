@@ -29,3 +29,7 @@ lazy val ts = (project in file("ts"))
         unmanagedClasspath in Runtime <+= (baseDirectory) map { bd => Attributed.blank(bd / "src/main/resources") }
     )
 
+// Some of our tests require sequential execution
+parallelExecution in Test in ts := false
+
+parallelExecution in Test in frontend := false

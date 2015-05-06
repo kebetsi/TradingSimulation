@@ -66,14 +66,14 @@ class StandardBroker extends Component with ActorLogging {
         }
       })
     }
-    case GetWalletFunds(uid) => {
+    case GetWalletFunds(uid, ref) => {
       log.debug("Broker: got a get show wallet request")
       val replyTo = sender
-      if (mapping.get(uid) != Some(replyTo)) {
+      if (mapping.get(uid) != Some(ref)) {
         log.debug("Broker: someone asks for not - his wallet")
         return dummyReturn
       }
-      executeForWallet(uid, GetWalletFunds(uid), {
+      executeForWallet(uid, GetWalletFunds(uid,ref), {
         case w: WalletFunds => {
           replyTo ! w
         }

@@ -3,13 +3,15 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
+GET   /                     controllers.Application.index
 
-GET     /wsTest                           controllers.Application.wsTest
+GET   /fetchers/quote       controllers.Application.quote
+
+GET   /market/transaction   controllers.Application.transaction
 
 # Static
 # ~~~~
 
 # Map static resources from the /public folder to the /assets URL path
-GET   /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
+GET   /assets/*file         controllers.Assets.versioned(path="/public", file: Asset)
 

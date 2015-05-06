@@ -20,11 +20,13 @@ import ch.epfl.ts.data.WalletParameter
 import ch.epfl.ts.test.TestHelpers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import ch.epfl.ts.test.ActorTestSuite
+import ch.epfl.ts.test.FxMarketWrapped
+import ch.epfl.ts.test.SimpleBrokerWrapped
 
 @RunWith(classOf[JUnitRunner])
 class BrokerInteractionTest
-    extends TestKit(TestHelpers.makeTestActorSystem("BrokerInteractionTest"))
-    with WordSpecLike {
+    extends ActorTestSuite("BrokerInteractionTest") {
 
   val marketID = 1L
   val market = system.actorOf(Props(classOf[FxMarketWrapped], marketID, new ForexMarketRules()), MarketNames.FOREX_NAME)
@@ -54,7 +56,7 @@ class BrokerInteractionTest
     " create a wallet for the trader" in {
       within(1 second) {
         EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 1) intercept {
-          broker ! GetWalletFunds(38265L)
+          broker ! GetWalletFunds(38265L,trader)
         }
         EventFilter.debug(message = "Broker: someone asks for not - his wallet", occurrences = 0) intercept {
           EventFilter.debug(message = "Broker: No such wallet", occurrences = 0) intercept {
@@ -146,26 +148,4 @@ class SimpleTraderWrapped(uid: Long, parameters: StrategyParameters, broker: Act
   }
 
   override def send[T: ClassTag](t: List[T]) = t.map(broker ! _)
-}
-
-/**
- * Analogical class for the broker.
- */
-class SimpleBrokerWrapped(market: ActorRef) extends StandardBroker {
-  override def send[T: ClassTag](t: T) {
-    market ! t
-  }
-
-  override def send[T: ClassTag](t: List[T]) = t.map(market ! _)
-}
-
-class FxMarketWrapped(uid: Long, rules: ForexMarketRules) extends MarketFXSimulator(uid, rules) {
-  import context.dispatcher
-  override def send[T: ClassTag](t: T) {
-    val broker = context.actorSelection("../Broker")
-    implicit val timeout = new Timeout(100 milliseconds)
-    for (res <- broker.resolveOne()) {
-      res ! t
-    }
-  }
 }

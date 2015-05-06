@@ -3,10 +3,11 @@ package ch.epfl.ts.test.data
 import scala.concurrent.duration.DurationLong
 import scala.language.postfixOps
 import scala.util.Try
+
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import ch.epfl.ts.component.ComponentBuilder
+
 import ch.epfl.ts.data.BooleanParameter
 import ch.epfl.ts.data.CoefficientParameter
 import ch.epfl.ts.data.Currency
@@ -17,17 +18,9 @@ import ch.epfl.ts.data.ParameterTrait
 import ch.epfl.ts.data.RealNumberParameter
 import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.data.TimeParameter
-import ch.epfl.ts.engine.ForexMarketRules
-import ch.epfl.ts.engine.MarketRules
-import ch.epfl.ts.traders.Arbitrageur
-import ch.epfl.ts.traders.MadTrader
-import ch.epfl.ts.traders.MovingAverageTrader
-import ch.epfl.ts.traders.SimpleTraderWithBroker
-import ch.epfl.ts.traders.SobiTrader
-import ch.epfl.ts.traders.TraderCompanion
-import ch.epfl.ts.traders.TransactionVwapTrader
-import ch.epfl.ts.engine.Wallet
 import ch.epfl.ts.data.WalletParameter
+import ch.epfl.ts.engine.ForexMarketRules
+import ch.epfl.ts.engine.Wallet
 
 @RunWith(classOf[JUnitRunner])
 class StrategyParametersTests extends FunSuite {
@@ -73,54 +66,6 @@ class StrategyParametersTests extends FunSuite {
     test(parameterTrait + " should have a default value which is valid") {
       val attempt = Try(parameterTrait.getInstance(parameterTrait.defaultValue))
       assert(attempt.isSuccess, "Should accept " + parameterTrait.defaultValue)
-    }
-  }
-
-
-  /**
-   * Generic function to test concrete trading strategy implementation's correct
-   * behavior when instantiated with correct & incorrect parameters
-   */
-  def testConcreteStrategy(strategyCompanion: TraderCompanion) = {
-    implicit val builder = new ComponentBuilder("ConcreteStrategyTest")
-
-    val traderId = 42L
-    def make(p: StrategyParameters) = strategyCompanion.getInstance(traderId, p, "TraderBeingTested")
-    val emptyParameters = new StrategyParameters()
-    val required = strategyCompanion.requiredParameters
-    val optional = strategyCompanion.optionalParameters
-
-    // TODO: test optional parameters
-
-    /**
-     * Strategies not having any required parameter
-     */
-    if(required.isEmpty) {
-      test(strategyCompanion + " should allow instantiation with no parameters") {
-        val attempt = Try(make(emptyParameters))
-        assert(attempt.isSuccess)
-      }
-    }
-    /**
-     * Strategies with required parameters
-     */
-    else {
-      test(strategyCompanion + " should not allow instantiation with no parameters") {
-        val attempt = Try(make(emptyParameters))
-        assert(attempt.isFailure)
-      }
-
-      test(strategyCompanion + " should allow instantiation with parameters' default values") {
-        val parameters = for {
-          pair <- strategyCompanion.requiredParameters.toSeq
-          key = pair._1
-          parameter = pair._2.getInstance(pair._2.defaultValue)
-        } yield (key, parameter)
-
-        val sp = new StrategyParameters(parameters: _*)
-        val attempt = Try(make(sp))
-        assert(attempt.isSuccess)
-      }
     }
   }
 
@@ -234,14 +179,5 @@ class StrategyParametersTests extends FunSuite {
       List(new ForexMarketRules),
       List()
     )
-
-
-  /** Simple tests for strategy's parameterization */
-  testConcreteStrategy(MadTrader)
-  testConcreteStrategy(TransactionVwapTrader)
-  testConcreteStrategy(MovingAverageTrader)
-  testConcreteStrategy(SimpleTraderWithBroker)
-  testConcreteStrategy(Arbitrageur)
-  testConcreteStrategy(SobiTrader)
 
 }

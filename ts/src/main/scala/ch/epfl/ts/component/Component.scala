@@ -12,14 +12,21 @@ case object StartSignal
 case object StopSignal
 case class ComponentRegistration(ar: ActorRef, ct: Class[_], name: String)
 
-final class ComponentBuilder(myName: String, config: Config) {
+final class ComponentBuilder(val system: ActorSystem) {
   type ComponentProps = akka.actor.Props
-  val system = ActorSystem(myName, config)
   var graph = Map[ComponentRef, List[(ComponentRef, Class[_])]]()
   var instances = List[ComponentRef]()
+  
+  def this() {
+    this(ActorSystem(ConfigFactory.load().getString("akka.systemName"), ConfigFactory.load()))
+  }
 
-  def this(name: String){
-    this(name, ConfigFactory.load())
+  def this(name: String) {
+    this(ActorSystem(name, ConfigFactory.load()))
+  }
+  
+  def this(myName: String, config: Config) {
+    this(ActorSystem(myName, config))
   }
 
   def add(src: ComponentRef, dest: ComponentRef, data: Class[_]) {

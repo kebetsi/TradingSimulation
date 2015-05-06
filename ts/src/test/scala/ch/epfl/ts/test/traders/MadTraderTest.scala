@@ -19,11 +19,11 @@ import ch.epfl.ts.traders.MadTrader
 import ch.epfl.ts.engine.GetWalletFunds
 import ch.epfl.ts.data.WalletParameter
 import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.test.ActorTestSuite
 
 @RunWith(classOf[JUnitRunner])
 class MadTraderTest
-  extends TestKit(TestHelpers.makeTestActorSystem("MadTraderTest"))
-  with WordSpecLike {
+  extends ActorTestSuite("MadTraderTest") {
   
   val traderId = 42L
   val currencies = (Currency.EUR, Currency.CHF)
@@ -46,10 +46,7 @@ class MadTraderTest
   )
   
   // TODO: refactor generic strategy testing from `StrategyParameter` test suite?
-  // TODO: refactor common Actor testing characteristics into a common superclass (word specs, testkit, builder, ...)
-  implicit val builder = new ComponentBuilder("MadTraderTest")
   val trader = MadTrader.getInstance(traderId, parameters, "MadTrader")
-  
   
   "A MadTrader" should {
     "send its first order within the given initial delay" in {
