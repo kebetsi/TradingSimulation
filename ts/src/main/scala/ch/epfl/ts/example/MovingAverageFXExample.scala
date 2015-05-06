@@ -39,14 +39,15 @@ import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.engine.Wallet
 import ch.epfl.ts.data.WalletParameter
 import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.component.utils.Printer
 
 object MovingAverageFXExample {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("simpleFX", ConfigFactory.parseString("akka.loglevel = \"DEBUG\""))
+    implicit val builder = new ComponentBuilder()
     val marketForexId = MarketNames.FOREX_ID
 
     val useLiveData = false
-    val symbol = (Currency.USD, Currency.CHF)
+    val symbol = (Currency.EUR, Currency.CHF)
 
     // ----- Creating actors
     // Fetcher
@@ -61,7 +62,7 @@ object MovingAverageFXExample {
         val workingDir = "./data";
         val currencyPair = symbol._1.toString() + symbol._2.toString();
 
-        builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 4200.0), "HistDataFetcher")
+        builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 60.0), "HistDataFetcher")
       }
     }
     // Market
@@ -75,7 +76,7 @@ object MovingAverageFXExample {
     val parameters = new StrategyParameters(
       MovingAverageTrader.INITIAL_FUNDS -> WalletParameter(initialFunds),
       MovingAverageTrader.SYMBOL -> CurrencyPairParameter(symbol),
-      MovingAverageTrader.VOLUME -> NaturalNumberParameter(1000),
+      MovingAverageTrader.VOLUME -> RealNumberParameter(1000.0),
       MovingAverageTrader.SHORT_PERIOD -> new TimeParameter(periods(0) seconds),
       MovingAverageTrader.LONG_PERIOD -> new TimeParameter(periods(1) seconds),
       MovingAverageTrader.TOLERANCE -> RealNumberParameter(0.0002)
@@ -103,6 +104,7 @@ object MovingAverageFXExample {
     val traderNames = Map(traderId -> trader.name)
     // Add printer if needed to debug / display
 
+    
     // ----- Connecting actors
     fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator,broker), classOf[Quote])
 
