@@ -118,7 +118,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   private def sell(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) - t.volume)
-    wallet += t.withC -> (wallet.getOrElse(t.withC, 1.0) + t.volume * t.price)
+    wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) + t.volume * t.price)
   }
 
   /**
