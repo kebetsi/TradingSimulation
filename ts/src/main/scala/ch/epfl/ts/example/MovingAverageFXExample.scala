@@ -100,11 +100,12 @@ object MovingAverageFXExample {
     // Display
     val traderNames = Map(traderId -> trader.name)
     // Add printer if needed to debug / display
+    //val printer = builder.createRef(Props(classOf[Printer], "MyPrinter"), "Printer")
 
 
     // ----- Connecting actors
 
-    //TODO : Leave only forexMarket (other components will get quote from it)
+    // TODO : connect fetcher only to the market (other components will get quotes from it)
     fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator, broker, trader), classOf[Quote])
 
     trader -> (broker, classOf[Register], classOf[FundWallet], classOf[GetWalletFunds], classOf[MarketAskOrder], classOf[MarketBidOrder])
