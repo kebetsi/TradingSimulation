@@ -7,7 +7,7 @@
 # public key is in ~/.ssh/authorized_key on every worker.
 
 if [ $# -ne "1" ]; then
-	echo "Usage: ./start-workers.sh <start | stop | status>"
+	echo "Usage: ./workerctl.sh <start | stop | status>"
 	exit
 fi
 
