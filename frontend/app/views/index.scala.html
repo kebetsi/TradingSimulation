@@ -1,23 +1,24 @@
 @(message: String)
 
 @main("Welcome to Play") {
-	
-	
 
-	
+
+
+
 <div data-ng-controller="MyController">
-    	
-  <ol> 
+  <ol>
     <li data-ng-repeat="quote in quotes">{{ quote }}</li>
   </ol>
-		<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="alert.close()">
-		  {{ alert.msg }}
-		</alert>
-		
-  <ol> 
+
+	<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="alert.close()">
+	  {{ alert.msg }}
+	</alert>
+
+  <ol>
     <li data-ng-repeat="i in currencies">{{ i }}</li>
   </ol>
-                    <highchart class="chart" config="chartConfig" ></highchart>
+
+  <highchart class="chart" config="chartConfig" ></highchart>
 </div>
 
 <tabset >

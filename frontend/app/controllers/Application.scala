@@ -1,6 +1,5 @@
 package controllers
 
-import actors.TrueFxWsDemoActor
 import play.api._
 import play.api.Play.current
 import play.api.libs.iteratee.Iteratee
