@@ -9,7 +9,7 @@ import akka.actor.ActorRef
 
 object RemotingActorExample {
   def main(args: Array[String]): Unit = {
-    
+
     // `akka.remote.netty.tcp.hostname` is specified on a per-machine basis in the `application.conf` file
     val remotingConfig = ConfigFactory.parseString(
 """
@@ -18,7 +18,7 @@ akka.remote.enabled-transports = ["akka.remote.netty.tcp"]
 akka.remote.netty.tcp.bind-hostname = "0.0.0.0"
 akka.remote.netty.tcp.port = 3333
 """).withFallback(ConfigFactory.load());
-    
+
     implicit val system = ActorSystem("remote", remotingConfig)
   }
 }

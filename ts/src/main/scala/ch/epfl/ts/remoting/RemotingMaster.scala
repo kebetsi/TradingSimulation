@@ -28,13 +28,14 @@ import ch.epfl.ts.data.MarketBidOrder
 case object WorkerIsLive
 
 /**
- * Responsible for overseeing actors instantiated at worker nodes
+ * Responsible for overseeing actors instantiated at worker nodes. That means it listens
+ * to them (i.e. it doesn't send any commands or similar, so far, except for being able to ping them).
  */
 class MasterActor extends Actor {
-  
+
   var workers: MutableList[ActorRef] = MutableList()
   var nAlive = 0
-  
+
   override def receive = {
     case w: ActorRef => {
       workers += w
@@ -48,8 +49,8 @@ class MasterActor extends Actor {
     }
     case m => println("MasterActor received weird: " + m)
   }
-  
-  
+
+
   def pingAllWorkers = workers.foreach {
     w => w ! 'Ping
   }
@@ -59,10 +60,10 @@ class MasterActor extends Actor {
  * Dummy actor to test Akka remoting
  */
 class WorkerActor(hostActor: ActorRef, dummyParam: Int) extends Actor {
-  
+
   println("Worker actor with param " + dummyParam + " now running.")
   hostActor ! WorkerIsLive
-  
+
   override def receive = {
     case s: String => {
       println("WorkerActor received: " + s)
@@ -72,58 +73,63 @@ class WorkerActor(hostActor: ActorRef, dummyParam: Int) extends Actor {
   }
 }
 
-/** Need this concrete class to help serialization */
+/* Need this concrete class to help serialization */
 class QuoteTag extends ClassTag[Quote] with Serializable {
   override def runtimeClass = classOf[Quote]
 }
 
+/**
+ * Runs a main() method that creates a MasterActor and remote WorkerActors
+ * by calling createRemoteActors() for every availableWorker. It assumes
+ * that there is a RemotingWorker class running and listening on port 3333
+ * on every availableWorker.
+ */
 object RemotingHostExample {
-  
+
   val availableWorkers = List(
     "ts-1-021qv44y.cloudapp.net",
-    //"ts-2.cloudapp.net",
-    "ts-3.cloudapp.net",
+    "ts-2.cloudapp.net"
+    //"ts-3.cloudapp.net",
     //"ts-4.cloudapp.net",
     //"ts-5.cloudapp.net",
     //"ts-6.cloudapp.net",
-    "ts-7.cloudapp.net",
-    "ts-8.cloudapp.net"
-    // TODO: other hosts
+    //"ts-7.cloudapp.net",
+    //"ts-8.cloudapp.net"
   )
   val workerPort = 3333
   // TODO: lookup in configuration
   val workerSystemName = "remote"
-  
+
   /**
-   * Get a list of props that need to be created identically on
-   * all actor systems: 
+   * Define a list of props (actor types) that will be created identically on
+   * all actor systems (i.e. every worker will run these actors):
    */
   val commonProps = {
     // Fetcher
     val fetcher = new TrueFxFetcher
     val fetcherActor = Props(classOf[PullFetchComponent[Quote]], fetcher, new QuoteTag)
-    
+
     // Market
     val rules = new ForexMarketRules()
     val market = Props(classOf[MarketFXSimulator], MarketNames.FOREX_ID, rules)
-    
+
     // Printer
     val printer = Props(classOf[Printer], "")
-    
+
     Map(
       "fetcher" -> fetcherActor,
       "market"  -> market,
       "printer" -> printer
     )
   }
-  
+
   /**
    * For the given remote worker, create the common components
    * and an instance of the trading strategy for each parameter value given.
-   * 
-   * @param master Supervisor actor to register the worker to
-   * @param host Hostname of the remote actor system
-   * @param prefix Prefix to use in each of this system's actor names
+   *
+   * @param master            Supervisor actor to register the worker to
+   * @param host              Hostname of the remote actor system
+   * @param prefix            Prefix to use in each of this system's actor names
    * @param parameterValues
    */
   // TODO: replace by actual parameters
@@ -134,19 +140,19 @@ object RemotingHostExample {
                         (implicit builder: ComponentBuilder): Unit = {
     val address = Address("akka.tcp", workerSystemName, host, workerPort)
     val deploy = Deploy(scope = RemoteScope(address))
-    
+
     // Common props
     val common = commonProps.map({ case (name, props) =>
       println("Creating common prop " + (prefix + "-" + name) + " at host " + host)
       (name -> builder.createRef(props.withDeploy(deploy), prefix + name))
     })
-    
+
     // One trader for each parameterization
     for {
       dummyParam <- parameterValues
     } yield {
       val name = prefix +  "-Worker-" + dummyParam
-      
+
       // TODO: evaluator as well
       val trader = builder.createRef(Props(classOf[WorkerActor], master.ar, dummyParam).withDeploy(deploy), name)
 
@@ -158,14 +164,14 @@ object RemotingHostExample {
 
       println("Created trader " + name + " at host " + host)
     }
-    
+
     // TODO: all useful connections
     common("fetcher") -> (common("printer"), classOf[Quote])
     common("market")  -> (common("printer"), classOf[Transaction])
   }
-  
+
   def main(args: Array[String]): Unit = {
-    
+
     // `akka.remote.netty.tcp.hostname` is specified on a per-machine basis in the `application.conf` file
     val remotingConfig = ConfigFactory.parseString(
 """
@@ -174,21 +180,23 @@ akka.remote.enabled-transports = ["akka.remote.netty.tcp"]
 akka.remote.netty.tcp.port = 3333
 akka.actor.serialize-creators = on
 """).withFallback(ConfigFactory.load());
-    
+
+    // Build the master actor
     implicit val builder = new ComponentBuilder("host", remotingConfig)
     val master = builder.createRef(Props(classOf[MasterActor]), "MasterActor")
-    
+
+    // Prepare parameters for worker actors (there will be one actor per parameter value)
     val allParameterValues = (1 to 10)
     val slicedParameters = {
-      val n = (allParameterValues.length / availableWorkers.length.toFloat).ceil.toInt 
+      val n = (allParameterValues.length / availableWorkers.length.toFloat).ceil.toInt
       (0 until availableWorkers.length).map(i => allParameterValues.slice(n * i, (n * i) + n))
     }
-    
-    // Programmatic deployment: master asks workers to instantiate actors
+
+    // Build remote worker actors
     val remoteActors = for {
       (workerHost, idx) <- availableWorkers.zipWithIndex
     } yield createRemoteActors(master, workerHost, idx.toString(), slicedParameters(idx))
-    
+
     builder.start
     // TODO: handle evaluator reports on stop
   }
