@@ -1,7 +1,9 @@
 package ch.epfl.ts.traders
 
+import scala.language.postfixOps
 import scala.reflect
 import scala.reflect.ClassTag
+import scala.concurrent.duration.DurationInt
 import akka.actor.Props
 import ch.epfl.ts.component.Component
 import ch.epfl.ts.component.ComponentBuilder
@@ -31,8 +33,10 @@ abstract class Trader(val uid: Long, val parameters: StrategyParameters) extends
   
   // On instantiation, check that all mandatory parameters have been provided
   companion.verifyParameters(parameters)
-  
   // TODO: warn if some parameters are unused
+  
+  /** Default timeout to use when Asking another component asynchronously */
+  val askTimeout = 500 milliseconds
   
   val initialFunds = parameters.get[Map[Currency.Currency, Double]]("InitialFunds")
   

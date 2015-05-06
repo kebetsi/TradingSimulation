@@ -48,7 +48,11 @@ object ExecutedAskOrder {
 abstract class WalletState(val uid: Long)
 
 /* Getter */
-//actorRef to enable ask pattern (future) and keeping verification of the GetWalletFund sender
+
+/**
+ * @param ref To enable using the ask pattern while keeping reliable verification of the GetWalletFund sender
+ *            Should be a reference to the trader asking for the funds.
+ */
 case class GetWalletFunds(override val uid: Long,ref:ActorRef) extends WalletState(uid)
 
 case class GetWalletAllOrders(override val uid: Long) extends WalletState(uid)

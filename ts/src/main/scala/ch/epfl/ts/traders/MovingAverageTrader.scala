@@ -24,11 +24,9 @@ import ch.epfl.ts.data.TimeParameter
 import ch.epfl.ts.data.RealNumberParameter
 import ch.epfl.ts.data.BooleanParameter
 import scala.slick.direct.order
-import scala.language.postfixOps
 import akka.pattern.ask
 import ch.epfl.ts.data._
 import akka.util.Timeout
-import scala.concurrent.duration._
 import scala.collection.mutable.{ HashMap => MHashMap }
 import ch.epfl.ts.engine.WalletFunds
 import scala.math.abs
@@ -139,7 +137,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
     var holdings = 0.0
     var shortings = 0.0
 
-    implicit val timeout = new Timeout(500 milliseconds)
+    implicit val timeout = new Timeout(askTimeout)
     val future = (broker ? GetWalletFunds(uid,this.self)).mapTo[WalletFunds]
     future onSuccess {
       case WalletFunds(id, funds: Map[Currency, Double]) => {
@@ -211,7 +209,7 @@ class MovingAverageTrader(uid: Long, parameters: StrategyParameters)
   }
 
   def placeOrder(order: MarketOrder) = {
-    implicit val timeout = new Timeout(500 milliseconds)
+    implicit val timeout = new Timeout(askTimeout)
     val future = (broker ? order).mapTo[Order]
     future onSuccess {
       //Transaction has been accepted by the broker (but may not be executed : e.g. limit orders) = OPEN Positions

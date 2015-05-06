@@ -1,42 +1,34 @@
 package ch.epfl.ts.test.traders
 
-import scala.language.postfixOps
 import scala.concurrent.duration.DurationInt
-import org.scalatest.WordSpecLike
-import com.typesafe.config.ConfigFactory
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.testkit.EventFilter
-import akka.testkit.TestActorRef
-import akka.testkit.TestKit
-import ch.epfl.ts.component.StartSignal
-import ch.epfl.ts.data.Currency._
-import ch.epfl.ts.indicators.SMA
-import ch.epfl.ts.traders.MovingAverageTrader
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
-import ch.epfl.ts.test.TestHelpers
-import ch.epfl.ts.data.StrategyParameters
-import ch.epfl.ts.data.WalletParameter
-import ch.epfl.ts.data.TimeParameter
-import ch.epfl.ts.data.CurrencyPairParameter
-import ch.epfl.ts.data.NaturalNumberParameter
-import ch.epfl.ts.data.RealNumberParameter
-import ch.epfl.ts.engine.Wallet
-import ch.epfl.ts.data.BooleanParameter
-import akka.actor.ActorRef
-import scala.reflect.ClassTag
-import ch.epfl.ts.brokers.StandardBroker
-import ch.epfl.ts.engine.ForexMarketRules
-import ch.epfl.ts.engine.MarketFXSimulator
-import akka.util.Timeout
-import ch.epfl.ts.component.fetch.MarketNames
-import ch.epfl.ts.data._
+import scala.language.postfixOps
 import scala.math.floor
-import org.scalatest.Sequential
+import scala.reflect.ClassTag
+
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+
+import akka.actor.ActorRef
+import akka.actor.Props
+import akka.actor.actorRef2Scala
+import akka.testkit.EventFilter
+import ch.epfl.ts.component.StartSignal
+import ch.epfl.ts.component.fetch.MarketNames
+import ch.epfl.ts.data.BooleanParameter
+import ch.epfl.ts.data.Currency
+import ch.epfl.ts.data.CurrencyPairParameter
+import ch.epfl.ts.data.Quote
+import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.data.StrategyParameters
+import ch.epfl.ts.data.TimeParameter
+import ch.epfl.ts.data.WalletParameter
+import ch.epfl.ts.engine.ForexMarketRules
+import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.indicators.SMA
 import ch.epfl.ts.test.ActorTestSuite
 import ch.epfl.ts.test.FxMarketWrapped
 import ch.epfl.ts.test.SimpleBrokerWrapped
+import ch.epfl.ts.traders.MovingAverageTrader
 
 /**
  * @warning Some of the following tests are dependent and should be executed in the specified order.
