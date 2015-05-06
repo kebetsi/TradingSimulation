@@ -11,6 +11,6 @@ object TestHelpers {
       akka.loglevel = "DEBUG"
       akka.loggers = ["akka.testkit.TestEventListener"]
       """
-    ))
+    ).withFallback(ConfigFactory.load()))
   
 }
