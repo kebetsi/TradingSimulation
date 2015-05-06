@@ -19,11 +19,11 @@ import ch.epfl.ts.traders.MadTrader
 import ch.epfl.ts.engine.GetWalletFunds
 import ch.epfl.ts.data.WalletParameter
 import ch.epfl.ts.engine.Wallet
+import ch.epfl.ts.test.ActorTestSuite
 
 @RunWith(classOf[JUnitRunner])
 class MadTraderTest
-  extends TestKit(TestHelpers.makeTestActorSystem("MadTraderTest"))
-  with WordSpecLike {
+  extends ActorTestSuite("MadTraderTest") {
   
   val traderId = 42L
   val currencies = (Currency.EUR, Currency.CHF)

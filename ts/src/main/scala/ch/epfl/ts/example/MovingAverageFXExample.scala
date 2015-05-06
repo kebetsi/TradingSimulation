@@ -75,14 +75,11 @@ object MovingAverageFXExample {
     val parameters = new StrategyParameters(
       MovingAverageTrader.INITIAL_FUNDS -> WalletParameter(initialFunds),
       MovingAverageTrader.SYMBOL -> CurrencyPairParameter(symbol),
-      MovingAverageTrader.VOLUME -> NaturalNumberParameter(1000),
       MovingAverageTrader.SHORT_PERIOD -> new TimeParameter(periods(0) seconds),
       MovingAverageTrader.LONG_PERIOD -> new TimeParameter(periods(1) seconds),
-      MovingAverageTrader.TOLERANCE -> RealNumberParameter(0.0002)
-    )
+      MovingAverageTrader.TOLERANCE -> RealNumberParameter(0.0002))
 
     val trader = MovingAverageTrader.getInstance(traderId, parameters, "MovingAverageTrader")
-
 
     // Indicator
     // Specify period over which we build the OHLC (from quotes)
@@ -94,7 +91,7 @@ object MovingAverageFXExample {
     val evaluationPeriod = 2000 milliseconds
     val evaluationInitialDelay = 1000000.0
     val currency = symbol._1
-//    val evaluator = builder.createRef(Props(classOf[Evaluator], trader, traderId, evaluationInitialDelay, currency, evaluationPeriod), "Evaluator")
+    //    val evaluator = builder.createRef(Props(classOf[Evaluator], trader, traderId, evaluationInitialDelay, currency, evaluationPeriod), "Evaluator")
 
     // Broker
     val broker = builder.createRef(Props(classOf[StandardBroker]), "Broker")
@@ -104,11 +101,13 @@ object MovingAverageFXExample {
     // Add printer if needed to debug / display
 
     // ----- Connecting actors
-    fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator,broker), classOf[Quote])
+    
+    //TODO : Leave only forexMarket (other components will get quote from it)
+    fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator, broker, trader), classOf[Quote])
 
-    trader -> (broker,classOf[Register],classOf[FundWallet],classOf[GetWalletFunds],classOf[MarketAskOrder], classOf[MarketBidOrder])
-    broker->(forexMarket,classOf[MarketAskOrder], classOf[MarketBidOrder])
-    forexMarket -> (broker,classOf[ExecutedBidOrder],classOf[ExecutedAskOrder])
+    trader -> (broker, classOf[Register], classOf[FundWallet], classOf[GetWalletFunds], classOf[MarketAskOrder], classOf[MarketBidOrder])
+    broker -> (forexMarket, classOf[MarketAskOrder], classOf[MarketBidOrder])
+    forexMarket -> (broker, classOf[ExecutedBidOrder], classOf[ExecutedAskOrder])
 
     maCross -> (trader, classOf[EMA])
     ohlcIndicator -> (maCross, classOf[OHLC])

@@ -1,7 +1,17 @@
+sudo: false
 install: true
 language: scala
 scala:
   - 2.11.2
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
 notifications:
   slack:
     secure: h0QcxCkN1aYhEgEvrLi9eKM2OdVOSfnPkQfwCXspV5fDYyEh96rDDJ4kBWoW6M0Fp4Uq7TZY6tGzUAdbnTU/Yg2+T0+H4+lDsfPhPTmmeZkAaByXVN2gOrNft06yHvte7WaDfON1eIUweNvuP8RGSgzyMpgAgIfhu5L43an7m/c=
