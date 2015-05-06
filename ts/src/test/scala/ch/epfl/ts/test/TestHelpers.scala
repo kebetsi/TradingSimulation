@@ -37,7 +37,9 @@ abstract class ActorTestSuite(val name: String)
   
 	/** After all tests have run, shut down the system */
   override def afterAll() = {
+    // TODO: use system.terminate (for some reason, doesn't compile in SBT)
     system.shutdown()
+    system.awaitTermination()
   }
   
 }
