@@ -46,7 +46,7 @@ object MovingAverageFXExample {
     implicit val builder = new ComponentBuilder()
     val marketForexId = MarketNames.FOREX_ID
 
-    val useLiveData = false
+    val useLiveData = true
     val symbol = (Currency.EUR, Currency.CHF)
 
     // ----- Creating actors
