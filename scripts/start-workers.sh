@@ -14,12 +14,13 @@ HOSTS=(ts-1-021qv44y ts-2) #ts-3 ts-4 ts-5 ts-6 ts-7 ts-8)
 USERS=(merlin dennis) #ts3 jakub ts-5 jakob ts-7 ts-8)
 PORTS=(22 22) # 22 22 22 22 65530 52640)
 
+bold=$(tput bold) ; normal=$(tput sgr0) # Text formatting
 
 for i in "${!HOSTS[@]}"; do
 	HOST=${HOSTS[$i]}
 	USER=${USERS[$i]}
 	PORT=${PORTS[$i]}
-	echo "Connecting to $USER@$HOST$DOMAINNAME port $PORT"
+	echo "${bold}Connecting to $USER@$HOST$DOMAINNAME port $PORT${normal}"
 
 	case "$1" in
 		start)
@@ -30,13 +31,12 @@ for i in "${!HOSTS[@]}"; do
 			#		(in our case: sh will be killed as soon as ssh has sent its command and disconnects, but nohup assures this doesn't happen to sbt)
 			#	4. "sbt 'project ts' 'runMain ch.epfl.ts.remoting.RemotingActorExample'" runs our remote actor system
 			#	5. " > ~/RemoteActor.log 2>&1" redirects all sbt output to ~/RemoteActor.log
-			ssh -n -f $USER@$HOST$DOMAINNAME -p $PORT "sh -c \"\cd ~/TradingSimulation; nohup sbt 'project ts' 'runMain ch.epfl.ts.remoting.RemotingActorExample' > ~/RemotingActor.log 2>&1 &\""
+			ssh $USER@$HOST$DOMAINNAME -p $PORT "sh -c \"\cd ~/TradingSimulation; nohup sbt 'project ts' 'runMain ch.epfl.ts.remoting.RemotingActorExample' > ~/RemotingActor.log 2>&1 &\""
 			;;
 		stop)
-			ssh -n -f $USER@$HOST$DOMAINNAME -p $PORT "kill $(ps -ef | grep '[R]emotingActor' | awk '{print $2}')"
+			ssh $USER@$HOST$DOMAINNAME -p $PORT "kill \$(ps -ef | grep '[R]emotingActor' | awk '{print \$2}')"
 			;;
 		status)
-			bold=$(tput bold) ; normal=$(tput sgr0) # Text formatting
 			echo "${bold}ps -ef | grep '[R]emotingActor'${normal} on $HOST$DOMAINNAME:"
 			ssh $USER@$HOST$DOMAINNAME -p $PORT "ps -ef | grep '[R]emotingActor'"
 			;;
