@@ -35,6 +35,8 @@ import ch.epfl.ts.data._
 import scala.math.floor
 import org.scalatest.Sequential
 import ch.epfl.ts.test.ActorTestSuite
+import ch.epfl.ts.test.FxMarketWrapped
+import ch.epfl.ts.test.SimpleBrokerWrapped
 
 /**
  * @warning Some of the following tests are dependent and should be executed in the specified order.
@@ -155,27 +157,5 @@ class MovingAverageTraderWrapped(uid: Long, parameters: StrategyParameters, brok
     broker ! t
   }
   override def send[T: ClassTag](t: List[T]) = t.map(broker ! _)
-}
-
-/**
- * Analogical class for the broker.
- */
-class SimpleBrokerWrapped(market: ActorRef) extends StandardBroker {
-  override def send[T: ClassTag](t: T) {
-    market ! t
-  }
-
-  override def send[T: ClassTag](t: List[T]) = t.map(market ! _)
-}
-
-class FxMarketWrapped(uid: Long, rules: ForexMarketRules) extends MarketFXSimulator(uid, rules) {
-  import context.dispatcher
-  override def send[T: ClassTag](t: T) {
-    val broker = context.actorSelection("../Broker")
-    implicit val timeout = new Timeout(100 milliseconds)
-    for (res <- broker.resolveOne()) {
-      res ! t
-    }
-  }
 }
 
