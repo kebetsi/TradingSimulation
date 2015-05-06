@@ -12,8 +12,32 @@ import ch.epfl.ts.data.Currency._
 /**
  * Represents metrics of a strategy
  */
-case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Currency, Double], currency: Currency, initial: Double,
-                            current: Double, totalReturns: Double, volatility: Double, drawdown: Double, sharpeRatio: Double)
+case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Currency, Double],
+                            currency: Currency, initial: Double, current: Double, totalReturns: Double,
+                            volatility: Double, drawdown: Double, sharpeRatio: Double) extends Ordered[EvaluationReport] {
+
+  /** Compares two evaluation reports by total returns
+    *
+    * Returns x where:
+    *   x < 0 when this < that
+    *   x == 0 when this == that
+    *   x > 0 when this > that
+    *
+    * Use the default comparable implementation to sort a list of reports:
+    *   list.sorted[EvaluationReport]
+    *
+    * Use sortBy to sort a list of reports:
+    *   list.sortBy(_.sharpeRatio)
+    *
+    * Use sortWith to sort a list of reports:
+    *   list.sortWith(_.sharpeRatio > _.sharpeRatio)
+    *
+    */
+  def compare(that: EvaluationReport) = {
+    val delta = this.totalReturns - that.totalReturns
+    if (delta > 0) 1 else if (delta < 0) -1 else 0
+  }
+}
 
 /**
   * Evaluates the performance of traders by total returns, volatility, draw down and sharpe ratio
@@ -30,7 +54,6 @@ case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Curr
   * @param currency currency of the initial seed money
   * @param period the time period to send evaluation report
   */
- //TODO Make Evaluator consistent with a Trader connected to a Broker which provide wallet-awareness  
 class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._
@@ -54,7 +77,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   override def connect(ar: ActorRef, ct: Class[_], name: String) = {
     if (ct.equals(classOf[EvaluationReport]))
-      dest += (ct -> (ar :: dest.getOrElse(ct, List())))
+      super.connect(ar, ct, name)
     else
       trader.ar ! ComponentRegistration(ar, ct, name)
   }

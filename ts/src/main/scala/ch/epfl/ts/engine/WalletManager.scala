@@ -19,7 +19,7 @@ class Wallet extends Actor with ActorLogging {
   var funds: Wallet.Type = Map[Currency, Double]()
 
   override def receive = {
-    case GetWalletFunds(uid) => answerGetWalletFunds(uid)
+    case GetWalletFunds(uid,ref) => answerGetWalletFunds(uid)
     case FundWallet(uid, c, q) => fundWallet(uid, c, q)
   }
 
