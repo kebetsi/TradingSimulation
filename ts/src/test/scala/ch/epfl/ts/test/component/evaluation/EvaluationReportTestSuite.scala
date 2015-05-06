@@ -27,7 +27,6 @@ class EvaluationReportTestSuite extends FunSuite {
   }
 
   test("compare with sorted") {
-  test("compare with sorted") {
     val seq = Seq(a, b)
     assert(seq.sorted[EvaluationReport] == Seq(a, b))
   }
