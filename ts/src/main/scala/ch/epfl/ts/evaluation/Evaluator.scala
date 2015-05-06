@@ -22,6 +22,16 @@ case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Curr
     *   x < 0 when this < that
     *   x == 0 when this == that
     *   x > 0 when this > that
+    *
+    * Use the default comparable implementation to sort a list of reports:
+    *   list.sorted[EvaluationReport]
+    *
+    * Use sortBy to sort a list of reports:
+    *   list.sortBy(_.sharpeRatio)
+    *
+    * Use sortWith to sort a list of reports:
+    *   list.sortWith(_.sharpeRatio > _.sharpeRatio)
+    *
     */
   def compare(that: EvaluationReport) = {
     val delta = this.totalReturns - that.totalReturns
@@ -44,7 +54,6 @@ case class EvaluationReport(traderId: Long, traderName: String, wallet: Map[Curr
   * @param currency currency of the initial seed money
   * @param period the time period to send evaluation report
   */
- //TODO Make Evaluator consistent with a Trader connected to a Broker which provide wallet-awareness  
 class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency: Currency, period: FiniteDuration) extends Component {
   // for usage of scheduler
   import context._
@@ -109,7 +118,7 @@ class Evaluator(trader: ComponentRef, traderId: Long, initial: Double, currency:
    */
   private def sell(t: Transaction): Unit = {
     wallet += t.whatC -> (wallet.getOrElse(t.whatC, 0.0) - t.volume)
-    wallet += t.withC -> (wallet.getOrElse(t.withC, 0.0) + t.volume * t.price)
+    wallet += t.withC -> (wallet.getOrElse(t.withC, 1.0) + t.volume * t.price)
   }
 
   /**
