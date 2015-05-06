@@ -46,10 +46,7 @@ class MadTraderTest
   )
   
   // TODO: refactor generic strategy testing from `StrategyParameter` test suite?
-  // TODO: refactor common Actor testing characteristics into a common superclass (word specs, testkit, builder, ...)
-  implicit val builder = new ComponentBuilder("MadTraderTest")
   val trader = MadTrader.getInstance(traderId, parameters, "MadTrader")
-  
   
   "A MadTrader" should {
     "send its first order within the given initial delay" in {

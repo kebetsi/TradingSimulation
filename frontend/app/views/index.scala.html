@@ -1,6 +1,31 @@
 @(message: String)
 
 @main("Welcome to Play") {
-	Check the console to see the messages from the server
+
+
+
+
+<div data-ng-controller="MyController">
+  <ol>
+    <li data-ng-repeat="quote in quotes">{{ quote }}</li>
+  </ol>
+
+	<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="alert.close()">
+	  {{ alert.msg }}
+	</alert>
+
+  <ol>
+    <li data-ng-repeat="i in currencies">{{ i }}</li>
+  </ol>
+
+  <highchart class="chart" config="chartConfig" ></highchart>
+</div>
+
+<tabset >
+	<tab heading="Statistics">TODO Statistics</tab>
+	<tab heading="Traders">TODO Traders</tab>
+	<tab heading="Transactions">TODO Transactions</tab>
+</tabset>
+
 
 }

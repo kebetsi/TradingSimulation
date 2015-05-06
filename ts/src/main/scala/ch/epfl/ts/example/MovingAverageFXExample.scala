@@ -39,14 +39,15 @@ import ch.epfl.ts.data.StrategyParameters
 import ch.epfl.ts.engine.Wallet
 import ch.epfl.ts.data.WalletParameter
 import ch.epfl.ts.data.RealNumberParameter
+import ch.epfl.ts.component.utils.Printer
 
 object MovingAverageFXExample {
   def main(args: Array[String]): Unit = {
-    implicit val builder = new ComponentBuilder("simpleFX", ConfigFactory.parseString("akka.loglevel = \"DEBUG\""))
+    implicit val builder = new ComponentBuilder()
     val marketForexId = MarketNames.FOREX_ID
 
-    val useLiveData = false
-    val symbol = (Currency.USD, Currency.CHF)
+    val useLiveData = true
+    val symbol = (Currency.EUR, Currency.CHF)
 
     // ----- Creating actors
     // Fetcher
@@ -61,7 +62,7 @@ object MovingAverageFXExample {
         val workingDir = "./data";
         val currencyPair = symbol._1.toString() + symbol._2.toString();
 
-        builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 4200.0), "HistDataFetcher")
+        builder.createRef(Props(classOf[HistDataCSVFetcher], workingDir, currencyPair, startDate, endDate, 60.0), "HistDataFetcher")
       }
     }
     // Market
@@ -99,10 +100,12 @@ object MovingAverageFXExample {
     // Display
     val traderNames = Map(traderId -> trader.name)
     // Add printer if needed to debug / display
+    //val printer = builder.createRef(Props(classOf[Printer], "MyPrinter"), "Printer")
+
 
     // ----- Connecting actors
-    
-    //TODO : Leave only forexMarket (other components will get quote from it)
+
+    // TODO : connect fetcher only to the market (other components will get quotes from it)
     fxQuoteFetcher -> (Seq(forexMarket, ohlcIndicator, broker, trader), classOf[Quote])
 
     trader -> (broker, classOf[Register], classOf[FundWallet], classOf[GetWalletFunds], classOf[MarketAskOrder], classOf[MarketBidOrder])

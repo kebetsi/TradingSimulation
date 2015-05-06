@@ -13,6 +13,7 @@ import ch.epfl.ts.engine.ForexMarketRules
 import scala.reflect.ClassTag
 import akka.actor.ActorRef
 import akka.util.Timeout
+import ch.epfl.ts.component.ComponentBuilder
 
 object TestHelpers {
 
@@ -22,7 +23,7 @@ object TestHelpers {
       akka.loglevel = "DEBUG"
       akka.loggers = ["akka.testkit.TestEventListener"]
       """
-    ))
+    ).withFallback(ConfigFactory.load()))
   
 }
 
@@ -35,9 +36,13 @@ abstract class ActorTestSuite(val name: String)
   with WordSpecLike
   with BeforeAndAfterAll {
   
+  implicit val builder = new ComponentBuilder(system)
+  
 	/** After all tests have run, shut down the system */
   override def afterAll() = {
+    // TODO: use system.terminate (for some reason, doesn't compile in SBT)
     system.shutdown()
+    system.awaitTermination()
   }
   
 }

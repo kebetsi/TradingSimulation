@@ -28,3 +28,5 @@ lazy val ts = (project in file("ts"))
 
 // Some of our tests require sequential execution
 parallelExecution in Test in ts := false
+
+parallelExecution in Test in frontend := false
