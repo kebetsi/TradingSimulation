@@ -7,7 +7,7 @@ import akka.actor.ActorSystem
 import akka.actor.Props
 import akka.actor.ActorRef
 
-object RemotingActorExample {
+object RemotingWorker {
   def main(args: Array[String]): Unit = {
 
     // `akka.remote.netty.tcp.hostname` is specified on a per-machine basis in the `application.conf` file

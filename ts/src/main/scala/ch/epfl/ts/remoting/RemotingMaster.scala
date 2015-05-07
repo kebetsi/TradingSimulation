@@ -1,6 +1,7 @@
 package ch.epfl.ts.remoting
 
 import scala.collection.mutable.MutableList
+import scala.reflect.ClassTag
 import com.typesafe.config.ConfigFactory
 import akka.actor.Actor
 import akka.actor.ActorRef
@@ -14,7 +15,6 @@ import ch.epfl.ts.engine.MarketRules
 import ch.epfl.ts.engine.MarketFXSimulator
 import ch.epfl.ts.engine.ForexMarketRules
 import ch.epfl.ts.component.fetch.TrueFxFetcher
-import scala.reflect.ClassTag
 import ch.epfl.ts.component.fetch.PullFetchComponent
 import ch.epfl.ts.component.fetch.MarketNames
 import ch.epfl.ts.data.Quote
@@ -84,7 +84,7 @@ class QuoteTag extends ClassTag[Quote] with Serializable {
  * that there is a RemotingWorker class running and listening on port 3333
  * on every availableWorker.
  */
-object RemotingHostExample {
+object RemotingHost {
 
   val availableWorkers = List(
     "ts-1-021qv44y.cloudapp.net",
