@@ -13,9 +13,9 @@ fi
 
 # Which workers to control
 DOMAINNAME=".cloudapp.net"
-HOSTS=(ts-1-021qv44y ts-2) #ts-3 ts-4 ts-5 ts-6 ts-7 ts-8)
-USERS=(merlin dennis) #ts3 jakub ts-5 jakob ts-7 ts-8)
-PORTS=(22 22) # 22 22 22 22 65530 52640)
+HOSTS=(ts-1-021qv44y ts-2 ts-3 ts-4 ts-5 ts-6 ts-7 ts-8)
+USERS=(merlin dennis ts3 jakub ts-5 jakob ts-7 ts-8)
+PORTS=(22 22 22 22 58575 22 65530 52640)
 
 # Which git branch to run on workers
 BRANCH="master"
