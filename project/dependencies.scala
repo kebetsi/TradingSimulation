@@ -6,11 +6,12 @@ object Dependencies {
   lazy val ts = common ++ tradingsimulation
 
   val common = Seq(
+    "org.scala-lang" % "scala-reflect" % "2.11.2",
     "junit" % "junit" % "4.8.1" % "test",
     "org.scalatest" % "scalatest_2.11" % "2.2.2" % "test",
-    "com.typesafe.akka" %% "akka-actor" % "2.3.6" withSources() withJavadoc(),
-    "com.typesafe.akka" %% "akka-remote" % "2.3.6" withSources() withJavadoc(),
-    "com.typesafe.akka" %% "akka-testkit" % "2.3.6" % "test",
+    "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT" withSources() withJavadoc(),
+    "com.typesafe.akka" %% "akka-remote" % "2.4-SNAPSHOT" withSources() withJavadoc(),
+    "com.typesafe.akka" %% "akka-testkit" % "2.4-SNAPSHOT" % "test",
     "com.typesafe.slick" %% "slick" % "2.1.0" withSources() withJavadoc()
   )
 
