@@ -72,9 +72,7 @@ for i in "${!HOSTS[@]}"; do
 			;;
 		update-restart)
 			echo "Updating and restarting..."
-			ssh $USER@$HOST$DOMAINNAME -p $PORT "$UPDATE_CMD"
-			ssh $USER@$HOST$DOMAINNAME -p $PORT "$STOP_CMD"
-			ssh $USER@$HOST$DOMAINNAME -p $PORT "$START_CMD"
+			ssh $USER@$HOST$DOMAINNAME -p $PORT "$UPDATE_CMD; $STOP_CMD; $START_CMD"
 			;;
 		*)
 			echo "Unknown action $1"
